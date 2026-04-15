@@ -805,7 +805,7 @@ async function openChatModal() {
           const configModule = await import("./config.js");
           apiKey = configModule.config.longcatApiKey;
         } catch (error) {
-          console.warn("config.js not found, API key not configured");
+          console.warn("config.js not found, using environment variables");
         }
 
         console.log(
