@@ -33,9 +33,19 @@ import {
   WORK_TYPE_ONSITE,
   WORK_TYPE_WFH,
 } from "./shared/validators.js";
+import { chatInput } from "./frontend-components/chatInput.js";
+import { messageList } from "./frontend-components/messageList.js";
+import {
+  ChatStateManager,
+  initializeChatState,
+} from "./shared/chatStateManager.js";
+import { config } from "./config.js";
 
 let db = null;
 let currentSection = "employees";
+let chatStateManager = null;
+let chatInputControl = null;
+let messageListControl = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
   try {
@@ -44,6 +54,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     await renderProjects();
     await renderTasks();
     setupEventListeners();
+    initializeChat();
   } catch (error) {
     showNotification(error.message, "error");
   }
@@ -70,6 +81,18 @@ function setupEventListeners() {
     .getElementById("chat-modal-overlay")
     .addEventListener("click", handleChatModalOverlayClick);
   document.addEventListener("keydown", handleEscapeKey);
+}
+
+function initializeChat() {
+  chatStateManager = initializeChatState("enosoft_chat_history");
+
+  const history = chatStateManager.getHistory();
+  if (history.length === 0) {
+    chatStateManager.addMessage(
+      "assistant",
+      "Hello! I'm your AI assistant for the Enosoft Project Management System. How can I help you today?",
+    );
+  }
 }
 
 function handleNavigation(event) {
@@ -758,6 +781,31 @@ function openChatModal() {
   const chatModal = document.getElementById("chat-modal-overlay");
   if (chatModal) {
     chatModal.classList.remove("hidden");
+
+    if (!chatInputControl || !messageListControl) {
+      const messageListContainer = document.querySelector(
+        ".chat-message-list-container",
+      );
+      const inputContainer = document.querySelector(".chat-input-container");
+
+      if (messageListContainer && inputContainer) {
+        messageListControl = messageList(
+          messageListContainer,
+          chatStateManager,
+        );
+        chatInputControl = chatInput(inputContainer, chatStateManager);
+
+        chatStateManager.onMessageAdded(() => {
+          if (messageListControl) {
+            messageListControl.refresh();
+          }
+        });
+      }
+    }
+
+    if (messageListControl) {
+      messageListControl.refresh();
+    }
   }
 }
 

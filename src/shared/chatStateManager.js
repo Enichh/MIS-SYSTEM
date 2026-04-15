@@ -30,11 +30,12 @@ class ChatStateManager {
    * @param {string} storageKey - localStorage key for persistence
    */
   constructor(storageKey) {
-    if (!storageKey || typeof storageKey !== 'string') {
-      throw new Error('Storage key must be a non-empty string');
+    if (!storageKey || typeof storageKey !== "string") {
+      throw new Error("Storage key must be a non-empty string");
     }
     this.storageKey = storageKey;
     this.messages = [];
+    this.listeners = [];
     this.loadFromStorage();
   }
 
@@ -48,23 +49,51 @@ class ChatStateManager {
    * const msg = manager.addMessage('user', 'Hello');
    */
   addMessage(role, content) {
-    if (role !== 'user' && role !== 'assistant') {
+    if (role !== "user" && role !== "assistant") {
       throw new Error('Role must be either "user" or "assistant"');
     }
-    if (!content || typeof content !== 'string') {
-      throw new Error('Content must be a non-empty string');
+    if (!content || typeof content !== "string") {
+      throw new Error("Content must be a non-empty string");
     }
 
     const message = {
       id: generateMessageId(),
       role,
       content,
-      timestamp: Date.now()
+      timestamp: Date.now(),
     };
 
     this.messages.push(message);
     this.persistToStorage();
+    this.notifyListeners();
     return message;
+  }
+
+  /**
+   * Registers a callback to be called when messages are added
+   * @param {Function} callback - Function to call when messages change
+   * @returns {void}
+   */
+  onMessageAdded(callback) {
+    if (typeof callback !== "function") {
+      throw new Error("Callback must be a function");
+    }
+    this.listeners.push(callback);
+  }
+
+  /**
+   * Notifies all registered listeners of message changes
+   * @private
+   * @returns {void}
+   */
+  notifyListeners() {
+    this.listeners.forEach((callback) => {
+      try {
+        callback(this.messages);
+      } catch (error) {
+        console.error("Error in message listener:", error);
+      }
+    });
   }
 
   /**
