@@ -704,11 +704,6 @@ async function removeEmployeeFromTask(employeeId, taskId) {
 }
 
 export {
-  DB_NAME,
-  DB_VERSION,
-  STORE_EMPLOYEES,
-  STORE_PROJECTS,
-  STORE_TASKS,
   openDatabase,
   createEmployee,
   getEmployee,
