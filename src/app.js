@@ -801,14 +801,11 @@ async function openChatModal() {
         );
 
         let apiKey = "";
-        if (import.meta && import.meta.env && import.meta.env.LONGCAT_API_KEY) {
-          apiKey = import.meta.env.LONGCAT_API_KEY;
-        }
         try {
           const configModule = await import("./config.js");
           apiKey = configModule.config.longcatApiKey;
         } catch (error) {
-          console.warn("config.js not found, using environment variables");
+          console.warn("config.js not found, API key not configured");
         }
 
         console.log(
