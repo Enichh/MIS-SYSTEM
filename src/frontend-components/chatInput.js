@@ -21,10 +21,8 @@ function chatInput(container, chatStateManager, apiKey) {
     throw new Error("chatStateManager must be a valid object");
   }
 
-  if (!apiKey || typeof apiKey !== "string") {
-    throw new Error(
-      "API key must be a non-empty string. Set it in src/config.js for local development or as environment variable for Netlify.",
-    );
+  if (typeof apiKey !== "string") {
+    apiKey = "";
   }
 
   const inputWrapper = document.createElement("div");
@@ -68,6 +66,14 @@ function chatInput(container, chatStateManager, apiKey) {
   async function sendMessage() {
     const message = textarea.value.trim();
     if (!message || isSending) {
+      return;
+    }
+
+    if (!apiKey) {
+      chatStateManager.addMessage(
+        "assistant",
+        "API key not configured. Please set LONGCAT_API_KEY environment variable or create src/config.js with your API key.",
+      );
       return;
     }
 
