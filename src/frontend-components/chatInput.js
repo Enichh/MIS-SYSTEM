@@ -4,16 +4,15 @@
  */
 
 import { longcatApiClient, queryEmployeeData } from "../shared/apiClient.js";
-import { config } from "../config.js";
 
 /**
  * Renders the chat input component with send functionality
  * @param {HTMLElement} container - Container element to render the input in
  * @param {ChatStateManager} chatStateManager - Chat state manager instance
- * @param {string} apiKey - LONGCAT API key for authentication (optional, uses config if not provided)
+ * @param {string} apiKey - LONGCAT API key for authentication
  * @returns {Object} Component control object
  */
-function chatInput(container, chatStateManager, apiKey = config.longcatApiKey) {
+function chatInput(container, chatStateManager, apiKey) {
   if (!container || !(container instanceof HTMLElement)) {
     throw new Error("Container must be a valid HTMLElement");
   }

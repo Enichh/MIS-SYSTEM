@@ -39,7 +39,6 @@ import {
   ChatStateManager,
   initializeChatState,
 } from "./shared/chatStateManager.js";
-import { config } from "./config.js";
 
 let db = null;
 let currentSection = "employees";
@@ -777,7 +776,7 @@ function showNotification(message, type) {
 
 window.closeModal = closeModal;
 
-function openChatModal() {
+async function openChatModal() {
   const chatModal = document.getElementById("chat-modal-overlay");
   if (chatModal) {
     chatModal.classList.remove("hidden");
@@ -793,7 +792,16 @@ function openChatModal() {
           messageListContainer,
           chatStateManager,
         );
-        chatInputControl = chatInput(inputContainer, chatStateManager);
+
+        let apiKey = import.meta.env.LONGCAT_API_KEY || "";
+        try {
+          const configModule = await import("./config.js");
+          apiKey = configModule.config.longcatApiKey;
+        } catch (error) {
+          console.warn("config.js not found, using environment variables");
+        }
+
+        chatInputControl = chatInput(inputContainer, chatStateManager, apiKey);
 
         chatStateManager.onMessageAdded(() => {
           if (messageListControl) {
