@@ -92,12 +92,12 @@
  * generateId('prj'); // returns 'prj_xyz789ghi012'
  */
 function generateId(prefix) {
-  const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
-  let randomPart = '';
+  const chars = "abcdefghijklmnopqrstuvwxyz0123456789";
+  let randomPart = "";
   for (let i = 0; i < 12; i++) {
     randomPart += chars.charAt(Math.floor(Math.random() * chars.length));
   }
   return `${prefix}_${randomPart}`;
 }
 
-export { Employee, Project, Task, WorkType, generateId };
+export { generateId };

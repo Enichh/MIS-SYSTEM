@@ -1,10 +1,4 @@
-import {
-  Employee,
-  Project,
-  Task,
-  WorkType,
-  generateId,
-} from "./shared/models.js";
+import { generateId } from "./shared/models.js";
 import {
   openDatabase,
   createEmployee,

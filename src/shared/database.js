@@ -3,7 +3,7 @@
  * @module shared/database
  */
 
-import { Employee, Project, Task } from "./models.js";
+// Type definitions are in JSDoc comments - no runtime imports needed
 
 /**
  * Database name constant
