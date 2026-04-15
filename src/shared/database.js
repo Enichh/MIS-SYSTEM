@@ -3,13 +3,13 @@
  * @module shared/database
  */
 
-import { Employee, Project, Task } from './models.js';
+import { Employee, Project, Task } from "./models.js";
 
 /**
  * Database name constant
  * @constant {string}
  */
-export const DB_NAME = 'enosoft_pms';
+export const DB_NAME = "enosoft_pms";
 
 /**
  * Database version constant
@@ -21,19 +21,19 @@ export const DB_VERSION = 1;
  * Employees object store name
  * @constant {string}
  */
-export const STORE_EMPLOYEES = 'employees';
+export const STORE_EMPLOYEES = "employees";
 
 /**
  * Projects object store name
  * @constant {string}
  */
-export const STORE_PROJECTS = 'projects';
+export const STORE_PROJECTS = "projects";
 
 /**
  * Tasks object store name
  * @constant {string}
  */
-export const STORE_TASKS = 'tasks';
+export const STORE_TASKS = "tasks";
 
 /**
  * Opens or creates the IndexedDB database with proper schema
@@ -57,22 +57,26 @@ function openDatabase() {
 
       // Create employees store with indexes
       if (!db.objectStoreNames.contains(STORE_EMPLOYEES)) {
-        const employeeStore = db.createObjectStore(STORE_EMPLOYEES, { keyPath: 'id' });
-        employeeStore.createIndex('email', 'email', { unique: true });
-        employeeStore.createIndex('workType', 'workType', { unique: false });
+        const employeeStore = db.createObjectStore(STORE_EMPLOYEES, {
+          keyPath: "id",
+        });
+        employeeStore.createIndex("email", "email", { unique: true });
+        employeeStore.createIndex("workType", "workType", { unique: false });
       }
 
       // Create projects store with indexes
       if (!db.objectStoreNames.contains(STORE_PROJECTS)) {
-        const projectStore = db.createObjectStore(STORE_PROJECTS, { keyPath: 'id' });
-        projectStore.createIndex('status', 'status', { unique: false });
+        const projectStore = db.createObjectStore(STORE_PROJECTS, {
+          keyPath: "id",
+        });
+        projectStore.createIndex("status", "status", { unique: false });
       }
 
       // Create tasks store with indexes
       if (!db.objectStoreNames.contains(STORE_TASKS)) {
-        const taskStore = db.createObjectStore(STORE_TASKS, { keyPath: 'id' });
-        taskStore.createIndex('projectId', 'projectId', { unique: false });
-        taskStore.createIndex('status', 'status', { unique: false });
+        const taskStore = db.createObjectStore(STORE_TASKS, { keyPath: "id" });
+        taskStore.createIndex("projectId", "projectId", { unique: false });
+        taskStore.createIndex("status", "status", { unique: false });
       }
     };
   });
@@ -87,14 +91,15 @@ function openDatabase() {
 async function createEmployee(employee) {
   try {
     const db = await openDatabase();
-    const transaction = db.transaction([STORE_EMPLOYEES], 'readwrite');
+    const transaction = db.transaction([STORE_EMPLOYEES], "readwrite");
     const store = transaction.objectStore(STORE_EMPLOYEES);
 
     return new Promise((resolve, reject) => {
       const request = store.add(employee);
 
       request.onsuccess = () => resolve(employee.id);
-      request.onerror = () => reject(new Error(`Failed to create employee: ${request.error}`));
+      request.onerror = () =>
+        reject(new Error(`Failed to create employee: ${request.error}`));
     });
   } catch (error) {
     throw new Error(`createEmployee error: ${error.message}`);
@@ -110,14 +115,15 @@ async function createEmployee(employee) {
 async function getEmployee(id) {
   try {
     const db = await openDatabase();
-    const transaction = db.transaction([STORE_EMPLOYEES], 'readonly');
+    const transaction = db.transaction([STORE_EMPLOYEES], "readonly");
     const store = transaction.objectStore(STORE_EMPLOYEES);
 
     return new Promise((resolve, reject) => {
       const request = store.get(id);
 
       request.onsuccess = () => resolve(request.result || null);
-      request.onerror = () => reject(new Error(`Failed to get employee: ${request.error}`));
+      request.onerror = () =>
+        reject(new Error(`Failed to get employee: ${request.error}`));
     });
   } catch (error) {
     throw new Error(`getEmployee error: ${error.message}`);
@@ -133,14 +139,15 @@ async function getEmployee(id) {
 async function updateEmployee(employee) {
   try {
     const db = await openDatabase();
-    const transaction = db.transaction([STORE_EMPLOYEES], 'readwrite');
+    const transaction = db.transaction([STORE_EMPLOYEES], "readwrite");
     const store = transaction.objectStore(STORE_EMPLOYEES);
 
     return new Promise((resolve, reject) => {
       const request = store.put(employee);
 
       request.onsuccess = () => resolve();
-      request.onerror = () => reject(new Error(`Failed to update employee: ${request.error}`));
+      request.onerror = () =>
+        reject(new Error(`Failed to update employee: ${request.error}`));
     });
   } catch (error) {
     throw new Error(`updateEmployee error: ${error.message}`);
@@ -156,14 +163,15 @@ async function updateEmployee(employee) {
 async function deleteEmployee(id) {
   try {
     const db = await openDatabase();
-    const transaction = db.transaction([STORE_EMPLOYEES], 'readwrite');
+    const transaction = db.transaction([STORE_EMPLOYEES], "readwrite");
     const store = transaction.objectStore(STORE_EMPLOYEES);
 
     return new Promise((resolve, reject) => {
       const request = store.delete(id);
 
       request.onsuccess = () => resolve();
-      request.onerror = () => reject(new Error(`Failed to delete employee: ${request.error}`));
+      request.onerror = () =>
+        reject(new Error(`Failed to delete employee: ${request.error}`));
     });
   } catch (error) {
     throw new Error(`deleteEmployee error: ${error.message}`);
@@ -178,14 +186,15 @@ async function deleteEmployee(id) {
 async function getAllEmployees() {
   try {
     const db = await openDatabase();
-    const transaction = db.transaction([STORE_EMPLOYEES], 'readonly');
+    const transaction = db.transaction([STORE_EMPLOYEES], "readonly");
     const store = transaction.objectStore(STORE_EMPLOYEES);
 
     return new Promise((resolve, reject) => {
       const request = store.getAll();
 
       request.onsuccess = () => resolve(request.result || []);
-      request.onerror = () => reject(new Error(`Failed to get all employees: ${request.error}`));
+      request.onerror = () =>
+        reject(new Error(`Failed to get all employees: ${request.error}`));
     });
   } catch (error) {
     throw new Error(`getAllEmployees error: ${error.message}`);
@@ -201,14 +210,15 @@ async function getAllEmployees() {
 async function createProject(project) {
   try {
     const db = await openDatabase();
-    const transaction = db.transaction([STORE_PROJECTS], 'readwrite');
+    const transaction = db.transaction([STORE_PROJECTS], "readwrite");
     const store = transaction.objectStore(STORE_PROJECTS);
 
     return new Promise((resolve, reject) => {
       const request = store.add(project);
 
       request.onsuccess = () => resolve(project.id);
-      request.onerror = () => reject(new Error(`Failed to create project: ${request.error}`));
+      request.onerror = () =>
+        reject(new Error(`Failed to create project: ${request.error}`));
     });
   } catch (error) {
     throw new Error(`createProject error: ${error.message}`);
@@ -224,14 +234,15 @@ async function createProject(project) {
 async function getProject(id) {
   try {
     const db = await openDatabase();
-    const transaction = db.transaction([STORE_PROJECTS], 'readonly');
+    const transaction = db.transaction([STORE_PROJECTS], "readonly");
     const store = transaction.objectStore(STORE_PROJECTS);
 
     return new Promise((resolve, reject) => {
       const request = store.get(id);
 
       request.onsuccess = () => resolve(request.result || null);
-      request.onerror = () => reject(new Error(`Failed to get project: ${request.error}`));
+      request.onerror = () =>
+        reject(new Error(`Failed to get project: ${request.error}`));
     });
   } catch (error) {
     throw new Error(`getProject error: ${error.message}`);
@@ -247,14 +258,15 @@ async function getProject(id) {
 async function updateProject(project) {
   try {
     const db = await openDatabase();
-    const transaction = db.transaction([STORE_PROJECTS], 'readwrite');
+    const transaction = db.transaction([STORE_PROJECTS], "readwrite");
     const store = transaction.objectStore(STORE_PROJECTS);
 
     return new Promise((resolve, reject) => {
       const request = store.put(project);
 
       request.onsuccess = () => resolve();
-      request.onerror = () => reject(new Error(`Failed to update project: ${request.error}`));
+      request.onerror = () =>
+        reject(new Error(`Failed to update project: ${request.error}`));
     });
   } catch (error) {
     throw new Error(`updateProject error: ${error.message}`);
@@ -270,14 +282,15 @@ async function updateProject(project) {
 async function deleteProject(id) {
   try {
     const db = await openDatabase();
-    const transaction = db.transaction([STORE_PROJECTS], 'readwrite');
+    const transaction = db.transaction([STORE_PROJECTS], "readwrite");
     const store = transaction.objectStore(STORE_PROJECTS);
 
     return new Promise((resolve, reject) => {
       const request = store.delete(id);
 
       request.onsuccess = () => resolve();
-      request.onerror = () => reject(new Error(`Failed to delete project: ${request.error}`));
+      request.onerror = () =>
+        reject(new Error(`Failed to delete project: ${request.error}`));
     });
   } catch (error) {
     throw new Error(`deleteProject error: ${error.message}`);
@@ -292,14 +305,15 @@ async function deleteProject(id) {
 async function getAllProjects() {
   try {
     const db = await openDatabase();
-    const transaction = db.transaction([STORE_PROJECTS], 'readonly');
+    const transaction = db.transaction([STORE_PROJECTS], "readonly");
     const store = transaction.objectStore(STORE_PROJECTS);
 
     return new Promise((resolve, reject) => {
       const request = store.getAll();
 
       request.onsuccess = () => resolve(request.result || []);
-      request.onerror = () => reject(new Error(`Failed to get all projects: ${request.error}`));
+      request.onerror = () =>
+        reject(new Error(`Failed to get all projects: ${request.error}`));
     });
   } catch (error) {
     throw new Error(`getAllProjects error: ${error.message}`);
@@ -315,14 +329,15 @@ async function getAllProjects() {
 async function createTask(task) {
   try {
     const db = await openDatabase();
-    const transaction = db.transaction([STORE_TASKS], 'readwrite');
+    const transaction = db.transaction([STORE_TASKS], "readwrite");
     const store = transaction.objectStore(STORE_TASKS);
 
     return new Promise((resolve, reject) => {
       const request = store.add(task);
 
       request.onsuccess = () => resolve(task.id);
-      request.onerror = () => reject(new Error(`Failed to create task: ${request.error}`));
+      request.onerror = () =>
+        reject(new Error(`Failed to create task: ${request.error}`));
     });
   } catch (error) {
     throw new Error(`createTask error: ${error.message}`);
@@ -338,14 +353,15 @@ async function createTask(task) {
 async function getTask(id) {
   try {
     const db = await openDatabase();
-    const transaction = db.transaction([STORE_TASKS], 'readonly');
+    const transaction = db.transaction([STORE_TASKS], "readonly");
     const store = transaction.objectStore(STORE_TASKS);
 
     return new Promise((resolve, reject) => {
       const request = store.get(id);
 
       request.onsuccess = () => resolve(request.result || null);
-      request.onerror = () => reject(new Error(`Failed to get task: ${request.error}`));
+      request.onerror = () =>
+        reject(new Error(`Failed to get task: ${request.error}`));
     });
   } catch (error) {
     throw new Error(`getTask error: ${error.message}`);
@@ -361,14 +377,15 @@ async function getTask(id) {
 async function updateTask(task) {
   try {
     const db = await openDatabase();
-    const transaction = db.transaction([STORE_TASKS], 'readwrite');
+    const transaction = db.transaction([STORE_TASKS], "readwrite");
     const store = transaction.objectStore(STORE_TASKS);
 
     return new Promise((resolve, reject) => {
       const request = store.put(task);
 
       request.onsuccess = () => resolve();
-      request.onerror = () => reject(new Error(`Failed to update task: ${request.error}`));
+      request.onerror = () =>
+        reject(new Error(`Failed to update task: ${request.error}`));
     });
   } catch (error) {
     throw new Error(`updateTask error: ${error.message}`);
@@ -384,14 +401,15 @@ async function updateTask(task) {
 async function deleteTask(id) {
   try {
     const db = await openDatabase();
-    const transaction = db.transaction([STORE_TASKS], 'readwrite');
+    const transaction = db.transaction([STORE_TASKS], "readwrite");
     const store = transaction.objectStore(STORE_TASKS);
 
     return new Promise((resolve, reject) => {
       const request = store.delete(id);
 
       request.onsuccess = () => resolve();
-      request.onerror = () => reject(new Error(`Failed to delete task: ${request.error}`));
+      request.onerror = () =>
+        reject(new Error(`Failed to delete task: ${request.error}`));
     });
   } catch (error) {
     throw new Error(`deleteTask error: ${error.message}`);
@@ -406,14 +424,15 @@ async function deleteTask(id) {
 async function getAllTasks() {
   try {
     const db = await openDatabase();
-    const transaction = db.transaction([STORE_TASKS], 'readonly');
+    const transaction = db.transaction([STORE_TASKS], "readonly");
     const store = transaction.objectStore(STORE_TASKS);
 
     return new Promise((resolve, reject) => {
       const request = store.getAll();
 
       request.onsuccess = () => resolve(request.result || []);
-      request.onerror = () => reject(new Error(`Failed to get all tasks: ${request.error}`));
+      request.onerror = () =>
+        reject(new Error(`Failed to get all tasks: ${request.error}`));
     });
   } catch (error) {
     throw new Error(`getAllTasks error: ${error.message}`);
@@ -431,7 +450,10 @@ async function getAllTasks() {
 async function assignEmployeeToProject(employeeId, projectId) {
   try {
     const db = await openDatabase();
-    const transaction = db.transaction([STORE_EMPLOYEES, STORE_PROJECTS], 'readwrite');
+    const transaction = db.transaction(
+      [STORE_EMPLOYEES, STORE_PROJECTS],
+      "readwrite",
+    );
     const employeeStore = transaction.objectStore(STORE_EMPLOYEES);
     const projectStore = transaction.objectStore(STORE_PROJECTS);
 
@@ -439,13 +461,15 @@ async function assignEmployeeToProject(employeeId, projectId) {
       const employeeRequest = employeeStore.get(employeeId);
       const projectRequest = projectStore.get(projectId);
 
-      employeeRequest.onerror = () => reject(new Error(`Failed to get employee: ${employeeRequest.error}`));
-      projectRequest.onerror = () => reject(new Error(`Failed to get project: ${projectRequest.error}`));
+      employeeRequest.onerror = () =>
+        reject(new Error(`Failed to get employee: ${employeeRequest.error}`));
+      projectRequest.onerror = () =>
+        reject(new Error(`Failed to get project: ${projectRequest.error}`));
 
       employeeRequest.onsuccess = () => {
         const employee = employeeRequest.result;
         if (!employee) {
-          reject(new Error('Employee not found'));
+          reject(new Error("Employee not found"));
           return;
         }
 
@@ -459,7 +483,7 @@ async function assignEmployeeToProject(employeeId, projectId) {
       projectRequest.onsuccess = () => {
         const project = projectRequest.result;
         if (!project) {
-          reject(new Error('Project not found'));
+          reject(new Error("Project not found"));
           return;
         }
 
@@ -471,7 +495,10 @@ async function assignEmployeeToProject(employeeId, projectId) {
       };
 
       transaction.oncomplete = () => resolve();
-      transaction.onerror = () => reject(new Error(`Assignment transaction failed: ${transaction.error}`));
+      transaction.onerror = () =>
+        reject(
+          new Error(`Assignment transaction failed: ${transaction.error}`),
+        );
     });
   } catch (error) {
     throw new Error(`assignEmployeeToProject error: ${error.message}`);
@@ -489,7 +516,10 @@ async function assignEmployeeToProject(employeeId, projectId) {
 async function assignEmployeeToTask(employeeId, taskId) {
   try {
     const db = await openDatabase();
-    const transaction = db.transaction([STORE_EMPLOYEES, STORE_TASKS], 'readwrite');
+    const transaction = db.transaction(
+      [STORE_EMPLOYEES, STORE_TASKS],
+      "readwrite",
+    );
     const employeeStore = transaction.objectStore(STORE_EMPLOYEES);
     const taskStore = transaction.objectStore(STORE_TASKS);
 
@@ -497,13 +527,15 @@ async function assignEmployeeToTask(employeeId, taskId) {
       const employeeRequest = employeeStore.get(employeeId);
       const taskRequest = taskStore.get(taskId);
 
-      employeeRequest.onerror = () => reject(new Error(`Failed to get employee: ${employeeRequest.error}`));
-      taskRequest.onerror = () => reject(new Error(`Failed to get task: ${taskRequest.error}`));
+      employeeRequest.onerror = () =>
+        reject(new Error(`Failed to get employee: ${employeeRequest.error}`));
+      taskRequest.onerror = () =>
+        reject(new Error(`Failed to get task: ${taskRequest.error}`));
 
       employeeRequest.onsuccess = () => {
         const employee = employeeRequest.result;
         if (!employee) {
-          reject(new Error('Employee not found'));
+          reject(new Error("Employee not found"));
           return;
         }
 
@@ -517,7 +549,7 @@ async function assignEmployeeToTask(employeeId, taskId) {
       taskRequest.onsuccess = () => {
         const task = taskRequest.result;
         if (!task) {
-          reject(new Error('Task not found'));
+          reject(new Error("Task not found"));
           return;
         }
 
@@ -529,7 +561,10 @@ async function assignEmployeeToTask(employeeId, taskId) {
       };
 
       transaction.oncomplete = () => resolve();
-      transaction.onerror = () => reject(new Error(`Assignment transaction failed: ${transaction.error}`));
+      transaction.onerror = () =>
+        reject(
+          new Error(`Assignment transaction failed: ${transaction.error}`),
+        );
     });
   } catch (error) {
     throw new Error(`assignEmployeeToTask error: ${error.message}`);
@@ -547,7 +582,10 @@ async function assignEmployeeToTask(employeeId, taskId) {
 async function removeEmployeeFromProject(employeeId, projectId) {
   try {
     const db = await openDatabase();
-    const transaction = db.transaction([STORE_EMPLOYEES, STORE_PROJECTS], 'readwrite');
+    const transaction = db.transaction(
+      [STORE_EMPLOYEES, STORE_PROJECTS],
+      "readwrite",
+    );
     const employeeStore = transaction.objectStore(STORE_EMPLOYEES);
     const projectStore = transaction.objectStore(STORE_PROJECTS);
 
@@ -555,13 +593,15 @@ async function removeEmployeeFromProject(employeeId, projectId) {
       const employeeRequest = employeeStore.get(employeeId);
       const projectRequest = projectStore.get(projectId);
 
-      employeeRequest.onerror = () => reject(new Error(`Failed to get employee: ${employeeRequest.error}`));
-      projectRequest.onerror = () => reject(new Error(`Failed to get project: ${projectRequest.error}`));
+      employeeRequest.onerror = () =>
+        reject(new Error(`Failed to get employee: ${employeeRequest.error}`));
+      projectRequest.onerror = () =>
+        reject(new Error(`Failed to get project: ${projectRequest.error}`));
 
       employeeRequest.onsuccess = () => {
         const employee = employeeRequest.result;
         if (!employee) {
-          reject(new Error('Employee not found'));
+          reject(new Error("Employee not found"));
           return;
         }
 
@@ -576,7 +616,7 @@ async function removeEmployeeFromProject(employeeId, projectId) {
       projectRequest.onsuccess = () => {
         const project = projectRequest.result;
         if (!project) {
-          reject(new Error('Project not found'));
+          reject(new Error("Project not found"));
           return;
         }
 
@@ -589,7 +629,8 @@ async function removeEmployeeFromProject(employeeId, projectId) {
       };
 
       transaction.oncomplete = () => resolve();
-      transaction.onerror = () => reject(new Error(`Removal transaction failed: ${transaction.error}`));
+      transaction.onerror = () =>
+        reject(new Error(`Removal transaction failed: ${transaction.error}`));
     });
   } catch (error) {
     throw new Error(`removeEmployeeFromProject error: ${error.message}`);
@@ -607,7 +648,10 @@ async function removeEmployeeFromProject(employeeId, projectId) {
 async function removeEmployeeFromTask(employeeId, taskId) {
   try {
     const db = await openDatabase();
-    const transaction = db.transaction([STORE_EMPLOYEES, STORE_TASKS], 'readwrite');
+    const transaction = db.transaction(
+      [STORE_EMPLOYEES, STORE_TASKS],
+      "readwrite",
+    );
     const employeeStore = transaction.objectStore(STORE_EMPLOYEES);
     const taskStore = transaction.objectStore(STORE_TASKS);
 
@@ -615,13 +659,15 @@ async function removeEmployeeFromTask(employeeId, taskId) {
       const employeeRequest = employeeStore.get(employeeId);
       const taskRequest = taskStore.get(taskId);
 
-      employeeRequest.onerror = () => reject(new Error(`Failed to get employee: ${employeeRequest.error}`));
-      taskRequest.onerror = () => reject(new Error(`Failed to get task: ${taskRequest.error}`));
+      employeeRequest.onerror = () =>
+        reject(new Error(`Failed to get employee: ${employeeRequest.error}`));
+      taskRequest.onerror = () =>
+        reject(new Error(`Failed to get task: ${taskRequest.error}`));
 
       employeeRequest.onsuccess = () => {
         const employee = employeeRequest.result;
         if (!employee) {
-          reject(new Error('Employee not found'));
+          reject(new Error("Employee not found"));
           return;
         }
 
@@ -636,7 +682,7 @@ async function removeEmployeeFromTask(employeeId, taskId) {
       taskRequest.onsuccess = () => {
         const task = taskRequest.result;
         if (!task) {
-          reject(new Error('Task not found'));
+          reject(new Error("Task not found"));
           return;
         }
 
@@ -649,7 +695,8 @@ async function removeEmployeeFromTask(employeeId, taskId) {
       };
 
       transaction.oncomplete = () => resolve();
-      transaction.onerror = () => reject(new Error(`Removal transaction failed: ${transaction.error}`));
+      transaction.onerror = () =>
+        reject(new Error(`Removal transaction failed: ${transaction.error}`));
     });
   } catch (error) {
     throw new Error(`removeEmployeeFromTask error: ${error.message}`);
@@ -657,6 +704,11 @@ async function removeEmployeeFromTask(employeeId, taskId) {
 }
 
 export {
+  DB_NAME,
+  DB_VERSION,
+  STORE_EMPLOYEES,
+  STORE_PROJECTS,
+  STORE_TASKS,
   openDatabase,
   createEmployee,
   getEmployee,
@@ -676,5 +728,5 @@ export {
   assignEmployeeToProject,
   assignEmployeeToTask,
   removeEmployeeFromProject,
-  removeEmployeeFromTask
+  removeEmployeeFromTask,
 };
