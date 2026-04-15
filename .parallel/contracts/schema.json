@@ -1,0 +1,138 @@
+{
+  "version": "1.0.0",
+  "feature": "AI Chatbot with Employee Data Access and Netlify Deployment",
+  "contracts": {
+    "shared": {
+      "exports": {
+        "functions": {
+          "longcatApiClient": {
+            "type": "function",
+            "description": "API client for LONGCAT chat API integration"
+          },
+          "queryEmployeeData": {
+            "type": "function",
+            "description": "Query employee database for chat context"
+          },
+          "initializeChatState": {
+            "type": "function",
+            "description": "Initialize chat state manager with storage"
+          }
+        },
+        "classes": {
+          "ChatStateManager": {
+            "type": "class",
+            "description": "Manage chat message history and state"
+          }
+        },
+        "constants": {
+          "LONGCAT_API_BASE_URL": {
+            "type": "string",
+            "description": "LONGCAT API endpoint URL"
+          },
+          "CHAT_STORAGE_KEY": {
+            "type": "string",
+            "description": "localStorage key for chat history"
+          }
+        },
+        "config": {
+          "netlifyConfig": {
+            "type": "object",
+            "description": "Netlify deployment configuration"
+          }
+        }
+      },
+      "schemas": {
+        "longcatApiClient": {
+          "type": "function",
+          "description": "API client for LONGCAT chat API integration",
+          "parameters": {
+            "apiKey": "string",
+            "message": "string",
+            "context": "object"
+          },
+          "returns": "Promise<{ response: string, usage: object }>"
+        },
+        "queryEmployeeData": {
+          "type": "function",
+          "description": "Query employee database for chat context",
+          "parameters": {
+            "query": "string"
+          },
+          "returns": "Promise<Employee[]>"
+        },
+        "initializeChatState": {
+          "type": "function",
+          "description": "Initialize chat state manager with storage",
+          "parameters": {
+            "storageKey": "string"
+          },
+          "returns": "ChatStateManager"
+        },
+        "ChatStateManager": {
+          "type": "class",
+          "description": "Manage chat message history and state",
+          "methods": [
+            "addMessage",
+            "getHistory",
+            "clearHistory",
+            "persistToStorage"
+          ]
+        },
+        "netlifyConfig": {
+          "type": "object",
+          "description": "Netlify deployment configuration",
+          "properties": {
+            "build": {
+              "command": "string",
+              "publish": "string"
+            },
+            "functions": {
+              "directory": "string"
+            },
+            "redirects": "array"
+          }
+        }
+      }
+    },
+    "frontend-layout": {
+      "imports_from_shared": [],
+      "exports": {
+        "fabButton": {
+          "type": "component",
+          "description": "Floating Action Button fixed to bottom-right"
+        },
+        "chatModalLayout": {
+          "type": "component",
+          "description": "Chat modal layout with responsive design"
+        },
+        "responsiveContainer": {
+          "type": "component",
+          "description": "Responsive container for chat interface"
+        }
+      },
+      "file_naming_convention": "camelCase for JavaScript functions, kebab-case for CSS classes"
+    },
+    "frontend-components": {
+      "imports_from_shared": {
+        "longcatApiClient": "function",
+        "queryEmployeeData": "function",
+        "ChatStateManager": "class"
+      },
+      "exports": {
+        "chatMessage": {
+          "type": "component",
+          "description": "Individual chat message component"
+        },
+        "messageList": {
+          "type": "component",
+          "description": "Message history component with auto-scroll"
+        },
+        "chatInput": {
+          "type": "component",
+          "description": "Chat input component with API integration"
+        }
+      },
+      "file_naming_convention": "camelCase for JavaScript functions, kebab-case for CSS classes"
+    }
+  }
+}
