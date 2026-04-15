@@ -1,0 +1,9 @@
+# Static assets - serve directly
+/src/* /src/:splat 200
+/assets/* /assets/:splat 200
+
+# Files with extensions - serve directly
+/*.* /:splat 200
+
+# Catch-all for SPA routing
+/* /index.html 200
