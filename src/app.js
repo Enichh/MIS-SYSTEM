@@ -787,6 +787,13 @@ async function openChatModal() {
       );
       const inputContainer = document.querySelector(".chat-input-container");
 
+      console.log("Chat initialization:", {
+        messageListContainer,
+        inputContainer,
+        chatInputControl,
+        messageListControl,
+      });
+
       if (messageListContainer && inputContainer) {
         messageListControl = messageList(
           messageListContainer,
@@ -801,12 +808,22 @@ async function openChatModal() {
           console.warn("config.js not found, using environment variables");
         }
 
+        console.log(
+          "Creating chatInput with apiKey:",
+          apiKey ? "present" : "missing",
+        );
         chatInputControl = chatInput(inputContainer, chatStateManager, apiKey);
+        console.log("chatInput created:", chatInputControl);
 
         chatStateManager.onMessageAdded(() => {
           if (messageListControl) {
             messageListControl.refresh();
           }
+        });
+      } else {
+        console.error("Chat containers not found:", {
+          messageListContainer,
+          inputContainer,
         });
       }
     }
