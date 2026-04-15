@@ -800,7 +800,10 @@ async function openChatModal() {
           chatStateManager,
         );
 
-        let apiKey = import.meta.env.LONGCAT_API_KEY || "";
+        let apiKey = "";
+        if (import.meta && import.meta.env && import.meta.env.LONGCAT_API_KEY) {
+          apiKey = import.meta.env.LONGCAT_API_KEY;
+        }
         try {
           const configModule = await import("./config.js");
           apiKey = configModule.config.longcatApiKey;
