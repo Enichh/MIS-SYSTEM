@@ -3,7 +3,10 @@
  * @module features/tasks/components/taskList
  */
 
-import { getAllTasks, getAllProjects } from "../../shared/services/database.js";
+import {
+  getAllTasks,
+  getAllProjects,
+} from "../../../shared/services/database.js";
 
 /**
  * Renders the task list
