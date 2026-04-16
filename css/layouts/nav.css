@@ -1,0 +1,17 @@
+@import url('../shared/design-tokens.css');
+
+nav {
+  background-color: var(--color-background-tertiary);
+  padding: 1rem;
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+@media (max-width: 768px) {
+  nav {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+}

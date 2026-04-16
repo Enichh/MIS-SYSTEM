@@ -1,0 +1,12 @@
+@import url('../shared/design-tokens.css');
+
+.empty-state {
+  text-align: center;
+  padding: 3rem;
+  color: var(--text-secondary);
+}
+
+.empty-state h3 {
+  color: var(--primary);
+  margin-bottom: 1rem;
+}

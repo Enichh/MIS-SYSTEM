@@ -1,0 +1,29 @@
+/* Main CSS Entry Point
+ * Import order follows dependency graph:
+ * 1. Reset (CSS normalization)
+ * 2. Design tokens (CSS variables - must come before base)
+ * 3. Base (HTML element styles using tokens)
+ * 4. Utilities (helper classes)
+ * 5. Components (UI component styles)
+ * 6. Layouts (page layout styles)
+ */
+
+@import url('./shared/reset.css');
+@import url('./shared/design-tokens.css');
+@import url('./shared/base.css');
+@import url('./shared/utilities.css');
+
+@import url('./components/buttons.css');
+@import url('./components/cards.css');
+@import url('./components/forms.css');
+@import url('./components/modals.css');
+@import url('./components/chat-components.css');
+@import url('./components/data-table.css');
+@import url('./components/status-badge.css');
+@import url('./components/notification.css');
+@import url('./components/empty-state.css');
+
+@import url('./layouts/header.css');
+@import url('./layouts/nav.css');
+@import url('./layouts/main.css');
+@import url('./layouts/responsive-grid.css');

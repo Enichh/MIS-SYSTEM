@@ -1,0 +1,53 @@
+@import url('../shared/design-tokens.css');
+
+.data-card {
+  background-color: var(--color-background-secondary);
+  border: 1px solid var(--color-border);
+  padding: var(--spacing-lg);
+  border-radius: 8px;
+  transition: var(--transition-base);
+}
+
+.data-card:hover {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-lg);
+  transform: translateY(-2px);
+}
+
+.data-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: var(--spacing-md);
+}
+
+.data-card-title {
+  color: var(--color-primary);
+  font-weight: 700;
+  font-size: 20px;
+  margin-bottom: 0.5rem;
+}
+
+.data-card-subtitle {
+  color: var(--color-text-secondary);
+  font-size: 14px;
+}
+
+.data-card-body {
+  margin-bottom: var(--spacing-md);
+}
+
+.data-card-body p {
+  margin-bottom: 0.5rem;
+  color: var(--color-text-secondary);
+}
+
+.data-card-body strong {
+  color: var(--color-text);
+}
+
+.data-card-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}

@@ -1,0 +1,33 @@
+{
+  "execution_order": [
+    {
+      "phase": "1",
+      "workstream": "shared",
+      "depends_on": [],
+      "blocks": ["components", "layouts"],
+      "can_run_parallel_with": []
+    },
+    {
+      "phase": "2",
+      "workstream": "components",
+      "depends_on": ["shared"],
+      "blocks": ["integration"],
+      "can_run_parallel_with": ["layouts"]
+    },
+    {
+      "phase": "2",
+      "workstream": "layouts",
+      "depends_on": ["shared"],
+      "blocks": ["integration"],
+      "can_run_parallel_with": ["components"]
+    },
+    {
+      "phase": "3",
+      "workstream": "integration",
+      "depends_on": ["shared", "components", "layouts"],
+      "blocks": [],
+      "can_run_parallel_with": []
+    }
+  ],
+  "total_phases": 3
+}

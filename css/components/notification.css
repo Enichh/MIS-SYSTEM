@@ -1,0 +1,49 @@
+@import url('../shared/design-tokens.css');
+
+.notification {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 1rem 1.5rem;
+  border-radius: 4px;
+  font-weight: var(--heading-weight);
+  z-index: 2000;
+  animation: slideInRight 0.3s ease;
+  max-width: 400px;
+}
+
+.notification.hidden {
+  display: none;
+}
+
+@keyframes slideInRight {
+  from {
+    opacity: 0;
+    transform: translateX(100px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+.notification.success {
+  background-color: var(--success);
+  color: var(--background);
+  border: 2px solid var(--success);
+  box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
+}
+
+.notification.error {
+  background-color: var(--error);
+  color: var(--text);
+  border: 2px solid var(--error);
+  box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
+}
+
+.notification.warning {
+  background-color: var(--warning);
+  color: var(--background);
+  border: 2px solid var(--warning);
+  box-shadow: 0 0 20px rgba(255, 165, 0, 0.3);
+}

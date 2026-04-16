@@ -1,0 +1,198 @@
+@import url('../shared/design-tokens.css');
+
+.btn-primary {
+  background-color: var(--color-primary);
+  color: white;
+  border: 1px solid var(--color-primary);
+  padding: 0.75rem 1.5rem;
+  font-size: var(--text-base);
+  cursor: pointer;
+  transition: var(--transition-base);
+  font-family: sans-serif;
+  font-weight: 700;
+  border-radius: 6px;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-primary-hover);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.btn-primary:focus {
+  box-shadow: 0 0 0 3px rgba(128, 0, 128, 0.3);
+  outline: none;
+}
+
+.btn-primary:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-secondary {
+  background-color: var(--color-background-secondary);
+  color: var(--color-text);
+  border: 1px solid var(--color-border);
+  padding: 0.75rem 1.5rem;
+  font-size: var(--text-base);
+  cursor: pointer;
+  transition: var(--transition-base);
+  font-family: sans-serif;
+  border-radius: 6px;
+}
+
+.btn-secondary:hover {
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.btn-secondary:focus {
+  box-shadow: 0 0 0 3px rgba(128, 0, 128, 0.3);
+  outline: none;
+}
+
+.btn-secondary:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-danger {
+  background-color: #d32f2f;
+  color: white;
+  border: 1px solid #d32f2f;
+  padding: 0.5rem 1rem;
+  font-size: 14px;
+  cursor: pointer;
+  transition: var(--transition-base);
+  font-family: sans-serif;
+  border-radius: 6px;
+}
+
+.btn-danger:hover {
+  box-shadow: var(--shadow-md);
+  transform: translateY(-2px);
+}
+
+.btn-danger:focus {
+  box-shadow: 0 0 0 3px rgba(211, 47, 47, 0.3);
+  outline: none;
+}
+
+.btn-danger:active {
+  transform: translateY(0);
+  box-shadow: var(--shadow-md);
+}
+
+.btn-danger:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.btn-close {
+  background: none;
+  border: none;
+  color: var(--text);
+  font-size: 2rem;
+  cursor: pointer;
+  padding: 0;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition);
+}
+
+.btn-close:hover {
+  color: var(--primary);
+  transform: rotate(90deg);
+}
+
+.btn-close:focus {
+  outline: var(--focus-outline);
+  outline-offset: 2px;
+}
+
+.nav-btn {
+  background-color: var(--color-surface);
+  color: var(--color-text);
+  border: 1px solid var(--color-border-light);
+  padding: var(--spacing-md);
+  font-size: 1rem;
+  cursor: pointer;
+  transition: var(--transition-base);
+  font-family: system-ui, -apple-system, sans-serif;
+  font-weight: var(--font-weight-regular);
+}
+
+.nav-btn:hover {
+  box-shadow: var(--shadow-md);
+  border-color: var(--color-primary);
+  transform: translateY(-2px);
+}
+
+.nav-btn.active {
+  background-color: var(--color-primary);
+  color: var(--color-background);
+  border-color: var(--color-primary);
+  box-shadow: var(--shadow-md);
+}
+
+.nav-btn:focus {
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
+.fab-button {
+  position: fixed;
+  bottom: var(--spacing-lg);
+  right: var(--spacing-lg);
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background-color: var(--color-primary);
+  color: var(--color-background);
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-lg);
+  z-index: 100;
+  transition: var(--transition-base);
+}
+
+.fab-button:hover {
+  background-color: var(--color-primary-hover);
+  box-shadow: var(--shadow-xl);
+  transform: scale(1.1);
+}
+
+.fab-button:focus {
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
+.fab-button:active {
+  transform: scale(0.95);
+}
+
+.fab-button svg {
+  width: 28px;
+  height: 28px;
+  fill: currentColor;
+}
