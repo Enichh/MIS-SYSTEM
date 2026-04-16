@@ -4,12 +4,53 @@
  */
 
 /**
+ * Formats entity data for display (ProjectDTO, EmployeeDTO, TaskDTO)
+ * @param {Object} entity - Entity data object
+ * @param {string} entityType - Type of entity (project, employee, task)
+ * @returns {string} HTML string with formatted entity data
+ */
+function formatEntityData(entity, entityType) {
+  if (!entity || typeof entity !== 'object') {
+    return '';
+  }
+
+  let html = `<div class="entity-card entity-${entityType}">`;
+  
+  if (entityType === 'project') {
+    html += `<div class="entity-header"><strong>Project:</strong> ${entity.name || 'Unknown'}</div>`;
+    if (entity.description) html += `<div class="entity-desc">${entity.description}</div>`;
+    if (entity.status) html += `<div class="entity-status">Status: ${entity.status}</div>`;
+    if (entity.startDate) html += `<div class="entity-date">Start: ${entity.startDate}</div>`;
+    if (entity.endDate) html += `<div class="entity-date">End: ${entity.endDate}</div>`;
+  } else if (entityType === 'employee') {
+    html += `<div class="entity-header"><strong>Employee:</strong> ${entity.name || 'Unknown'}</div>`;
+    if (entity.email) html += `<div class="entity-email">${entity.email}</div>`;
+    if (entity.role) html += `<div class="entity-role">Role: ${entity.role}</div>`;
+    if (entity.department) html += `<div class="entity-dept">Dept: ${entity.department}</div>`;
+    if (entity.projects && entity.projects.length > 0) {
+      html += `<div class="entity-projects">Projects: ${entity.projects.join(', ')}</div>`;
+    }
+  } else if (entityType === 'task') {
+    html += `<div class="entity-header"><strong>Task:</strong> ${entity.title || 'Unknown'}</div>`;
+    if (entity.description) html += `<div class="entity-desc">${entity.description}</div>`;
+    if (entity.status) html += `<div class="entity-status">Status: ${entity.status}</div>`;
+    if (entity.projectId) html += `<div class="entity-project">Project ID: ${entity.projectId}</div>`;
+    if (entity.assignedTo) html += `<div class="entity-assignee">Assigned to: ${entity.assignedTo}</div>`;
+    if (entity.dueDate) html += `<div class="entity-date">Due: ${entity.dueDate}</div>`;
+  }
+  
+  html += '</div>';
+  return html;
+}
+
+/**
  * Renders a single chat message with appropriate styling based on role
  * @param {Object} message - Message object from ChatStateManager
  * @param {string} message.id - Unique message identifier
  * @param {'user'|'assistant'} message.role - Message role (user or assistant)
  * @param {string} message.content - Message content
  * @param {number} message.timestamp - Unix timestamp
+ * @param {Object} [message.knowledgeData] - Optional knowledge response data
  * @returns {HTMLElement} DOM element for the message
  */
 function chatMessage(message) {
@@ -17,7 +58,7 @@ function chatMessage(message) {
     throw new Error('Message must be an object');
   }
 
-  const { id, role, content, timestamp } = message;
+  const { id, role, content, timestamp, knowledgeData } = message;
 
   if (!id || typeof id !== 'string') {
     throw new Error('Message must have a valid id');
@@ -44,6 +85,52 @@ function chatMessage(message) {
 
   if (role === 'assistant') {
     messageContent.innerHTML = parseBasicMarkdown(content);
+    
+    if (knowledgeData) {
+      const knowledgeDiv = document.createElement('div');
+      knowledgeDiv.className = 'message-knowledge-data';
+      
+      if (knowledgeData.relatedEntities) {
+        const entitiesSection = document.createElement('div');
+        entitiesSection.className = 'knowledge-entities-section';
+        
+        Object.entries(knowledgeData.relatedEntities).forEach(([entityType, entities]) => {
+          if (entities && entities.length > 0) {
+            entities.forEach(entity => {
+              const entityHtml = formatEntityData(entity, entityType);
+              entitiesSection.innerHTML += entityHtml;
+            });
+          }
+        });
+        
+        if (entitiesSection.innerHTML) {
+          knowledgeDiv.appendChild(entitiesSection);
+        }
+      }
+      
+      if (knowledgeData.sources && knowledgeData.sources.length > 0) {
+        const sourcesSection = document.createElement('div');
+        sourcesSection.className = 'knowledge-sources-section';
+        sourcesSection.innerHTML = '<strong>Sources:</strong><ul>';
+        knowledgeData.sources.forEach(source => {
+          sourcesSection.innerHTML += `<li>${source}</li>`;
+        });
+        sourcesSection.innerHTML += '</ul>';
+        knowledgeDiv.appendChild(sourcesSection);
+      }
+      
+      if (knowledgeData.confidence !== undefined) {
+        const confidenceSection = document.createElement('div');
+        confidenceSection.className = 'knowledge-confidence-section';
+        const confidencePercent = Math.round(knowledgeData.confidence * 100);
+        confidenceSection.textContent = `Confidence: ${confidencePercent}%`;
+        knowledgeDiv.appendChild(confidenceSection);
+      }
+      
+      if (knowledgeDiv.children.length > 0) {
+        messageContent.appendChild(knowledgeDiv);
+      }
+    }
   } else {
     messageContent.textContent = content;
   }

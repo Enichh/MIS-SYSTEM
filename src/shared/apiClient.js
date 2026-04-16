@@ -1,10 +1,10 @@
 /**
- * @fileoverview API client for LONGCAT chat integration and employee data queries
+ * @fileoverview API client for LONGCAT chat integration and Netlify Functions
  * @module shared/apiClient
  */
 
 import { getAllEmployees } from "./database.js";
-// Type definitions are in JSDoc comments - no runtime imports needed
+import { KNOWLEDGE_ENDPOINTS } from "./constants.js";
 
 /**
  * LONGCAT API client for chat completions
@@ -96,6 +96,114 @@ async function longcatApiClient(apiKey, message, context = {}) {
 }
 
 /**
+ * Sanitize query string for safe API transmission
+ * @param {string} query - Raw query string
+ * @returns {string} Sanitized query
+ */
+function sanitizeQuery(query) {
+  if (!query || typeof query !== "string") return "";
+  return query.trim().slice(0, 1000);
+}
+
+/**
+ * Format knowledge response from Netlify Function
+ * @param {object} data - Raw response data
+ * @returns {object} Formatted KnowledgeResponse
+ */
+function formatKnowledgeResponse(data) {
+  return {
+    answer: data.answer || "",
+    sources: data.sources || [],
+    confidence: data.confidence || 0,
+    relatedEntities: data.relatedEntities || {}
+  };
+}
+
+/**
+ * Query knowledge base via Netlify Function
+ * @param {KnowledgeQuery} knowledgeQuery - Query object with query string and optional context
+ * @returns {Promise<KnowledgeResponse>} Knowledge response with answer and metadata
+ * @throws {Error} If API request fails
+ * @example
+ * const response = await queryKnowledge({
+ *   query: 'What projects is John working on?',
+ *   context: { employeeId: 'emp-123' }
+ * });
+ */
+async function queryKnowledge(knowledgeQuery) {
+  if (!knowledgeQuery || typeof knowledgeQuery !== "object") {
+    throw new Error("KnowledgeQuery must be an object");
+  }
+
+  if (!knowledgeQuery.query || typeof knowledgeQuery.query !== "string") {
+    throw new Error("KnowledgeQuery.query must be a non-empty string");
+  }
+
+  const sanitizedQuery = sanitizeQuery(knowledgeQuery.query);
+  if (!sanitizedQuery) {
+    throw new Error("Query cannot be empty after sanitization");
+  }
+
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+  try {
+    const response = await fetch(KNOWLEDGE_ENDPOINTS.QUERY, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        query: sanitizedQuery,
+        context: knowledgeQuery.context || {}
+      }),
+      signal: controller.signal
+    });
+
+    clearTimeout(timeoutId);
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        `Knowledge query failed: ${response.status} ${response.statusText} - ${errorData.message || "Unknown error"}`
+      );
+    }
+
+    const data = await response.json();
+    return formatKnowledgeResponse(data);
+  } catch (error) {
+    clearTimeout(timeoutId);
+    if (error.name === "AbortError") {
+      throw new Error("Knowledge query timed out after 30 seconds");
+    }
+    throw new Error(`queryKnowledge error: ${error.message}`);
+  }
+}
+
+/**
+ * Initialize API client with configuration
+ * @param {object} config - Configuration object
+ * @param {string} [config.apiKey] - API key for authentication (if needed)
+ * @param {number} [config.timeout=30000] - Request timeout in milliseconds
+ * @returns {object} Initialized client instance
+ * @example
+ * const client = initializeApiClient({ apiKey: 'sk-xxx', timeout: 60000 });
+ */
+function initializeApiClient(config = {}) {
+  const { apiKey, timeout = 30000 } = config;
+
+  return {
+    queryKnowledge,
+    longcatApiClient: apiKey ? (message, context) => longcatApiClient(apiKey, message, context) : null,
+    queryEmployeeData,
+    config: {
+      timeout,
+      hasApiKey: !!apiKey
+    }
+  };
+}
+
+/**
  * Query employee database for chat context
  * @param {string} query - Search query string (matches name, email, or workType)
  * @returns {Promise<Employee[]>} Array of matching employees
@@ -127,4 +235,4 @@ async function queryEmployeeData(query) {
   }
 }
 
-export { longcatApiClient, queryEmployeeData };
+export { longcatApiClient, queryEmployeeData, queryKnowledge, initializeApiClient };

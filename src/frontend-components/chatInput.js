@@ -3,26 +3,21 @@
  * @module frontend-components/chatInput
  */
 
-import { longcatApiClient, queryEmployeeData } from "../shared/apiClient.js";
+import { queryKnowledge } from "../shared/apiClient.js";
 
 /**
- * Renders the chat input component with send functionality
+ * Renders the chat input component with Netlify Functions integration
  * @param {HTMLElement} container - Container element to render the input in
  * @param {ChatStateManager} chatStateManager - Chat state manager instance
- * @param {string} apiKey - LONGCAT API key for authentication
  * @returns {Object} Component control object
  */
-function chatInput(container, chatStateManager, apiKey) {
+function chatInput(container, chatStateManager) {
   if (!container || !(container instanceof HTMLElement)) {
     throw new Error("Container must be a valid HTMLElement");
   }
 
   if (!chatStateManager || typeof chatStateManager !== "object") {
     throw new Error("chatStateManager must be a valid object");
-  }
-
-  if (typeof apiKey !== "string") {
-    apiKey = "";
   }
 
   const inputWrapper = document.createElement("div");
@@ -69,14 +64,6 @@ function chatInput(container, chatStateManager, apiKey) {
       return;
     }
 
-    if (!apiKey) {
-      chatStateManager.addMessage(
-        "assistant",
-        "API key not configured. Please set LONGCAT_API_KEY environment variable or create src/config.js with your API key.",
-      );
-      return;
-    }
-
     isSending = true;
     updateSendButton();
     sendButton.textContent = "Sending...";
@@ -86,14 +73,16 @@ function chatInput(container, chatStateManager, apiKey) {
       textarea.value = "";
       autoResize();
 
-      const employeeData = await queryEmployeeData("");
-      const context = {
-        employeeCount: employeeData.length,
-        timestamp: new Date().toISOString(),
+      const knowledgeQuery = {
+        query: message,
+        context: {
+          timestamp: new Date().toISOString(),
+        },
       };
 
-      const response = await longcatApiClient(apiKey, message, context);
-      chatStateManager.addMessage("assistant", response.response);
+      const response = await queryKnowledge(knowledgeQuery);
+      const message = chatStateManager.addMessage("assistant", response.answer);
+      message.knowledgeData = response;
     } catch (error) {
       console.error("Failed to send message:", error);
       chatStateManager.addMessage(

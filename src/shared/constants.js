@@ -4,10 +4,21 @@
  */
 
 /**
- * LONGCAT API base URL
+ * API base URL for Netlify Functions
  * @constant {string}
  */
-export const LONGCAT_API_BASE_URL = 'https://api.longcat.chat/openai/v1/chat/completions';
+export const API_BASE_URL = '/.netlify/functions';
+
+/**
+ * Knowledge query endpoints
+ * @constant {object}
+ */
+export const KNOWLEDGE_ENDPOINTS = {
+  QUERY: '/.netlify/functions/knowledge-query',
+  PROJECTS: '/.netlify/functions/project-data',
+  EMPLOYEES: '/.netlify/functions/employee-data',
+  TASKS: '/.netlify/functions/task-data'
+};
 
 /**
  * localStorage key for chat history persistence

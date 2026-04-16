@@ -7,6 +7,102 @@ import { ChatStateManager } from '../shared/chatStateManager.js';
 import { chatMessage } from './chatMessage.js';
 
 /**
+ * Renders a knowledge response with confidence score and related entities
+ * @param {Object} knowledgeData - Knowledge response data
+ * @param {string} knowledgeData.answer - The answer text
+ * @param {number} knowledgeData.confidence - Confidence score (0-1)
+ * @param {Array} knowledgeData.sources - Array of source references
+ * @param {Object} knowledgeData.relatedEntities - Related entity data
+ * @returns {HTMLElement} DOM element for knowledge response
+ */
+function renderKnowledgeResponse(knowledgeData) {
+  if (!knowledgeData || typeof knowledgeData !== 'object') {
+    throw new Error('Knowledge data must be an object');
+  }
+
+  const { answer, confidence, sources, relatedEntities } = knowledgeData;
+
+  const wrapper = document.createElement('div');
+  wrapper.className = 'knowledge-response-wrapper';
+
+  const confidenceDiv = document.createElement('div');
+  confidenceDiv.className = 'knowledge-confidence';
+  const confidencePercent = Math.round((confidence || 0) * 100);
+  confidenceDiv.textContent = `Confidence: ${confidencePercent}%`;
+  wrapper.appendChild(confidenceDiv);
+
+  const answerDiv = document.createElement('div');
+  answerDiv.className = 'knowledge-answer';
+  answerDiv.innerHTML = parseBasicMarkdown(answer || '');
+  wrapper.appendChild(answerDiv);
+
+  if (sources && sources.length > 0) {
+    const sourcesDiv = document.createElement('div');
+    sourcesDiv.className = 'knowledge-sources';
+    sourcesDiv.innerHTML = '<strong>Sources:</strong>';
+    const sourcesList = document.createElement('ul');
+    sources.forEach(source => {
+      const li = document.createElement('li');
+      li.textContent = source;
+      sourcesList.appendChild(li);
+    });
+    sourcesDiv.appendChild(sourcesList);
+    wrapper.appendChild(sourcesDiv);
+  }
+
+  if (relatedEntities && Object.keys(relatedEntities).length > 0) {
+    const entitiesDiv = document.createElement('div');
+    entitiesDiv.className = 'knowledge-entities';
+    entitiesDiv.innerHTML = '<strong>Related Entities:</strong>';
+    
+    Object.entries(relatedEntities).forEach(([type, entities]) => {
+      if (entities && entities.length > 0) {
+        const typeDiv = document.createElement('div');
+        typeDiv.className = 'entity-type';
+        typeDiv.innerHTML = `<span class="entity-label">${type}:</span>`;
+        const entityList = document.createElement('div');
+        entityList.className = 'entity-list';
+        entities.forEach(entity => {
+          const entitySpan = document.createElement('span');
+          entitySpan.className = 'entity-item';
+          entitySpan.textContent = entity.name || entity.id || JSON.stringify(entity);
+          entityList.appendChild(entitySpan);
+        });
+        typeDiv.appendChild(entityList);
+        entitiesDiv.appendChild(typeDiv);
+      }
+    });
+    
+    wrapper.appendChild(entitiesDiv);
+  }
+
+  return wrapper;
+}
+
+/**
+ * Parses basic markdown syntax for AI responses
+ * Supports: **bold**, *italic*, `code`, and line breaks
+ * @param {string} text - Text to parse
+ * @returns {string} HTML string with basic formatting
+ */
+function parseBasicMarkdown(text) {
+  if (!text || typeof text !== 'string') {
+    return '';
+  }
+
+  let html = text
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;');
+
+  html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/\*(.*?)\*/g, '<em>$1</em>');
+  html = html.replace(/`(.*?)`/g, '<code>$1</code>');
+  html = html.replace(/\n/g, '<br>');
+
+  return html;
+}
+/**
  * Renders the message list container with history display
  * @param {HTMLElement} container - Container element to render the message list in
  * @param {ChatStateManager} chatStateManager - Chat state manager instance
@@ -37,9 +133,14 @@ function messageList(container, chatStateManager) {
     }
 
     history.forEach(msg => {
-      const messageElement = chatMessage(msg);
-      listContainer.appendChild(messageElement);
-    });
+    const messageElement = chatMessage(msg);
+    listContainer.appendChild(messageElement);
+      
+    if (msg.role === 'assistant' && msg.knowledgeData) {
+      const knowledgeElement = renderKnowledgeResponse(msg.knowledgeData);
+      listContainer.appendChild(knowledgeElement);
+    }
+  });
 
     if (isLoading) {
       renderLoadingIndicator();

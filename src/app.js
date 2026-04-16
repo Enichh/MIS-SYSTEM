@@ -33,6 +33,7 @@ import {
   WORK_TYPE_ONSITE,
   WORK_TYPE_WFH,
 } from "./shared/validators.js";
+import { initializeApiClient } from "./shared/apiClient.js";
 import { chatInput } from "./frontend-components/chatInput.js";
 import { messageList } from "./frontend-components/messageList.js";
 import {
@@ -45,10 +46,12 @@ let currentSection = "employees";
 let chatStateManager = null;
 let chatInputControl = null;
 let messageListControl = null;
+let apiClient = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
   try {
     db = await openDatabase();
+    apiClient = initializeApiClient({ timeout: 30000 });
     await renderEmployees();
     await renderProjects();
     await renderTasks();
@@ -792,6 +795,7 @@ async function openChatModal() {
         inputContainer,
         chatInputControl,
         messageListControl,
+        apiClient,
       });
 
       if (messageListContainer && inputContainer) {
@@ -800,19 +804,10 @@ async function openChatModal() {
           chatStateManager,
         );
 
-        let apiKey = "";
-        try {
-          const configModule = await import("./config.js");
-          apiKey = configModule.config.longcatApiKey;
-        } catch (error) {
-          console.warn("config.js not found, using environment variables");
-        }
-
         console.log(
-          "Creating chatInput with apiKey:",
-          apiKey ? "present" : "missing",
+          "Creating chatInput with Netlify Functions",
         );
-        chatInputControl = chatInput(inputContainer, chatStateManager, apiKey);
+        chatInputControl = chatInput(inputContainer, chatStateManager);
         console.log("chatInput created:", chatInputControl);
 
         chatStateManager.onMessageAdded(() => {
