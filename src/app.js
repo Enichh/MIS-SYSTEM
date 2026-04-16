@@ -92,7 +92,7 @@ function initializeChat() {
   if (history.length === 0) {
     chatStateManager.addMessage(
       "assistant",
-      "Hello! I'm your AI assistant for the Enosoft Project Management System. How can I help you today?",
+      "Hello! This is the AI assistant for the Enosoft Project Management System. How can it help today?",
     );
   }
 }
@@ -804,9 +804,7 @@ async function openChatModal() {
           chatStateManager,
         );
 
-        console.log(
-          "Creating chatInput with Netlify Functions",
-        );
+        console.log("Creating chatInput with Netlify Functions");
         chatInputControl = chatInput(inputContainer, chatStateManager);
         console.log("chatInput created:", chatInputControl);
 
