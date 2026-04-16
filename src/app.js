@@ -135,6 +135,8 @@ async function handleDocumentClick(event) {
   } else if (action === "remove-task") {
     const employeeId = event.target.dataset.employeeId;
     await handleRemoveFromTask(employeeId, id);
+  } else if (action === "delete-chat") {
+    await handleDeleteChat();
   }
 }
 
@@ -629,6 +631,26 @@ async function handleRemoveFromTask(employeeId, taskId) {
     await removeEmployeeFromTask(employeeId, taskId);
     showNotification("Employee removed from task successfully", "success");
     await refreshCurrentSection();
+  } catch (error) {
+    showNotification(error.message, "error");
+  }
+}
+
+async function handleDeleteChat() {
+  if (!confirm("Are you sure you want to delete all chat history?")) {
+    return;
+  }
+
+  try {
+    chatStateManager.clearHistory();
+    chatStateManager.addMessage(
+      "assistant",
+      "Hello! This is the AI assistant for the Enosoft Project Management System. How can I help you today?",
+    );
+    if (messageListControl) {
+      messageListControl.refresh();
+    }
+    showNotification("Chat history deleted successfully", "success");
   } catch (error) {
     showNotification(error.message, "error");
   }

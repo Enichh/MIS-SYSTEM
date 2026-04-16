@@ -1,105 +1,38 @@
 {
   "version": "1.0.0",
-  "feature": "Modular CSS Architecture with Mobile Responsiveness",
+  "feature": "Chat Delete Icon",
   "freeze_phase": "hot",
   "contracts": {
     "shared": {
       "exports": {
         "public": {
-          "css_variables": ["--color-primary", "--color-background", "--spacing-md", "--text-base", "--transition-base"],
-          "css_files": ["design-tokens.css", "base.css", "reset.css", "utilities.css"],
-          "breakpoints": ["mobile", "tablet", "desktop"]
+          "classes": ["ChatStateManager"],
+          "functions": ["initializeChatState"],
+          "types": []
         },
-        "internal": ["--color-primary-hover", "--shadow-md", "internal-helpers"]
+        "internal": []
       },
-      "file_structure": {
-        "design-tokens.css": "CSS custom properties (colors, spacing, typography, shadows, transitions)",
-        "base.css": "Base HTML element styles (body only - NOT header/nav)",
-        "reset.css": "CSS reset and normalization",
-        "utilities.css": "Utility classes for common patterns"
-      }
+      "schemas": {}
     },
-    "components": {
-      "imports_from_shared": ["design-tokens.css", "utilities.css"],
-      "exports": {
-        "css_files": ["buttons.css", "cards.css", "forms.css", "modals.css", "chat-components.css", "data-table.css", "status-badge.css", "notification.css", "empty-state.css"],
-        "component_classes": [".btn-primary", ".data-card", ".form-group", ".modal", ".chat-message", ".data-table", ".status-badge", ".notification", ".empty-state", ".chat-modal", ".loading-dots", ".chat-responsive-container"]
-      },
+    "frontend": {
+      "imports_from_shared": ["ChatStateManager"],
+      "exports": [],
       "allowed_internal_helpers": true,
       "file_naming": {
-        "pattern": "css/components/{kebab-name}.css",
-        "example": "css/components/buttons.css"
-      }
-    },
-    "layouts": {
-      "imports_from_shared": ["design-tokens.css", "utilities.css"],
-      "exports": {
-        "css_files": ["header.css", "nav.css", "main.css", "responsive-grid.css"],
-        "layout_classes": [".section-header", ".data-list"]
-      },
-      "allowed_internal_helpers": true,
-      "file_naming": {
-        "pattern": "css/layouts/{kebab-name}.css",
-        "example": "css/layouts/header.css"
-      }
-    },
-    "integration": {
-      "imports_from_shared": ["reset.css", "design-tokens.css", "base.css", "utilities.css"],
-      "imports_from_components": ["buttons.css", "cards.css", "forms.css", "modals.css", "chat-components.css", "data-table.css", "status-badge.css", "notification.css", "empty-state.css"],
-      "imports_from_layouts": ["header.css", "nav.css", "main.css", "responsive-grid.css"],
-      "exports": {
-        "html_file": "index.html",
-        "css_entry": "css/main.css"
-      },
-      "allowed_internal_helpers": false,
-      "responsiveness": {
-        "breakpoints": {
-          "mobile": "max-width: 480px",
-          "tablet": "min-width: 481px and max-width: 768px",
-          "desktop": "min-width: 769px"
-        },
-        "approach": "mobile-first"
+        "pattern": "src/frontend-components/{camelName}.js",
+        "example": "src/frontend-components/chatInput.js"
       }
     }
   },
   "boundaries": {
-    "shared_to_components": {
-      "data_shape": "CSS custom properties and base styles",
-      "import_method": "@import url('./shared/{file}.css');",
-      "dependency": "components depend on shared design tokens"
-    },
-    "shared_to_layouts": {
-      "data_shape": "CSS custom properties and base styles",
-      "import_method": "@import url('./shared/{file}.css');",
-      "dependency": "layouts depend on shared design tokens"
-    },
-    "components_to_integration": {
-      "data_shape": "Component-specific CSS files",
-      "import_method": "@import url('./components/{file}.css');",
-      "dependency": "integration imports all component files"
-    },
-    "layouts_to_integration": {
-      "data_shape": "Layout-specific CSS files",
-      "import_method": "@import url('./layouts/{file}.css');",
-      "dependency": "integration imports all layout files"
+    "shared_to_frontend": {
+      "data_shape": "void",
+      "serialization": "function_call",
+      "error_shape": { "type": "Error", "message": "string" }
     }
   },
   "dependency_graph": {
-    "shared": {
-      "depends_on": [],
-      "blocks": ["components", "layouts", "integration"]
-    },
-    "components": {
-      "depends_on": ["shared"],
-      "blocks": ["integration"]
-    },
-    "layouts": {
-      "depends_on": ["shared"],
-      "blocks": ["integration"]
-    },
-    "integration": {
-      "depends_on": ["shared", "components", "layouts"],
-      "blocks": []
-    }
+    "shared": { "depends_on": [], "blocks": ["frontend"] },
+    "frontend": { "depends_on": ["shared"], "blocks": [] }
   }
 }

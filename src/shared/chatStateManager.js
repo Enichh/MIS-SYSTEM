@@ -117,6 +117,7 @@ class ChatStateManager {
   clearHistory() {
     this.messages = [];
     this.persistToStorage();
+    this.notifyListeners();
   }
 
   /**

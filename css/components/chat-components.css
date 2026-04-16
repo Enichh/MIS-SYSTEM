@@ -1,4 +1,4 @@
-@import url('../shared/design-tokens.css');
+@import url("../shared/design-tokens.css");
 
 .chat-modal-overlay {
   position: fixed;
@@ -59,6 +59,12 @@
   margin: 0;
 }
 
+.chat-modal-header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+}
+
 .chat-modal-close {
   background: none;
   border: none;
@@ -80,6 +86,35 @@
 }
 
 .chat-modal-close:focus {
+  box-shadow: var(--focus-ring);
+  outline: none;
+}
+
+.chat-modal-delete {
+  background: none;
+  border: none;
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  padding: 0;
+  width: 2rem;
+  height: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-base);
+}
+
+.chat-modal-delete svg {
+  width: 1.25rem;
+  height: 1.25rem;
+}
+
+.chat-modal-delete:hover {
+  color: var(--color-error);
+  transform: scale(1.1);
+}
+
+.chat-modal-delete:focus {
   box-shadow: var(--focus-ring);
   outline: none;
 }
@@ -303,6 +338,16 @@
     border-bottom-left-radius: 0;
     border-bottom-right-radius: 0;
   }
+
+  .chat-modal-delete svg {
+    width: 1rem;
+    height: 1rem;
+  }
+
+  .chat-modal-delete {
+    width: 1.75rem;
+    height: 1.75rem;
+  }
 }
 
 @media (max-width: 320px) {
@@ -330,10 +375,30 @@
   .chat-modal {
     max-width: 500px;
   }
+
+  .chat-modal-delete svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .chat-modal-delete {
+    width: 2rem;
+    height: 2rem;
+  }
 }
 
 @media (min-width: 1024px) {
   .chat-modal {
     max-width: 600px;
+  }
+
+  .chat-modal-delete svg {
+    width: 1.25rem;
+    height: 1.25rem;
+  }
+
+  .chat-modal-delete {
+    width: 2rem;
+    height: 2rem;
   }
 }
