@@ -81,8 +81,11 @@ function chatInput(container, chatStateManager) {
       };
 
       const response = await queryKnowledge(knowledgeQuery);
-      const message = chatStateManager.addMessage("assistant", response.answer);
-      message.knowledgeData = response;
+      const assistantMessage = chatStateManager.addMessage(
+        "assistant",
+        response.answer,
+      );
+      assistantMessage.knowledgeData = response;
     } catch (error) {
       console.error("[DEBUG] Failed to send message:", error);
       console.error("[DEBUG] Error message:", error.message);
