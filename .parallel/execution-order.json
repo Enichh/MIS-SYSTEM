@@ -1,5 +1,45 @@
 {
-  "workstreams": ["shared", "frontend"],
-  "execution_order": ["shared", "frontend"],
-  "description": "Shared workstream adds dark mode CSS tokens, frontend workstream creates toggle UI and state management"
+  "version": "1.0.0",
+  "feature": "UI Architecture Migration",
+  "execution_order": [
+    {
+      "phase": "sequential",
+      "workstream": "shared-foundation",
+      "blocking": true,
+      "description": "Reorganize shared services, components, and utilities. BLOCKS all other workstreams."
+    },
+    {
+      "phase": "parallel",
+      "workstreams": [
+        "employees-projects",
+        "tasks-chat"
+      ],
+      "blocking": false,
+      "description": "Extract employees, projects, tasks, and chat features. Can run in parallel after shared-foundation completes."
+    },
+    {
+      "phase": "sequential",
+      "workstream": "entry-point",
+      "blocking": true,
+      "description": "Refactor entry point and clean up old structure. BLOCKS on all feature workstreams completing."
+    }
+  ],
+  "dependency_graph": {
+    "shared-foundation": {
+      "depends_on": [],
+      "blocks": ["employees-projects", "tasks-chat", "entry-point"]
+    },
+    "employees-projects": {
+      "depends_on": ["shared-foundation"],
+      "blocks": ["entry-point"]
+    },
+    "tasks-chat": {
+      "depends_on": ["shared-foundation"],
+      "blocks": ["entry-point"]
+    },
+    "entry-point": {
+      "depends_on": ["shared-foundation", "employees-projects", "tasks-chat"],
+      "blocks": []
+    }
+  }
 }

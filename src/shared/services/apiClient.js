@@ -4,7 +4,7 @@
  */
 
 import { getAllEmployees } from "./database.js";
-import { KNOWLEDGE_ENDPOINTS } from "./constants.js";
+import { KNOWLEDGE_ENDPOINTS } from "../constants.js";
 
 /**
  * LONGCAT API client for chat completions

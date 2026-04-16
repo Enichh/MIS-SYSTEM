@@ -1,95 +1,84 @@
+// Contract Validation Script
+// Validates that all tokens referenced in task files are in schema.json imports_from_shared lists
+
 const fs = require('fs');
 const path = require('path');
 
 // Read schema.json
-const schemaPath = path.join('.parallel', 'contracts', 'schema.json');
+const schemaPath = path.join(__dirname, '../contracts/schema.json');
 const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
+
+// Read all task files
+const workstreamsDir = path.join(__dirname, '../workstreams');
+const taskFiles = fs.readdirSync(workstreamsDir).filter(f => f.endsWith('-tasks.md'));
 
 console.log('=== Contract Validation ===\n');
 
-// Validate schema structure
-if (!schema.version || !schema.feature || !schema.freeze_phase) {
-    console.error('❌ ERROR: Missing required schema fields');
-    process.exit(1);
+let violations = [];
+
+// Extract imports_from_shared from schema for each workstream
+const schemaImports = {};
+for (const workstreamName of Object.keys(schema.contracts)) {
+    if (workstreamName === 'shared-foundation') continue;
+    schemaImports[workstreamName] = schema.contracts[workstreamName].imports_from_shared || [];
 }
 
-console.log(`✓ Feature: ${schema.feature}`);
-console.log(`✓ Version: ${schema.version}`);
-console.log(`✓ Freeze Phase: ${schema.freeze_phase}`);
-
-// Validate contracts exist
-if (!schema.contracts) {
-    console.error('❌ ERROR: Missing contracts section');
-    process.exit(1);
-}
-
-console.log('✓ Contracts section exists');
-
-// Validate workstreams
-const workstreams = Object.keys(schema.contracts);
-console.log(`\nWorkstreams: ${workstreams.join(', ')}`);
-
-// Validate dependency graph
-if (!schema.dependency_graph) {
-    console.error('❌ ERROR: Missing dependency_graph');
-    process.exit(1);
-}
-
-console.log('✓ Dependency graph exists');
-
-// Check for naming collisions
-const allExports = {};
-workstreams.forEach(ws => {
-    const contract = schema.contracts[ws];
-    if (contract.exports && contract.exports.public) {
-        const exports = contract.exports.public;
-        Object.keys(exports).forEach(type => {
-            exports[type].forEach(item => {
-                const key = `${ws}:${type}:${item}`;
-                if (allExports[key]) {
-                    console.error(`❌ ERROR: Naming collision detected: ${key}`);
-                    process.exit(1);
-                }
-                allExports[key] = true;
-            });
-        });
+// Validate each task file
+for (const taskFile of taskFiles) {
+    const workstreamName = taskFile.replace('-tasks.md', '');
+    const taskFilePath = path.join(workstreamsDir, taskFile);
+    const taskContent = fs.readFileSync(taskFilePath, 'utf8');
+    
+    console.log(`Validating ${workstreamName}...`);
+    
+    // Skip shared-foundation (it defines exports, doesn't import)
+    if (workstreamName === 'shared-foundation') {
+        console.log(`  ✓ Skipped (defines exports, doesn't import from shared)\n`);
+        continue;
     }
-});
+    
+    // Extract function/type/constant references from task content
+    // Look for patterns like: "validateEmployee", "EmployeeDTO", "WORK_TYPE_ONSITE"
+    const functionPattern = /\b(validate[A-Z][a-zA-Z]*|create[A-Z][a-zA-Z]*|get[A-Z][a-zA-Z]*|update[A-Z][a-zA-Z]*|delete[A-Z][a-zA-Z]*|getAll[A-Z][a-zA-Z]*|assign[A-Z][a-zA-Z]*|remove[A-Z][a-zA-Z]*|generateId|initializeApiClient|queryKnowledge|ChatStateManager|initializeChatState|ThemeToggle|initializeThemeManager)\b/g;
+    const typePattern = /\b(EmployeeDTO|ProjectDTO|TaskDTO)\b/g;
+    const constantPattern = /\b(DB_NAME|DB_VERSION|STORE_EMPLOYEES|STORE_PROJECTS|STORE_TASKS|WORK_TYPE_ONSITE|WORK_TYPE_WFH)\b/g;
+    
+    const functionMatches = taskContent.match(functionPattern) || [];
+    const typeMatches = taskContent.match(typePattern) || [];
+    const constantMatches = taskContent.match(constantPattern) || [];
+    
+    const allReferences = [...new Set([...functionMatches, ...typeMatches, ...constantMatches])];
+    
+    const allowedImports = schemaImports[workstreamName] || [];
+    
+    for (const ref of allReferences) {
+        if (!allowedImports.includes(ref)) {
+            violations.push({
+                workstream: workstreamName,
+                reference: ref,
+                allowed: allowedImports
+            });
+        }
+    }
+    
+    if (violations.filter(v => v.workstream === workstreamName).length === 0) {
+        console.log(`  ✓ All references in imports_from_shared\n`);
+    }
+}
 
-console.log('✓ No naming collisions detected');
-
-// Validate task files reference tokens in schema
-const sharedTasksPath = path.join('.parallel', 'workstreams', 'shared-tasks.md');
-const frontendTasksPath = path.join('.parallel', 'workstreams', 'frontend-tasks.md');
-
-if (!fs.existsSync(sharedTasksPath)) {
-    console.error('❌ ERROR: shared-tasks.md not found');
+// Report violations
+if (violations.length > 0) {
+    console.log('\n=== CONTRACT VIOLATIONS FOUND ===\n');
+    for (const violation of violations) {
+        console.log(`Workstream: ${violation.workstream}`);
+        console.log(`  Reference: "${violation.reference}"`);
+        console.log(`  Allowed imports: [${violation.allowed.join(', ')}]`);
+        console.log(`  Status: ✗ NOT in allowed imports\n`);
+    }
+    console.log('\nFix required: Add missing references to schema.json imports_from_shared for the affected workstream(s).');
     process.exit(1);
-}
-
-if (!fs.existsSync(frontendTasksPath)) {
-    console.error('❌ ERROR: frontend-tasks.md not found');
-    process.exit(1);
-}
-
-console.log('✓ Task files exist');
-
-// Read task files
-const sharedTasks = fs.readFileSync(sharedTasksPath, 'utf8');
-const frontendTasks = fs.readFileSync(frontendTasksPath, 'utf8');
-
-// Check that task files reference schema correctly
-if (sharedTasks.includes('schema.json#/contracts/')) {
-    console.log('✓ shared-tasks.md references schema');
 } else {
-    console.warn('⚠ WARNING: shared-tasks.md may not reference schema');
+    console.log('\n=== Contract Validation Complete ===');
+    console.log('No contract violations found ✓');
+    process.exit(0);
 }
-
-if (frontendTasks.includes('schema.json#/contracts/')) {
-    console.log('✓ frontend-tasks.md references schema');
-} else {
-    console.warn('⚠ WARNING: frontend-tasks.md may not reference schema');
-}
-
-console.log('\n=== Contract Validation Complete ===');
-console.log('✓ All checks passed');

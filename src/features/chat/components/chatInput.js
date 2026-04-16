@@ -3,7 +3,7 @@
  * @module frontend-components/chatInput
  */
 
-import { queryKnowledge } from "../shared/apiClient.js";
+import { queryKnowledge } from "../../../shared/services/apiClient.js";
 
 /**
  * Renders the chat input component with Netlify Functions integration

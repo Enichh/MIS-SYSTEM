@@ -1,46 +1,209 @@
 {
   "version": "1.0.0",
-  "feature": "Dark Mode Toggle - MSI Red and Black Design",
+  "feature": "UI Architecture Migration",
   "freeze_phase": "hot",
+  "target_structure": {
+    "src/": {
+      "app/": "App-wide setup (app.js, router.js, providers.js, global-styles.js)",
+      "features/": {
+        "employees/": "Employee feature (components/, services/, types/, index.js)",
+        "projects/": "Project feature (components/, services/, types/, index.js)",
+        "tasks/": "Task feature (components/, services/, types/, index.js)",
+        "chat/": "Chat feature (components/, services/, types/, index.js)"
+      },
+      "shared/": {
+        "components/": "Design system atoms/molecules (button/, card/, modal/, form/, index.js)",
+        "services/": "Global reusable logic (apiClient.js, database.js, validators.js, index.js)",
+        "utils/": "Pure helper functions (models.js, types.js, chatStateManager.js, index.js)",
+        "constants.js": "Global constants"
+      }
+    }
+  },
   "contracts": {
-    "shared": {
+    "shared-foundation": {
       "exports": {
         "public": {
-          "classes": [],
-          "functions": [],
-          "types": [],
-          "constants": []
+          "types": ["EmployeeDTO", "ProjectDTO", "TaskDTO"],
+          "functions": [
+            "generateId",
+            "validateEmployee",
+            "validateProject",
+            "validateTask",
+            "openDatabase",
+            "createEmployee",
+            "getEmployee",
+            "updateEmployee",
+            "deleteEmployee",
+            "getAllEmployees",
+            "createProject",
+            "getProject",
+            "updateProject",
+            "deleteProject",
+            "getAllProjects",
+            "createTask",
+            "getTask",
+            "updateTask",
+            "deleteTask",
+            "getAllTasks",
+            "assignEmployeeToProject",
+            "assignEmployeeToTask",
+            "removeEmployeeFromProject",
+            "removeEmployeeFromTask",
+            "initializeApiClient",
+            "queryKnowledge",
+            "ChatStateManager",
+            "initializeChatState",
+            "WORK_TYPE_ONSITE",
+            "WORK_TYPE_WFH"
+          ],
+          "constants": ["DB_NAME", "DB_VERSION", "STORE_EMPLOYEES", "STORE_PROJECTS", "STORE_TASKS"]
         },
         "internal": []
       },
-      "schemas": {}
-    },
-    "frontend": {
-      "imports_from_shared": [],
-      "exports": {
-        "public": {
-          "classes": ["ThemeToggle"],
-          "functions": ["initializeThemeManager", "toggleTheme"],
-          "types": []
+      "schemas": {
+        "EmployeeDTO": {
+          "type": "object",
+          "properties": {
+            "id": { "type": "string" },
+            "name": { "type": "string" },
+            "email": { "type": "string", "format": "email" },
+            "workType": { "type": "string", "enum": ["onsite", "wfh"] },
+            "assignedProjects": { "type": "array", "items": { "type": "string" } },
+            "assignedTasks": { "type": "array", "items": { "type": "string" } },
+            "createdAt": { "type": "number" },
+            "updatedAt": { "type": "number" }
+          },
+          "required": ["id", "name", "email", "workType"]
         },
-        "internal": ["saveThemePreference", "loadThemePreference", "applyTheme"]
-      },
+        "ProjectDTO": {
+          "type": "object",
+          "properties": {
+            "id": { "type": "string" },
+            "name": { "type": "string" },
+            "description": { "type": "string" },
+            "status": { "type": "string", "enum": ["active", "completed", "archived"] },
+            "assignedEmployees": { "type": "array", "items": { "type": "string" } },
+            "tasks": { "type": "array", "items": { "type": "string" } },
+            "createdAt": { "type": "number" },
+            "updatedAt": { "type": "number" }
+          },
+          "required": ["id", "name", "status"]
+        },
+        "TaskDTO": {
+          "type": "object",
+          "properties": {
+            "id": { "type": "string" },
+            "projectId": { "type": "string" },
+            "title": { "type": "string" },
+            "description": { "type": "string" },
+            "status": { "type": "string", "enum": ["pending", "in-progress", "completed"] },
+            "assignedEmployees": { "type": "array", "items": { "type": "string" } },
+            "createdAt": { "type": "number" },
+            "updatedAt": { "type": "number" }
+          },
+          "required": ["id", "projectId", "title", "status"]
+        }
+      }
+    },
+    "employees-projects": {
+      "imports_from_shared": [
+        "EmployeeDTO",
+        "ProjectDTO",
+        "generateId",
+        "validateEmployee",
+        "validateProject",
+        "openDatabase",
+        "createEmployee",
+        "getEmployee",
+        "updateEmployee",
+        "deleteEmployee",
+        "getAllEmployees",
+        "createProject",
+        "getProject",
+        "updateProject",
+        "deleteProject",
+        "getAllProjects",
+        "assignEmployeeToProject",
+        "removeEmployeeFromProject",
+        "WORK_TYPE_ONSITE",
+        "WORK_TYPE_WFH"
+      ],
+      "exports": ["renderEmployees", "renderProjects"],
       "allowed_internal_helpers": true,
       "file_naming": {
-        "pattern": "src/frontend-components/{camelName}.js",
-        "example": "src/frontend-components/themeToggle.js"
+        "pattern": "src/features/{feature-name}/components/{ComponentName}.js",
+        "example": "src/features/employees/components/employeeCard.js"
+      }
+    },
+    "tasks-chat": {
+      "imports_from_shared": [
+        "TaskDTO",
+        "generateId",
+        "validateTask",
+        "openDatabase",
+        "createTask",
+        "getTask",
+        "updateTask",
+        "deleteTask",
+        "getAllTasks",
+        "assignEmployeeToTask",
+        "removeEmployeeFromTask",
+        "initializeApiClient",
+        "queryKnowledge",
+        "ChatStateManager",
+        "initializeChatState"
+      ],
+      "exports": ["renderTasks", "chatInput", "messageList"],
+      "allowed_internal_helpers": true,
+      "file_naming": {
+        "pattern": "src/features/{feature-name}/components/{ComponentName}.js",
+        "example": "src/features/tasks/components/taskCard.js"
+      }
+    },
+    "entry-point": {
+      "imports_from_employees_projects": ["renderEmployees", "renderProjects"],
+      "imports_from_tasks_chat": ["renderTasks", "chatInput", "messageList"],
+      "imports_from_shared": [
+        "ChatStateManager",
+        "initializeChatState",
+        "initializeApiClient",
+        "ThemeToggle",
+        "initializeThemeManager"
+      ],
+      "exports": [],
+      "allowed_internal_helpers": true,
+      "file_naming": {
+        "pattern": "src/app/app.js",
+        "example": "src/app/app.js"
       }
     }
   },
   "boundaries": {
-    "shared_to_frontend": {
-      "data_shape": "void",
-      "serialization": "css_tokens",
-      "error_shape": { "type": "Error", "message": "string" }
+    "shared_to_employees_projects": {
+      "data_shape": "EmployeeDTO[] | ProjectDTO[]",
+      "serialization": "JSON",
+      "error_shape": { "code": "string", "message": "string" }
+    },
+    "shared_to_tasks_chat": {
+      "data_shape": "TaskDTO[]",
+      "serialization": "JSON",
+      "error_shape": { "code": "string", "message": "string" }
+    },
+    "employees_projects_to_entry": {
+      "data_shape": "renderEmployees() | renderProjects()",
+      "serialization": "function",
+      "error_shape": { "code": "string", "message": "string" }
+    },
+    "tasks_chat_to_entry": {
+      "data_shape": "renderTasks() | chatInput() | messageList()",
+      "serialization": "function",
+      "error_shape": { "code": "string", "message": "string" }
     }
   },
   "dependency_graph": {
-    "shared": { "depends_on": [], "blocks": ["frontend"] },
-    "frontend": { "depends_on": ["shared"], "blocks": [] }
+    "shared-foundation": { "depends_on": [], "blocks": ["employees-projects", "tasks-chat", "entry-point"] },
+    "employees-projects": { "depends_on": ["shared-foundation"], "blocks": ["entry-point"] },
+    "tasks-chat": { "depends_on": ["shared-foundation"], "blocks": ["entry-point"] },
+    "entry-point": { "depends_on": ["shared-foundation", "employees-projects", "tasks-chat"], "blocks": [] }
   }
 }

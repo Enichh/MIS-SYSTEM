@@ -3,6 +3,8 @@
  * @module frontend-components/chatMessage
  */
 
+import { parseBasicMarkdown } from "../../../shared/utils/markdown.js";
+
 /**
  * Formats entity data for display (ProjectDTO, EmployeeDTO, TaskDTO)
  * @param {Object} entity - Entity data object
@@ -166,30 +168,6 @@ function chatMessage(message) {
   messageDiv.appendChild(messageMeta);
 
   return messageDiv;
-}
-
-/**
- * Parses basic markdown syntax for AI responses
- * Supports: **bold**, *italic*, `code`, and line breaks
- * @param {string} text - Text to parse
- * @returns {string} HTML string with basic formatting
- */
-function parseBasicMarkdown(text) {
-  if (!text || typeof text !== "string") {
-    return "";
-  }
-
-  let html = text
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;");
-
-  html = html.replace(/\*\*(.*?)\*\*/g, "<strong>$1</strong>");
-  html = html.replace(/\*(.*?)\*/g, "<em>$1</em>");
-  html = html.replace(/`(.*?)`/g, "<code>$1</code>");
-  html = html.replace(/\n/g, "<br>");
-
-  return html;
 }
 
 /**
