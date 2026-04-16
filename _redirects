@@ -1,9 +1,6 @@
 # Static assets - serve directly
 /assets/* /assets/:splat 200
 
-# Netlify functions - preserve function endpoints
-/.netlify/functions/* /.netlify/functions/:splat 200
-
 # Files with extensions - serve directly (preserves full path)
 /*.* /:splat 200
 
