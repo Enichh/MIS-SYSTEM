@@ -4,6 +4,9 @@
 # Netlify functions - preserve function endpoints
 /.netlify/functions/* /.netlify/functions/:splat 200
 
+# Source files - preserve full path structure
+/src/* /src/:splat 200
+
 # Files with extensions - serve directly (preserves full path)
 /*.* /:splat 200
 
