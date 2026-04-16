@@ -1,14 +1,44 @@
-function buildKnowledgeContext(context) {
+const { fetchFromDatabase } = require("./database-helper");
+
+async function buildKnowledgeContext(context) {
   const contextParts = [];
 
   if (context.projectId) {
-    contextParts.push(`Project ID: ${context.projectId}`);
+    const projects = await fetchFromDatabase("projects", {
+      id: context.projectId,
+    });
+    if (projects.length > 0) {
+      const project = projects[0];
+      contextParts.push(`Project: ${project.name} (ID: ${project.id})`);
+      contextParts.push(`  Description: ${project.description}`);
+      contextParts.push(`  Status: ${project.status}`);
+      contextParts.push(`  Dates: ${project.startDate} to ${project.endDate}`);
+    }
   }
   if (context.employeeId) {
-    contextParts.push(`Employee ID: ${context.employeeId}`);
+    const employees = await fetchFromDatabase("employees", {
+      id: context.employeeId,
+    });
+    if (employees.length > 0) {
+      const employee = employees[0];
+      contextParts.push(`Employee: ${employee.name} (ID: ${employee.id})`);
+      contextParts.push(`  Email: ${employee.email}`);
+      contextParts.push(`  Role: ${employee.role}`);
+      contextParts.push(`  Department: ${employee.department}`);
+      contextParts.push(`  Assigned Projects: ${employee.projects.join(", ")}`);
+    }
   }
   if (context.taskId) {
-    contextParts.push(`Task ID: ${context.taskId}`);
+    const tasks = await fetchFromDatabase("tasks", { id: context.taskId });
+    if (tasks.length > 0) {
+      const task = tasks[0];
+      contextParts.push(`Task: ${task.title} (ID: ${task.id})`);
+      contextParts.push(`  Description: ${task.description}`);
+      contextParts.push(`  Status: ${task.status}`);
+      contextParts.push(`  Project ID: ${task.projectId}`);
+      contextParts.push(`  Assigned To: ${task.assignedTo}`);
+      contextParts.push(`  Due Date: ${task.dueDate}`);
+    }
   }
 
   return contextParts.join("\n");
@@ -58,7 +88,7 @@ async function knowledgeQueryHandler(event, context) {
       };
     }
 
-    const contextString = buildKnowledgeContext(queryContext);
+    const contextString = await buildKnowledgeContext(queryContext);
 
     const response = await fetch(
       "https://api.longcat.chat/openai/v1/chat/completions",
