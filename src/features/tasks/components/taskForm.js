@@ -3,7 +3,7 @@
  * @module features/tasks/components/taskForm
  */
 
-import { getAllProjects } from "../../shared/services/database.js";
+import { getAllProjects } from "../../../shared/services/database.js";
 
 /**
  * Populates the project select dropdown
