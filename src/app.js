@@ -92,7 +92,7 @@ function initializeChat() {
   if (history.length === 0) {
     chatStateManager.addMessage(
       "assistant",
-      "Hello! This is the AI assistant for the Enosoft Project Management System. How can it help today?",
+      "Hello! This is the AI assistant for the Enosoft Project Management System. How can I help you today?",
     );
   }
 }

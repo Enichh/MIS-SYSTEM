@@ -991,6 +991,7 @@ main {
 }
 
 .chat-message-role {
+  display: none;
   font-weight: var(--font-weight-medium);
   text-transform: uppercase;
   letter-spacing: 0.5px;
