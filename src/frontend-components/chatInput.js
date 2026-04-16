@@ -84,7 +84,9 @@ function chatInput(container, chatStateManager) {
       const message = chatStateManager.addMessage("assistant", response.answer);
       message.knowledgeData = response;
     } catch (error) {
-      console.error("Failed to send message:", error);
+      console.error("[DEBUG] Failed to send message:", error);
+      console.error("[DEBUG] Error message:", error.message);
+      console.error("[DEBUG] Error stack:", error.stack);
       chatStateManager.addMessage(
         "assistant",
         "Sorry, I encountered an error. Please try again.",

@@ -15,10 +15,20 @@ function buildKnowledgeContext(context) {
 }
 
 async function knowledgeQueryHandler(event, context) {
+  console.log("[DEBUG] knowledgeQueryHandler called");
+  console.log("[DEBUG] Event:", JSON.stringify(event));
+  console.log(
+    "[DEBUG] Available env vars:",
+    Object.keys(process.env).filter(
+      (k) => k.includes("API") || k.includes("KEY"),
+    ),
+  );
+
   const { LONGCAT_API_KEY } = process.env;
+  console.log("[DEBUG] LONGCAT_API_KEY exists:", !!LONGCAT_API_KEY);
 
   if (!LONGCAT_API_KEY) {
-    return {
+    const errorResponse = {
       statusCode: 500,
       headers: {
         "Content-Type": "application/json",
@@ -28,6 +38,8 @@ async function knowledgeQueryHandler(event, context) {
         message: "LONGCAT_API_KEY environment variable is not configured",
       }),
     };
+    console.log("[DEBUG] Returning error:", JSON.stringify(errorResponse));
+    return errorResponse;
   }
 
   try {

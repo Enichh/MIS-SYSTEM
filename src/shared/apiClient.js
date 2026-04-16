@@ -115,7 +115,7 @@ function formatKnowledgeResponse(data) {
     answer: data.answer || "",
     sources: data.sources || [],
     confidence: data.confidence || 0,
-    relatedEntities: data.relatedEntities || {}
+    relatedEntities: data.relatedEntities || {},
   };
 }
 
@@ -148,24 +148,43 @@ async function queryKnowledge(knowledgeQuery) {
   const timeoutId = setTimeout(() => controller.abort(), 30000);
 
   try {
+    console.log(
+      "[DEBUG] queryKnowledge calling Netlify function:",
+      KNOWLEDGE_ENDPOINTS.QUERY,
+    );
+    console.log(
+      "[DEBUG] Request body:",
+      JSON.stringify({
+        query: sanitizedQuery,
+        context: knowledgeQuery.context || {},
+      }),
+    );
+
     const response = await fetch(KNOWLEDGE_ENDPOINTS.QUERY, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
       },
       body: JSON.stringify({
         query: sanitizedQuery,
-        context: knowledgeQuery.context || {}
+        context: knowledgeQuery.context || {},
       }),
-      signal: controller.signal
+      signal: controller.signal,
     });
 
     clearTimeout(timeoutId);
 
+    console.log(
+      "[DEBUG] Response status:",
+      response.status,
+      response.statusText,
+    );
+
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
+      console.log("[DEBUG] Error response:", JSON.stringify(errorData));
       throw new Error(
-        `Knowledge query failed: ${response.status} ${response.statusText} - ${errorData.message || "Unknown error"}`
+        `Knowledge query failed: ${response.status} ${response.statusText} - ${errorData.message || "Unknown error"}`,
       );
     }
 
@@ -194,12 +213,14 @@ function initializeApiClient(config = {}) {
 
   return {
     queryKnowledge,
-    longcatApiClient: apiKey ? (message, context) => longcatApiClient(apiKey, message, context) : null,
+    longcatApiClient: apiKey
+      ? (message, context) => longcatApiClient(apiKey, message, context)
+      : null,
     queryEmployeeData,
     config: {
       timeout,
-      hasApiKey: !!apiKey
-    }
+      hasApiKey: !!apiKey,
+    },
   };
 }
 
@@ -235,4 +256,9 @@ async function queryEmployeeData(query) {
   }
 }
 
-export { longcatApiClient, queryEmployeeData, queryKnowledge, initializeApiClient };
+export {
+  longcatApiClient,
+  queryEmployeeData,
+  queryKnowledge,
+  initializeApiClient,
+};
