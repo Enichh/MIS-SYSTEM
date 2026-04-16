@@ -1,33 +1,41 @@
 {
   "version": "1.0.0",
-  "feature": "Chat Delete Icon",
+  "feature": "Dark Mode Toggle - MSI Red and Black Design",
   "freeze_phase": "hot",
   "contracts": {
     "shared": {
       "exports": {
         "public": {
-          "classes": ["ChatStateManager"],
-          "functions": ["initializeChatState"],
-          "types": []
+          "classes": [],
+          "functions": [],
+          "types": [],
+          "constants": []
         },
         "internal": []
       },
       "schemas": {}
     },
     "frontend": {
-      "imports_from_shared": ["ChatStateManager"],
-      "exports": [],
+      "imports_from_shared": [],
+      "exports": {
+        "public": {
+          "classes": ["ThemeToggle"],
+          "functions": ["initializeThemeManager", "toggleTheme"],
+          "types": []
+        },
+        "internal": ["saveThemePreference", "loadThemePreference", "applyTheme"]
+      },
       "allowed_internal_helpers": true,
       "file_naming": {
         "pattern": "src/frontend-components/{camelName}.js",
-        "example": "src/frontend-components/chatInput.js"
+        "example": "src/frontend-components/themeToggle.js"
       }
     }
   },
   "boundaries": {
     "shared_to_frontend": {
       "data_shape": "void",
-      "serialization": "function_call",
+      "serialization": "css_tokens",
       "error_shape": { "type": "Error", "message": "string" }
     }
   },

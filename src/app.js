@@ -40,6 +40,10 @@ import {
   ChatStateManager,
   initializeChatState,
 } from "./shared/chatStateManager.js";
+import {
+  ThemeToggle,
+  initializeThemeManager,
+} from "./frontend-components/themeToggle.js";
 
 let db = null;
 let currentSection = "employees";
@@ -47,9 +51,17 @@ let chatStateManager = null;
 let chatInputControl = null;
 let messageListControl = null;
 let apiClient = null;
+let themeToggle = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
   try {
+    initializeThemeManager();
+    const themeToggleContainer = document.getElementById(
+      "theme-toggle-container",
+    );
+    if (themeToggleContainer) {
+      themeToggle = new ThemeToggle(themeToggleContainer);
+    }
     db = await openDatabase();
     apiClient = initializeApiClient({ timeout: 30000 });
     await renderEmployees();

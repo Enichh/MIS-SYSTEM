@@ -1,17 +1,5 @@
 {
-  "feature": "Chat Delete Icon",
-  "version": "1.0.0",
-  "execution_order": [
-    {
-      "workstream": "shared",
-      "depends_on": [],
-      "status": "pending"
-    },
-    {
-      "workstream": "frontend",
-      "depends_on": ["shared"],
-      "status": "pending"
-    }
-  ],
-  "created_at": "2026-04-17T01:58:00Z"
+  "workstreams": ["shared", "frontend"],
+  "execution_order": ["shared", "frontend"],
+  "description": "Shared workstream adds dark mode CSS tokens, frontend workstream creates toggle UI and state management"
 }

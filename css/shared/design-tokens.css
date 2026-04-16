@@ -81,3 +81,53 @@
   --heading-weight: var(--font-weight-bold);
   --body-weight: var(--font-weight-regular);
 }
+
+/* Dark Mode Theme - MSI Red and Black Design */
+[data-theme="dark"] {
+  /* Color Palette - Dark Mode */
+  --color-primary: oklch(0.6 0.25 25);
+  --color-primary-hover: oklch(0.65 0.27 25);
+  --color-primary-light: oklch(0.7 0.2 25);
+  --color-background: oklch(0.15 0.02 240);
+  --color-background-secondary: oklch(0.18 0.02 240);
+  --color-background-tertiary: oklch(0.22 0.03 240);
+  --color-surface: oklch(0.25 0.03 240);
+  --color-text: oklch(0.9 0.01 240);
+  --color-text-secondary: oklch(0.75 0.02 240);
+  --color-text-muted: oklch(0.6 0.02 240);
+  --color-border: oklch(0.35 0.02 240);
+  --color-border-light: oklch(0.4 0.02 240);
+  --color-success: oklch(0.65 0.2 142);
+  --color-error: oklch(0.6 0.24 25);
+  --color-warning: oklch(0.75 0.17 65);
+  --color-info: oklch(0.65 0.2 220);
+
+  /* Focus Ring for Accessibility - Dark Mode */
+  --focus-ring: 0 0 0 3px oklch(0.6 0.25 25 / 0.4);
+
+  /* Legacy variables for backward compatibility - Dark Mode */
+  --primary: var(--color-primary);
+  --primary-dark: var(--color-primary-hover);
+  --background: var(--color-background);
+  --background-secondary: var(--color-background-secondary);
+  --background-tertiary: var(--color-background-tertiary);
+  --text: var(--color-text);
+  --text-secondary: var(--color-text-secondary);
+  --border: var(--color-border);
+  --border-secondary: var(--color-border-light);
+  --success: var(--color-success);
+  --error: var(--color-error);
+  --warning: var(--color-warning);
+  --hover-glow: 0 0 10px oklch(0.6 0.25 25 / 0.6);
+  --focus-outline: 2px solid var(--color-primary);
+  --transition: var(--transition-base);
+  --font-family: var(--font-sans);
+  --font-size-base: var(--text-base);
+  --heading-weight: var(--font-weight-bold);
+  --body-weight: var(--font-weight-regular);
+}
+
+/* Theme Transition Support */
+body {
+  transition: background-color 300ms ease-in-out, color 300ms ease-in-out, border-color 300ms ease-in-out;
+}

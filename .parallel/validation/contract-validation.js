@@ -1,25 +1,95 @@
-# Contract Validation Script
+const fs = require('fs');
+const path = require('path');
 
-This script validates that all tokens referenced in task files are present in schema.json imports_from_shared lists.
+// Read schema.json
+const schemaPath = path.join('.parallel', 'contracts', 'schema.json');
+const schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
 
-## Usage
-```bash
-node .parallel/validation/contract-validation.js
-```
+console.log('=== Contract Validation ===\n');
 
-## Validation Checks
-1. Schema JSON structure and syntax
-2. Naming collisions across workstreams
-3. Task count limits (max 3-4 per workstream)
-4. Contract consistency: All tokens referenced in task files must be in schema.json imports_from_shared lists
-5. DTO/schema compliance: Mock data respects enum constraints and required fields
-6. API endpoint consistency: Endpoints match existing codebase patterns
-7. Data flow verification: Data structures propagate correctly across workstreams
+// Validate schema structure
+if (!schema.version || !schema.feature || !schema.freeze_phase) {
+    console.error('❌ ERROR: Missing required schema fields');
+    process.exit(1);
+}
 
-## Exit Codes
-- 0: All validations passed
-- 1: Validation failed
+console.log(`✓ Feature: ${schema.feature}`);
+console.log(`✓ Version: ${schema.version}`);
+console.log(`✓ Freeze Phase: ${schema.freeze_phase}`);
 
-## Notes
-- This script should be run after plan generation and before parallel execution
-- Any violations should be fixed in schema.json before proceeding
+// Validate contracts exist
+if (!schema.contracts) {
+    console.error('❌ ERROR: Missing contracts section');
+    process.exit(1);
+}
+
+console.log('✓ Contracts section exists');
+
+// Validate workstreams
+const workstreams = Object.keys(schema.contracts);
+console.log(`\nWorkstreams: ${workstreams.join(', ')}`);
+
+// Validate dependency graph
+if (!schema.dependency_graph) {
+    console.error('❌ ERROR: Missing dependency_graph');
+    process.exit(1);
+}
+
+console.log('✓ Dependency graph exists');
+
+// Check for naming collisions
+const allExports = {};
+workstreams.forEach(ws => {
+    const contract = schema.contracts[ws];
+    if (contract.exports && contract.exports.public) {
+        const exports = contract.exports.public;
+        Object.keys(exports).forEach(type => {
+            exports[type].forEach(item => {
+                const key = `${ws}:${type}:${item}`;
+                if (allExports[key]) {
+                    console.error(`❌ ERROR: Naming collision detected: ${key}`);
+                    process.exit(1);
+                }
+                allExports[key] = true;
+            });
+        });
+    }
+});
+
+console.log('✓ No naming collisions detected');
+
+// Validate task files reference tokens in schema
+const sharedTasksPath = path.join('.parallel', 'workstreams', 'shared-tasks.md');
+const frontendTasksPath = path.join('.parallel', 'workstreams', 'frontend-tasks.md');
+
+if (!fs.existsSync(sharedTasksPath)) {
+    console.error('❌ ERROR: shared-tasks.md not found');
+    process.exit(1);
+}
+
+if (!fs.existsSync(frontendTasksPath)) {
+    console.error('❌ ERROR: frontend-tasks.md not found');
+    process.exit(1);
+}
+
+console.log('✓ Task files exist');
+
+// Read task files
+const sharedTasks = fs.readFileSync(sharedTasksPath, 'utf8');
+const frontendTasks = fs.readFileSync(frontendTasksPath, 'utf8');
+
+// Check that task files reference schema correctly
+if (sharedTasks.includes('schema.json#/contracts/')) {
+    console.log('✓ shared-tasks.md references schema');
+} else {
+    console.warn('⚠ WARNING: shared-tasks.md may not reference schema');
+}
+
+if (frontendTasks.includes('schema.json#/contracts/')) {
+    console.log('✓ frontend-tasks.md references schema');
+} else {
+    console.warn('⚠ WARNING: frontend-tasks.md may not reference schema');
+}
+
+console.log('\n=== Contract Validation Complete ===');
+console.log('✓ All checks passed');
