@@ -1,4 +1,4 @@
-@import url('../shared/design-tokens.css');
+@import url("../../../../css/shared/design-tokens.css");
 
 .btn-primary {
   background-color: var(--color-primary);
@@ -135,7 +135,10 @@
   font-size: 1rem;
   cursor: pointer;
   transition: var(--transition-base);
-  font-family: system-ui, -apple-system, sans-serif;
+  font-family:
+    system-ui,
+    -apple-system,
+    sans-serif;
   font-weight: var(--font-weight-regular);
 }
 

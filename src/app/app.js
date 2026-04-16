@@ -3,7 +3,6 @@
  * @module app/app
  */
 
-import "./global-styles.js";
 import { setupNavigation } from "./router.js";
 import {
   initializeTheme,
@@ -13,7 +12,11 @@ import {
   getChatStateManager,
   getApiClient,
 } from "./providers.js";
-import { initializeFormHandlers, handleDocumentClick, setupFormEventListeners } from "./formHandlers.js";
+import {
+  initializeFormHandlers,
+  handleDocumentClick,
+  setupFormEventListeners,
+} from "./formHandlers.js";
 import { renderEmployees } from "../features/employees/index.js";
 import { renderProjects } from "../features/projects/index.js";
 import { renderTasks } from "../features/tasks/index.js";
@@ -23,20 +26,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     initializeTheme();
     await initializeDatabase();
     await initializeApi();
-    
+
     // Initialize form handlers with dependencies
     initializeFormHandlers(getChatStateManager, getApiClient);
-    
+
     // Render all features
     await renderEmployees();
     await renderProjects();
     await renderTasks();
-    
+
     // Setup navigation and event listeners
     setupNavigation();
     setupFormEventListeners();
     document.addEventListener("click", handleDocumentClick);
-    
+
     // Initialize chat
     initializeChat();
   } catch (error) {

@@ -1,4 +1,4 @@
-@import url('../shared/design-tokens.css');
+@import url("../../../../css/shared/design-tokens.css");
 
 .data-card {
   background-color: var(--color-background-secondary);
