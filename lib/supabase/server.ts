@@ -5,6 +5,11 @@ export async function createClient() {
   const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
   const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY
 
+  console.log('Supabase client initialization:', {
+    supabaseUrl: supabaseUrl ? supabaseUrl.substring(0, 20) + '...' : 'MISSING',
+    supabaseKey: supabaseKey ? supabaseKey.substring(0, 20) + '...' : 'MISSING',
+  })
+
   if (!supabaseUrl || !supabaseKey) {
     throw new Error(
       'Missing required Supabase environment variables. ' +
