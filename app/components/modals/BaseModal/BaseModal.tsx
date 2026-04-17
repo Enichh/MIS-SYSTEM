@@ -87,21 +87,21 @@ export default function BaseModal({
   return (
     <dialog
       ref={dialogRef}
-      className={`backdrop:bg-black/50 backdrop:backdrop-blur-sm bg-[var(--color-background-secondary)] border border-[var(--color-border-light)] rounded-xl shadow-[var(--shadow-xl)] p-6 ${sizeClasses[size]} transition-all duration-300 ease-in-out`}
+      className={`modal ${sizeClasses[size]}`}
       onClick={handleOverlayClick}
       aria-labelledby={titleId}
       aria-describedby={ariaDescribedBy ? describedById : undefined}
       aria-label={ariaLabel}
       aria-modal="true"
     >
-      <div className="flex items-center justify-between mb-6">
-        <h2 id={titleId} className="text-xl font-semibold text-[var(--color-text)]">
+      <div className="modal-header">
+        <h2 id={titleId}>
           {title}
         </h2>
         {showCloseButton && (
           <button
             onClick={onClose}
-            className="text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:bg-[var(--color-background-tertiary)] rounded-lg p-1 transition-all duration-200"
+            className="btn-close"
             aria-label="Close modal"
           >
             <svg
@@ -123,7 +123,7 @@ export default function BaseModal({
           {ariaDescribedBy}
         </p>
       )}
-      <div className="mt-4">{children}</div>
+      <div className="modal-body">{children}</div>
     </dialog>
   );
 }
