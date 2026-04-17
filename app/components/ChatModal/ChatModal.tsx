@@ -3,11 +3,11 @@
 import { useState, useRef, useEffect } from 'react'
 import { CHAT_STORAGE_KEY } from '@/lib/constants'
 import type { KnowledgeQuery, KnowledgeResponse } from '@/types'
-import { MessageIcon } from '@/components/ui/icons/custom/MessageIcon'
-import { TrashIcon } from '@/components/ui/icons/custom/TrashIcon'
-import { Button } from '@/components/ui/Button/Button'
-import { Input } from '@/components/ui/Input/Input'
-import { Modal, ModalContent, ModalHeader, ModalTitle, ModalDescription, ModalFooter } from '@/components/ui/Modal/Modal'
+import { MessageIcon } from '@/app/components/ui/icons/custom/MessageIcon'
+import { TrashIcon } from '@/app/components/ui/icons/custom/TrashIcon'
+import { Button } from '@/app/components/ui/Button/Button'
+import { Input } from '@/app/components/ui/Input/Input'
+import { Modal, ModalContent, ModalHeader, ModalTitle, ModalDescription, ModalFooter } from '@/app/components/ui/Modal/Modal'
 
 interface ChatMessage {
   id: string

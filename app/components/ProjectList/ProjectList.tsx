@@ -5,7 +5,7 @@ import type { Project } from '@/types';
 import { Button } from '@/app/components/ui/Button/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/app/components/ui/Card/Card';
 import { Badge } from '@/app/components/ui/Badge/Badge';
-import DeleteConfirmation from '@/components/confirmation/DeleteConfirmation/DeleteConfirmation';
+import DeleteConfirmation from '@/app/components/confirmation/DeleteConfirmation/DeleteConfirmation';
 
 export default function ProjectList() {
   const [projects, setProjects] = useState<Project[]>([]);

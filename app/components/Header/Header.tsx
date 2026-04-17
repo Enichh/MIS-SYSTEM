@@ -2,7 +2,7 @@
 
 import ThemeToggle from '../ThemeToggle/ThemeToggle'
 import { HamburgerButton } from '../HamburgerButton/HamburgerButton'
-import { Icon } from '@/components/ui/icons/Icon'
+import { Icon } from '@/app/components/ui/icons/Icon'
 
 export default function Header() {
   return (
