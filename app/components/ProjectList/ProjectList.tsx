@@ -45,9 +45,9 @@ export default function ProjectList() {
     loadProjects();
   }, [loadProjects]);
 
-  const handleSearch = (query: SearchQuery) => {
+  const handleSearch = useCallback((query: SearchQuery) => {
     setSearchQuery(query.query);
-  };
+  }, []);
 
   const handleDeleteClick = (project: Project) => {
     setDeleteConfirmation({

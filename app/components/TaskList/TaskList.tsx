@@ -53,9 +53,9 @@ export default function TaskList() {
     loadData();
   }, [loadData]);
 
-  const handleSearch = (query: SearchQuery) => {
+  const handleSearch = useCallback((query: SearchQuery) => {
     setSearchQuery(query.query);
-  };
+  }, []);
 
   const projectMap = new Map(projects.map((p) => [p.id, p.name]));
 

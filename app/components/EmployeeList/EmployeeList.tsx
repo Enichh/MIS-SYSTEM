@@ -45,9 +45,9 @@ export default function EmployeeList() {
     loadEmployees();
   }, [loadEmployees]);
 
-  const handleSearch = (query: SearchQuery) => {
+  const handleSearch = useCallback((query: SearchQuery) => {
     setSearchQuery(query.query);
-  };
+  }, []);
 
   const handleDeleteClick = (employee: Employee) => {
     setDeleteConfirmation({
