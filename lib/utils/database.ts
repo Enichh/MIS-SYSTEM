@@ -77,6 +77,39 @@ export async function insertToDatabase<T = unknown>(
 }
 
 /**
+ * Updates a record in the specified database table
+ * @param tableName - The name of the table to update (must be in VALID_TABLES)
+ * @param id - The ID of the record to update
+ * @param data - The record data to update
+ * @returns The updated record
+ * @throws Error if table name is invalid or update fails
+ */
+export async function updateToDatabase<T = unknown>(
+  tableName: string,
+  id: string,
+  data: Record<string, unknown>
+): Promise<T> {
+  if (!VALID_TABLES.includes(tableName as any)) {
+    throw new Error(`Invalid table name: ${tableName}`);
+  }
+
+  const supabase = await createClient();
+  const { data: updatedData, error } = await supabase
+    .from(tableName)
+    .update(data)
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Database update error:', error);
+    throw new Error(`Failed to update ${tableName}: ${error.message}`);
+  }
+
+  return updatedData;
+}
+
+/**
  * Deletes a record from the specified database table
  * @param tableName - The name of the table to delete from (must be in VALID_TABLES)
  * @param id - The ID of the record to delete

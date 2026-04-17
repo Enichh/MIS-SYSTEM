@@ -1,0 +1,132 @@
+/* Streaming Chat Component Styles
+ * Extends existing chat.css with streaming-specific styles
+ */
+
+/* Streaming Chat Container */
+.streaming-chat {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: var(--color-background-secondary);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+/* Streaming Indicator */
+.chat-message-streaming {
+  position: relative;
+}
+
+.chat-message-streaming::after {
+  content: '';
+  display: inline-block;
+  width: 8px;
+  height: 16px;
+  background-color: var(--color-primary);
+  margin-left: 2px;
+  animation: blink 1s step-end infinite;
+}
+
+@keyframes blink {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0;
+  }
+}
+
+/* Chat Message Error */
+.chat-message-error {
+  background-color: var(--color-error);
+  color: var(--color-background);
+  padding: var(--spacing-md);
+  border-radius: 8px;
+  margin-bottom: var(--spacing-md);
+  animation: fadeIn var(--transition-base);
+}
+
+.chat-message-error p {
+  margin: 0 0 var(--spacing-sm) 0;
+}
+
+.chat-message-error button {
+  background-color: var(--color-background);
+  color: var(--color-error);
+  border: none;
+  padding: var(--spacing-xs) var(--spacing-sm);
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-medium);
+  transition: var(--transition-base);
+}
+
+.chat-message-error button:hover {
+  opacity: 0.9;
+}
+
+/* Chat Input Stop Button */
+.chat-input-stop {
+  padding: var(--spacing-md) var(--spacing-lg);
+  background-color: var(--color-error);
+  color: var(--color-background);
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-family);
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-semibold);
+  cursor: pointer;
+  transition: var(--transition-base);
+  white-space: nowrap;
+  min-height: 44px;
+  width: 100%;
+}
+
+.chat-input-stop:hover {
+  opacity: 0.9;
+  box-shadow: var(--shadow-md);
+}
+
+.chat-input-stop:focus {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.chat-input-stop:active {
+  transform: scale(0.98);
+}
+
+/* Auto-scroll indicator */
+.chat-auto-scroll-indicator {
+  position: absolute;
+  bottom: var(--spacing-lg);
+  right: var(--spacing-lg);
+  background-color: var(--color-primary);
+  color: var(--color-background);
+  border: none;
+  border-radius: 50%;
+  width: 2.5rem;
+  height: 2.5rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: var(--shadow-md);
+  transition: var(--transition-base);
+  z-index: 10;
+}
+
+.chat-auto-scroll-indicator:hover {
+  opacity: 0.9;
+  box-shadow: var(--shadow-lg);
+}
+
+.chat-auto-scroll-indicator:focus {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+.chat-auto-scroll-indicator.hidden {
+  display: none;
+}

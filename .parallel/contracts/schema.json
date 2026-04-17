@@ -1,75 +1,182 @@
 {
   "version": "1.0.0",
-  "feature": "AI Chat Drawer Integration",
+  "feature": "Streaming AI Responses and AI-Powered Quick Actions",
   "freeze_phase": "hot",
   "contracts": {
-    "frontend": {
+    "shared": {
       "exports": {
         "public": {
-          "types": [],
-          "functions": [],
-          "constants": []
+          "types": [
+            "QuickActionType",
+            "QuickActionConfig",
+            "StreamingChatMessage"
+          ],
+          "functions": [
+            "createQuickActionConfig",
+            "validateQuickActionPayload"
+          ],
+          "constants": [
+            "QUICK_ACTION_TYPES",
+            "STREAMING_CONFIG"
+          ]
         },
-        "internal": []
+        "internal": [
+          "parseQuickActionIntent",
+          "buildStreamingContext"
+        ]
       },
+      "schemas": {
+        "QuickActionConfig": {
+          "type": "object",
+          "properties": {
+            "type": { "type": "string", "enum": ["create_task", "assign_employee"] },
+            "label": { "type": "string" },
+            "payload": { "type": "object" }
+          },
+          "required": ["type", "label", "payload"]
+        }
+      }
+    },
+    "backend": {
+      "imports_from_shared": [
+        "QuickActionConfig",
+        "validateQuickActionPayload",
+        "QUICK_ACTION_TYPES"
+      ],
+      "exports": [
+        "streamingKnowledgeHandler",
+        "quickActionHandler"
+      ],
+      "allowed_internal_helpers": true,
+      "file_naming": {
+        "pattern": "app/api/{kebab-name}/route.ts",
+        "example": "app/api/knowledge/streaming/route.ts"
+      }
+    },
+    "frontend-chat": {
+      "imports_from_shared": [
+        "StreamingChatMessage",
+        "STREAMING_CONFIG"
+      ],
+      "exports": [
+        "StreamingChat"
+      ],
       "allowed_internal_helpers": true,
       "file_naming": {
         "pattern": "app/components/{PascalName}/{PascalName}.tsx",
-        "example": "app/components/DrawerChat/DrawerChat.tsx"
+        "example": "app/components/StreamingChat/StreamingChat.tsx"
+      }
+    },
+    "frontend-quickactions": {
+      "imports_from_shared": [
+        "QuickActionType",
+        "QuickActionConfig",
+        "createQuickActionConfig"
+      ],
+      "exports": [
+        "QuickActionsBar"
+      ],
+      "allowed_internal_helpers": true,
+      "file_naming": {
+        "pattern": "app/components/{PascalName}/{PascalName}.tsx",
+        "example": "app/components/QuickActionsBar/QuickActionsBar.tsx"
       }
     }
   },
   "boundaries": {
-    "component_integration": {
-      "navigation_context": "Add 'ai' to Section type in NavigationContext",
-      "drawer_component": "Integrate chat UI as drawer tab alongside employees/projects/tasks",
-      "chat_state": "Maintain isolated chat state using localStorage (existing pattern)",
-      "styling": "Use custom CSS classes from app/styles/ (no Tailwind)"
+    "shared_to_backend": {
+      "data_shape": "QuickActionConfig",
+      "serialization": "JSON",
+      "error_shape": { "code": "string", "message": "string" }
+    },
+    "shared_to_frontend-chat": {
+      "data_shape": "StreamingChatMessage",
+      "serialization": "JSON",
+      "error_shape": { "code": "string", "message": "string" }
+    },
+    "shared_to_frontend-quickactions": {
+      "data_shape": "QuickActionConfig[]",
+      "serialization": "JSON",
+      "error_shape": { "code": "string", "message": "string" }
+    },
+    "frontend-chat_to_backend": {
+      "endpoint": "POST /api/knowledge/streaming",
+      "request_shape": { "messages": "array", "context": "object" },
+      "response_shape": "stream"
+    },
+    "frontend-quickactions_to_backend": {
+      "endpoint": "POST /api/quick-action",
+      "request_shape": { "type": "string", "payload": "object" },
+      "response_shape": { "success": "boolean", "result": "object" }
     }
   },
   "dependency_graph": {
-    "frontend": {
+    "shared": {
       "depends_on": [],
+      "blocks": ["backend", "frontend-chat", "frontend-quickactions"]
+    },
+    "backend": {
+      "depends_on": ["shared"],
+      "blocks": ["frontend-chat", "frontend-quickactions"]
+    },
+    "frontend-chat": {
+      "depends_on": ["shared", "backend"],
+      "blocks": []
+    },
+    "frontend-quickactions": {
+      "depends_on": ["shared", "backend"],
       "blocks": []
     }
   },
   "best_practices": {
+    "vercel_ai_sdk": {
+      "streaming": "Use Vercel AI SDK's useChat hook with streaming enabled for real-time AI responses",
+      "transport": "Configure DefaultChatTransport with /api/knowledge/streaming endpoint",
+      "error_handling": "Implement proper error boundaries and loading states for streaming responses"
+    },
     "react_patterns": {
-      "state_management": "Use existing localStorage pattern for chat history persistence",
-      "component_isolation": "Chat component should maintain its own state independent of other sections",
-      "context_updates": "Update NavigationContext Section type to include 'ai' option",
-      "accessibility": "Maintain ARIA labels and keyboard navigation for new chat tab"
+      "state_management": "Use Vercel AI SDK's built-in state management for chat messages",
+      "component_isolation": "Quick Actions component should be independent and reusable",
+      "context_updates": "No context updates required - use existing NavigationContext",
+      "accessibility": "Maintain ARIA labels and keyboard navigation for quick action buttons"
     },
     "css_styling": {
       "custom_css": "Use app/styles/ for all styling (no Tailwind)",
-      "drawer_integration": "Reuse existing drawer CSS classes (drawer, drawer-open, drawer-backdrop)",
-      "chat_styling": "Reuse existing chat CSS classes from chat.css",
+      "chat_styling": "Reuse existing chat.css classes for message styling",
+      "quick_actions_styling": "Create new CSS module for QuickActionsBar component",
       "responsive": "Maintain mobile-first responsive design patterns"
     },
     "component_architecture": {
-      "single_responsibility": "Extract chat UI from ChatModal into reusable DrawerChat component",
-      "prop_drilling": "Use NavigationContext for active section state (no prop drilling)",
-      "code_reuse": "Reuse chat message rendering logic from ChatModal"
+      "single_responsibility": "StreamingChat handles streaming, QuickActionsBar handles quick actions",
+      "prop_drilling": "Use Vercel AI SDK's useChat hook for state (no prop drilling)",
+      "code_reuse": "Reuse existing chat message rendering logic from DrawerChat"
     }
   },
   "codebase_impact": {
     "files_to_modify": [
-      "lib/context/NavigationContext.tsx - Add 'ai' to Section type",
-      "app/components/Drawer/Drawer.tsx - Add AI chat tab integration",
-      "app/components/NavigationLinks/NavigationLinks.tsx - Add AI navigation link",
-      "app/page.tsx - Remove ChatModal component, add AI section rendering",
-      "app/components/ChatModal/ChatModal.tsx - Remove FAB button, refactor for drawer use"
+      "lib/hooks/useChat.ts - Replace with Vercel AI SDK's useChat hook or create new hook",
+      "app/components/DrawerChat/DrawerChat.tsx - Update to use streaming chat",
+      "app/components/ChatModal/ChatModal.tsx - Update to use streaming chat",
+      "package.json - Add @ai-sdk/react and ai dependencies"
     ],
     "files_to_create": [
-      "app/components/DrawerChat/DrawerChat.tsx - New isolated chat component for drawer",
-      "app/components/DrawerChat/DrawerChat.css - Styling for drawer-integrated chat"
+      "lib/types/ai.ts - AI-related type definitions",
+      "lib/utils/ai-config.ts - AI configuration and utilities",
+      "lib/utils/quick-actions.ts - Quick action utilities",
+      "app/api/knowledge/streaming/route.ts - Streaming knowledge API route",
+      "app/api/quick-action/route.ts - Quick action API endpoint",
+      "app/components/StreamingChat/StreamingChat.tsx - Streaming chat component",
+      "app/components/StreamingChat/StreamingChat.css - Streaming chat styling",
+      "app/components/QuickActionsBar/QuickActionsBar.tsx - Quick actions bar component",
+      "app/components/QuickActionsBar/QuickActionsBar.css - Quick actions bar styling"
     ],
     "css_best_practices": [
       "Use custom CSS classes from app/styles/ (no Tailwind)",
       "Reuse existing chat.css classes for message styling",
-      "Reuse drawer CSS classes for layout",
+      "Create new CSS module for QuickActionsBar with consistent naming",
       "Ensure mobile responsiveness with existing breakpoints",
-      "Maintain focus states for accessibility"
+      "Maintain focus states for accessibility",
+      "Add loading indicators for streaming states"
     ]
   }
 }

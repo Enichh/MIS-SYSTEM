@@ -1,4 +1,4 @@
-import { fetchFromDatabase, insertToDatabase, deleteFromDatabase } from '@/lib/utils/database'
+import { fetchFromDatabase, insertToDatabase, deleteFromDatabase, updateToDatabase } from '@/lib/utils/database'
 import type { Employee } from '@/types'
 
 export async function getEmployees(filters?: Record<string, unknown>): Promise<Employee[]> {
@@ -12,6 +12,16 @@ export async function getEmployees(filters?: Record<string, unknown>): Promise<E
  */
 export async function createEmployee(data: Omit<Employee, 'id' | 'created_at' | 'updated_at'>): Promise<Employee> {
   return insertToDatabase<Employee>('employees', data)
+}
+
+/**
+ * Updates an employee record by ID
+ * @param id - The ID of the employee to update
+ * @param data - The employee data to update
+ * @returns The updated employee record
+ */
+export async function updateEmployee(id: string, data: Partial<Omit<Employee, 'id' | 'created_at' | 'updated_at'>>): Promise<Employee> {
+  return updateToDatabase<Employee>('employees', id, data)
 }
 
 /**
