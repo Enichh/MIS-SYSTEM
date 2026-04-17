@@ -1,8 +1,6 @@
 'use client';
 
 import BaseModal from '@/components/modals/BaseModal/BaseModal';
-import { useConfirmation } from '@/lib/hooks/useConfirmation';
-import type { ConfirmationConfig } from '@/types';
 
 interface DeleteConfirmationProps {
   isOpen: boolean;
@@ -38,53 +36,44 @@ export default function DeleteConfirmation({
 }: DeleteConfirmationProps) {
   const styles = variantStyles[variant];
 
-  const config: ConfirmationConfig = {
-    isOpen,
-    onConfirm,
-    onCancel,
-    title: `Delete ${entityType}`,
-    message: `Are you sure you want to delete "${entityName}"? This action cannot be undone.`,
-    confirmText: 'Delete',
-    cancelText: 'Cancel',
-    variant,
-    ariaLabelledBy: `delete-${entityType.toLowerCase()}-title`,
-    ariaLabel: `Delete ${entityType} confirmation`,
-    ariaDescribedBy: `delete-${entityType.toLowerCase()}-description`,
-    initialFocus: '[aria-label="Cancel"]',
-  };
+  const title = `Delete ${entityType}`;
+  const message = `Are you sure you want to delete "${entityName}"? This action cannot be undone.`;
+  const ariaLabelledBy = `delete-${entityType.toLowerCase()}-title`;
+  const ariaLabel = `Delete ${entityType} confirmation`;
+  const ariaDescribedBy = `delete-${entityType.toLowerCase()}-description`;
 
   return (
     <BaseModal
-      isOpen={config.isOpen}
-      onClose={config.onCancel}
-      title={config.title}
+      isOpen={isOpen}
+      onClose={onCancel}
+      title={title}
       size="sm"
       showCloseButton={true}
       closeOnOverlayClick={true}
-      ariaLabelledBy={config.ariaLabelledBy}
-      ariaLabel={config.ariaLabel}
-      ariaDescribedBy={config.ariaDescribedBy}
-      initialFocus={config.initialFocus}
+      ariaLabelledBy={ariaLabelledBy}
+      ariaLabel={ariaLabel}
+      ariaDescribedBy={ariaDescribedBy}
+      initialFocus='[aria-label="Cancel"]'
       returnFocus={true}
     >
       <div className="space-y-4">
-        <p id={config.ariaDescribedBy} className="text-gray-700">
-          {config.message}
+        <p id={ariaDescribedBy} className="text-gray-700">
+          {message}
         </p>
         <div className="flex justify-end gap-3 mt-6">
           <button
-            onClick={config.onCancel}
+            onClick={onCancel}
             className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
             aria-label="Cancel"
           >
-            {config.cancelText}
+            Cancel
           </button>
           <button
-            onClick={config.onConfirm}
+            onClick={onConfirm}
             className={`px-4 py-2 rounded-md transition-colors ${styles.confirm}`}
             aria-label={`Delete ${entityName}`}
           >
-            {config.confirmText}
+            Delete
           </button>
         </div>
       </div>
