@@ -1,209 +1,217 @@
 {
   "version": "1.0.0",
-  "feature": "UI Architecture Migration",
+  "feature": "Next.js Migration - Backend First",
   "freeze_phase": "hot",
-  "target_structure": {
-    "src/": {
-      "app/": "App-wide setup (app.js, router.js, providers.js, global-styles.js)",
-      "features/": {
-        "employees/": "Employee feature (components/, services/, types/, index.js)",
-        "projects/": "Project feature (components/, services/, types/, index.js)",
-        "tasks/": "Task feature (components/, services/, types/, index.js)",
-        "chat/": "Chat feature (components/, services/, types/, index.js)"
-      },
-      "shared/": {
-        "components/": "Design system atoms/molecules (button/, card/, modal/, form/, index.js)",
-        "services/": "Global reusable logic (apiClient.js, database.js, validators.js, index.js)",
-        "utils/": "Pure helper functions (models.js, types.js, chatStateManager.js, index.js)",
-        "constants.js": "Global constants"
-      }
-    }
-  },
   "contracts": {
-    "shared-foundation": {
+    "shared": {
       "exports": {
         "public": {
-          "types": ["EmployeeDTO", "ProjectDTO", "TaskDTO"],
+          "types": [
+            "Employee",
+            "Project",
+            "Task",
+            "ApiResponse",
+            "KnowledgeQuery",
+            "KnowledgeResponse"
+          ],
           "functions": [
-            "generateId",
+            "fetchFromDatabase",
             "validateEmployee",
             "validateProject",
-            "validateTask",
-            "openDatabase",
-            "createEmployee",
-            "getEmployee",
-            "updateEmployee",
-            "deleteEmployee",
-            "getAllEmployees",
-            "createProject",
-            "getProject",
-            "updateProject",
-            "deleteProject",
-            "getAllProjects",
-            "createTask",
-            "getTask",
-            "updateTask",
-            "deleteTask",
-            "getAllTasks",
-            "assignEmployeeToProject",
-            "assignEmployeeToTask",
-            "removeEmployeeFromProject",
-            "removeEmployeeFromTask",
-            "initializeApiClient",
-            "queryKnowledge",
-            "ChatStateManager",
-            "initializeChatState",
-            "WORK_TYPE_ONSITE",
-            "WORK_TYPE_WFH"
+            "validateTask"
           ],
-          "constants": ["DB_NAME", "DB_VERSION", "STORE_EMPLOYEES", "STORE_PROJECTS", "STORE_TASKS"]
+          "constants": [
+            "API_BASE_URL",
+            "KNOWLEDGE_ENDPOINTS",
+            "CHAT_STORAGE_KEY"
+          ]
         },
-        "internal": []
+        "internal": [
+          "sanitizeQuery",
+          "formatKnowledgeResponse",
+          "detectQueryIntent",
+          "buildKnowledgeContext"
+        ]
       },
       "schemas": {
-        "EmployeeDTO": {
+        "Employee": {
           "type": "object",
           "properties": {
-            "id": { "type": "string" },
+            "id": { "type": "string", "pattern": "^emp-[0-9]{3}$" },
             "name": { "type": "string" },
             "email": { "type": "string", "format": "email" },
-            "workType": { "type": "string", "enum": ["onsite", "wfh"] },
-            "assignedProjects": { "type": "array", "items": { "type": "string" } },
-            "assignedTasks": { "type": "array", "items": { "type": "string" } },
-            "createdAt": { "type": "number" },
-            "updatedAt": { "type": "number" }
+            "role": { "type": "string" },
+            "department": { "type": "string" },
+            "projects": { "type": "array", "items": { "type": "string" } }
           },
-          "required": ["id", "name", "email", "workType"]
+          "required": ["id", "name", "email", "role", "department"]
         },
-        "ProjectDTO": {
+        "Project": {
           "type": "object",
           "properties": {
-            "id": { "type": "string" },
+            "id": { "type": "string", "pattern": "^proj-[0-9]{3}$" },
             "name": { "type": "string" },
             "description": { "type": "string" },
-            "status": { "type": "string", "enum": ["active", "completed", "archived"] },
-            "assignedEmployees": { "type": "array", "items": { "type": "string" } },
-            "tasks": { "type": "array", "items": { "type": "string" } },
-            "createdAt": { "type": "number" },
-            "updatedAt": { "type": "number" }
+            "status": { "type": "string", "enum": ["active", "completed", "on_hold"] },
+            "startDate": { "type": "string", "format": "date" },
+            "endDate": { "type": "string", "format": "date" }
           },
           "required": ["id", "name", "status"]
         },
-        "TaskDTO": {
+        "Task": {
           "type": "object",
           "properties": {
-            "id": { "type": "string" },
-            "projectId": { "type": "string" },
+            "id": { "type": "string", "pattern": "^task-[0-9]{3}$" },
             "title": { "type": "string" },
             "description": { "type": "string" },
-            "status": { "type": "string", "enum": ["pending", "in-progress", "completed"] },
-            "assignedEmployees": { "type": "array", "items": { "type": "string" } },
-            "createdAt": { "type": "number" },
-            "updatedAt": { "type": "number" }
+            "status": { "type": "string", "enum": ["completed", "in_progress", "pending"] },
+            "projectId": { "type": "string" },
+            "assignedTo": { "type": "string" },
+            "dueDate": { "type": "string", "format": "date" }
           },
-          "required": ["id", "projectId", "title", "status"]
+          "required": ["id", "title", "status", "projectId"]
+        },
+        "ApiResponse": {
+          "type": "object",
+          "properties": {
+            "code": { "type": "string" },
+            "message": { "type": "string" }
+          }
+        },
+        "KnowledgeQuery": {
+          "type": "object",
+          "properties": {
+            "query": { "type": "string" },
+            "context": {
+              "type": "object",
+              "properties": {
+                "employeeId": { "type": "string" },
+                "projectId": { "type": "string" },
+                "taskId": { "type": "string" }
+              }
+            }
+          },
+          "required": ["query"]
+        },
+        "KnowledgeResponse": {
+          "type": "object",
+          "properties": {
+            "answer": { "type": "string" },
+            "sources": { "type": "array", "items": { "type": "string" } },
+            "confidence": { "type": "number" },
+            "relatedEntities": { "type": "object" }
+          },
+          "required": ["answer"]
         }
       }
     },
-    "employees-projects": {
+    "backend": {
       "imports_from_shared": [
-        "EmployeeDTO",
-        "ProjectDTO",
-        "generateId",
-        "validateEmployee",
-        "validateProject",
-        "openDatabase",
-        "createEmployee",
-        "getEmployee",
-        "updateEmployee",
-        "deleteEmployee",
-        "getAllEmployees",
-        "createProject",
-        "getProject",
-        "updateProject",
-        "deleteProject",
-        "getAllProjects",
-        "assignEmployeeToProject",
-        "removeEmployeeFromProject",
-        "WORK_TYPE_ONSITE",
-        "WORK_TYPE_WFH"
+        "Employee",
+        "Project",
+        "Task",
+        "ApiResponse",
+        "KnowledgeQuery",
+        "KnowledgeResponse",
+        "fetchFromDatabase",
+        "detectQueryIntent",
+        "buildKnowledgeContext"
       ],
-      "exports": ["renderEmployees", "renderProjects"],
+      "exports": [
+        "GET /api/employees",
+        "GET /api/projects",
+        "GET /api/tasks",
+        "POST /api/knowledge/query"
+      ],
       "allowed_internal_helpers": true,
       "file_naming": {
-        "pattern": "src/features/{feature-name}/components/{ComponentName}.js",
-        "example": "src/features/employees/components/employeeCard.js"
+        "pattern": "app/api/{route-name}/route.ts",
+        "example": "app/api/employees/route.ts"
+      },
+      "nextjs_best_practices": {
+        "use_app_router": true,
+        "use_next_request_response": true,
+        "export_http_methods": ["GET", "POST"],
+        "default_dynamic_caching": true,
+        "use_typescript": true,
+        "input_validation": "zod",
+        "cors_configuration": "middleware"
       }
     },
-    "tasks-chat": {
+    "frontend": {
       "imports_from_shared": [
-        "TaskDTO",
-        "generateId",
-        "validateTask",
-        "openDatabase",
-        "createTask",
-        "getTask",
-        "updateTask",
-        "deleteTask",
-        "getAllTasks",
-        "assignEmployeeToTask",
-        "removeEmployeeFromTask",
-        "initializeApiClient",
-        "queryKnowledge",
-        "ChatStateManager",
-        "initializeChatState"
+        "Employee",
+        "Project",
+        "Task",
+        "ApiResponse",
+        "KnowledgeQuery",
+        "KnowledgeResponse",
+        "API_BASE_URL",
+        "KNOWLEDGE_ENDPOINTS",
+        "CHAT_STORAGE_KEY"
       ],
-      "exports": ["renderTasks", "chatInput", "messageList"],
+      "exports": [
+        "EmployeeList",
+        "ProjectList",
+        "TaskList",
+        "ChatModal",
+        "ThemeToggle"
+      ],
       "allowed_internal_helpers": true,
       "file_naming": {
-        "pattern": "src/features/{feature-name}/components/{ComponentName}.js",
-        "example": "src/features/tasks/components/taskCard.js"
-      }
-    },
-    "entry-point": {
-      "imports_from_employees_projects": ["renderEmployees", "renderProjects"],
-      "imports_from_tasks_chat": ["renderTasks", "chatInput", "messageList"],
-      "imports_from_shared": [
-        "ChatStateManager",
-        "initializeChatState",
-        "initializeApiClient",
-        "ThemeToggle",
-        "initializeThemeManager"
-      ],
-      "exports": [],
-      "allowed_internal_helpers": true,
-      "file_naming": {
-        "pattern": "src/app/app.js",
-        "example": "src/app/app.js"
+        "pattern": "app/components/{PascalName}/{PascalName}.tsx",
+        "example": "app/components/EmployeeList/EmployeeList.tsx"
+      },
+      "nextjs_best_practices": {
+        "use_app_router": true,
+        "use_server_components": true,
+        "use_typescript": true,
+        "incremental_migration": true,
+        "maintain_api_compatibility": true
       }
     }
   },
   "boundaries": {
-    "shared_to_employees_projects": {
-      "data_shape": "EmployeeDTO[] | ProjectDTO[]",
+    "shared_to_backend": {
+      "data_shape": "Employee[] | Project[] | Task[]",
       "serialization": "JSON",
       "error_shape": { "code": "string", "message": "string" }
     },
-    "shared_to_tasks_chat": {
-      "data_shape": "TaskDTO[]",
+    "shared_to_frontend": {
+      "data_shape": "Employee[] | Project[] | Task[] | KnowledgeResponse",
       "serialization": "JSON",
       "error_shape": { "code": "string", "message": "string" }
     },
-    "employees_projects_to_entry": {
-      "data_shape": "renderEmployees() | renderProjects()",
-      "serialization": "function",
-      "error_shape": { "code": "string", "message": "string" }
-    },
-    "tasks_chat_to_entry": {
-      "data_shape": "renderTasks() | chatInput() | messageList()",
-      "serialization": "function",
-      "error_shape": { "code": "string", "message": "string" }
+    "frontend_to_backend": {
+      "endpoints": [
+        "GET /api/employees",
+        "GET /api/projects",
+        "GET /api/tasks",
+        "POST /api/knowledge/query"
+      ],
+      "request_shape": {
+        "query": "string",
+        "context": "object"
+      },
+      "response_shape": {
+        "data": "array | object",
+        "code": "string",
+        "message": "string"
+      }
     }
   },
   "dependency_graph": {
-    "shared-foundation": { "depends_on": [], "blocks": ["employees-projects", "tasks-chat", "entry-point"] },
-    "employees-projects": { "depends_on": ["shared-foundation"], "blocks": ["entry-point"] },
-    "tasks-chat": { "depends_on": ["shared-foundation"], "blocks": ["entry-point"] },
-    "entry-point": { "depends_on": ["shared-foundation", "employees-projects", "tasks-chat"], "blocks": [] }
+    "shared": {
+      "depends_on": [],
+      "blocks": ["backend", "frontend"]
+    },
+    "backend": {
+      "depends_on": ["shared"],
+      "blocks": ["frontend"]
+    },
+    "frontend": {
+      "depends_on": ["shared", "backend"],
+      "blocks": []
+    }
   }
 }

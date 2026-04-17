@@ -1,7 +1,6 @@
 # Node modules
 node_modules/
 
-
 # IDE
 .vscode/
 .idea/
@@ -11,6 +10,16 @@ node_modules/
 # OS
 .DS_Store
 Thumbs.db
+
+# Next.js
+.next/
+
+# Environment variables
+.env*.local
+.env
+
+# TypeScript
+tsconfig.tsbuildinfo
 
 # Parallel workstream backups
 .parallel.*/
@@ -23,6 +32,3 @@ yarn-error.log*
 
 # Netlify
 .netlify/
-
-# Markdown files
-*.md
