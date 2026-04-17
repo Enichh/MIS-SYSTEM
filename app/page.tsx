@@ -14,8 +14,8 @@ export default function HomePage() {
       <Header />
       <Navigation />
 
-      <main>
-        <section id="employees-section" className="section active">
+      <main className="main-content">
+        <section id="employees-section" className="section section-active">
           <div className="section-header">
             <h2>Employees</h2>
             <EmployeeForm />

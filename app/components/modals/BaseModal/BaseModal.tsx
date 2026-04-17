@@ -1,7 +1,6 @@
 'use client';
 
 import { ModalConfig, ModalSize } from '@/types';
-import { getIcon, IconName } from '@/lib/utils/icon-utils';
 import { Modal, ModalContent, ModalHeader, ModalTitle, ModalDescription } from '../../ui/Modal/Modal';
 
 interface BaseModalProps extends ModalConfig {
@@ -9,10 +8,10 @@ interface BaseModalProps extends ModalConfig {
 }
 
 const sizeClasses: Record<ModalSize, string> = {
-  sm: 'max-w-sm',
-  md: 'max-w-md',
-  lg: 'max-w-lg',
-  xl: 'max-w-xl',
+  sm: 'max-w-xs',
+  md: 'max-w-sm',
+  lg: 'max-w-md',
+  xl: 'max-w-lg',
 };
 
 export default function BaseModal({
@@ -38,15 +37,10 @@ export default function BaseModal({
 
   return (
     <Modal open={isOpen} onOpenChange={handleOpenChange}>
-      <ModalContent className={sizeClasses[size]}>
+      <ModalContent className={sizeClasses[size]} aria-describedby={ariaDescribedBy ? describedById : undefined}>
         <ModalHeader>
           <ModalTitle id={titleId}>{title}</ModalTitle>
         </ModalHeader>
-        {ariaDescribedBy && (
-          <ModalDescription id={describedById}>
-            {ariaDescribedBy}
-          </ModalDescription>
-        )}
         {children}
       </ModalContent>
     </Modal>

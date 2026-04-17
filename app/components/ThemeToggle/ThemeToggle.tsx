@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from 'react'
 import { THEME_STORAGE_KEY } from '@/lib/constants'
-import { getIcon, IconName, ICON_SIZES } from '@/lib/utils/icon-utils'
+import { Icon } from '@/components/ui/icons/Icon'
 import { Button } from '@/components/ui/Button/Button'
 
 export default function ThemeToggle() {
@@ -21,17 +21,16 @@ export default function ThemeToggle() {
     const initialTheme = (savedTheme === 'light' || savedTheme === 'dark') ? savedTheme : systemTheme
     setTheme(initialTheme)
     document.documentElement.setAttribute('data-theme', initialTheme)
+    document.documentElement.classList.toggle('dark', initialTheme === 'dark')
   }, [mounted])
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light'
     setTheme(newTheme)
     document.documentElement.setAttribute('data-theme', newTheme)
+    document.documentElement.classList.toggle('dark', newTheme === 'dark')
     localStorage.setItem(THEME_STORAGE_KEY, newTheme)
   }
-
-  const LightIcon = getIcon('check' as IconName)
-  const DarkIcon = getIcon('x' as IconName)
 
   if (!mounted) {
     return (
@@ -41,7 +40,7 @@ export default function ThemeToggle() {
         aria-label="Toggle theme"
         disabled
       >
-        <LightIcon size={ICON_SIZES[1]} />
+        <Icon name="check" size={20} />
       </Button>
     )
   }
@@ -53,7 +52,7 @@ export default function ThemeToggle() {
       onClick={toggleTheme}
       aria-label="Toggle theme"
     >
-      {theme === 'light' ? <LightIcon size={ICON_SIZES[1]} /> : <DarkIcon size={ICON_SIZES[1]} />}
+      {theme === 'light' ? <Icon name="check" size={20} /> : <Icon name="x" size={20} />}
     </Button>
   )
 }

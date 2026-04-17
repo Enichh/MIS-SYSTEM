@@ -10,6 +10,7 @@ import {
   X,
   Check,
   Bell,
+  MessageSquare,
   Search,
   Filter,
   ChevronDown,
@@ -29,6 +30,7 @@ export type IconName =
   | 'x'
   | 'check'
   | 'bell'
+  | 'message'
   | 'search'
   | 'filter'
   | 'chevron-down'
@@ -57,6 +59,7 @@ const iconMap: Record<IconName, LucideIcon> = {
   x: X,
   check: Check,
   bell: Bell,
+  message: MessageSquare,
   search: Search,
   filter: Filter,
   'chevron-down': ChevronDown,

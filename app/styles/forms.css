@@ -1,0 +1,428 @@
+/* Form Components Module
+ * Form fields, labels, inputs, textareas, selects, and dropdown components
+ */
+
+/* Form Field */
+.form-field {
+  margin-bottom: var(--spacing-sm);
+  position: relative;
+}
+
+/* Form Label */
+.form-label {
+  display: block;
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+  margin-bottom: var(--spacing-xs);
+  letter-spacing: 0.025em;
+}
+
+.form-label .required {
+  color: var(--color-error);
+  margin-left: 0.25rem;
+  font-weight: 700;
+}
+
+/* Form Input, Textarea, and Select - Base Styles */
+.form-input,
+.form-textarea,
+.form-select {
+  width: 100%;
+  padding: var(--spacing-md);
+  border: 2px solid var(--color-border);
+  border-radius: 8px;
+  background-color: var(--color-background-secondary);
+  color: var(--color-text);
+  font-family: var(--font-family);
+  font-size: var(--text-base);
+  transition: all var(--transition-base);
+  box-shadow: var(--shadow-sm);
+  min-height: 44px;
+}
+
+.form-input:hover,
+.form-textarea:hover,
+.form-select:hover {
+  border-color: var(--color-primary);
+  background-color: var(--color-background);
+  box-shadow: var(--shadow-md);
+  transform: translateY(-1px);
+}
+
+.form-input:focus,
+.form-textarea:focus,
+.form-select:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow:
+    0 0 0 3px hsl(var(--ring) / 0.2),
+    var(--shadow-md);
+  background-color: var(--color-background);
+  transform: translateY(-1px);
+}
+
+.form-input.error,
+.form-textarea.error,
+.form-select.error {
+  border-color: var(--color-error);
+  background-color: hsl(25 60% 55% / 0.05);
+}
+
+.form-input.error:focus,
+.form-textarea.error:focus,
+.form-select.error:focus {
+  box-shadow: 0 0 0 4px hsl(25 60% 55% / 0.2);
+}
+
+/* Form Textarea Specific */
+.form-textarea {
+  resize: vertical;
+  min-height: 4rem;
+  line-height: 1.6;
+}
+
+/* Form Select Specific */
+.form-select {
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23666'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 1rem center;
+  background-size: 1.25rem;
+  padding-right: 3rem;
+  cursor: pointer;
+}
+
+/* Form Error Message */
+.form-error {
+  margin-top: 0.5rem;
+  font-size: 0.8125rem;
+  color: var(--color-error);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.375rem;
+  animation: slideDown 0.2s ease;
+}
+
+.form-error::before {
+  content: "⚠";
+  font-size: 0.875rem;
+}
+
+/* Form Actions */
+.form-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 2rem;
+  padding-top: 1.75rem;
+  border-top: 2px solid var(--color-border-light);
+}
+
+/* Searchable Dropdown */
+.searchable-dropdown {
+  position: relative;
+}
+
+/* Dropdown List */
+.dropdown-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: var(--color-background);
+  border: 2px solid var(--color-border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 10;
+  margin-top: 4px;
+  list-style: none;
+  padding: 0.5rem 0;
+  animation: fadeIn 0.2s ease;
+}
+
+/* Dropdown Item */
+.dropdown-item {
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.dropdown-item:hover {
+  background-color: var(--color-background-secondary);
+  border-color: var(--color-primary);
+}
+
+/* No Results */
+.no-results {
+  padding: 1rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+  text-align: center;
+}
+
+/* Dark Mode Overrides for Form Components */
+[data-theme="dark"] .form-input,
+[data-theme="dark"] .form-textarea,
+[data-theme="dark"] .form-select {
+  background-color: var(--color-background-tertiary);
+  border-color: var(--color-border);
+  color: var(--color-text);
+}
+
+[data-theme="dark"] .form-input:hover,
+[data-theme="dark"] .form-textarea:hover,
+[data-theme="dark"] .form-select:hover {
+  background-color: var(--color-background-secondary);
+  border-color: var(--color-primary);
+  color: var(--color-text);
+}
+
+[data-theme="dark"] .form-input:focus,
+[data-theme="dark"] .form-textarea:focus,
+[data-theme="dark"] .form-select:focus {
+  background-color: var(--color-background-secondary);
+  border-color: var(--color-primary);
+  color: var(--color-text);
+}
+
+[data-theme="dark"] .form-select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23aaa'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
+}
+
+[data-theme="dark"] .form-label {
+  color: var(--color-text);
+}
+
+[data-theme="dark"] .form-error {
+  color: var(--color-error);
+}
+
+[data-theme="dark"] .dropdown-list {
+  background-color: var(--color-background-tertiary);
+  border-color: var(--color-border);
+}
+
+[data-theme="dark"] .dropdown-item:hover {
+  background-color: var(--color-background-secondary);
+}
+
+/* Semantic Input Component Classes */
+.input {
+  display: flex;
+  width: 100%;
+  border-radius: 0.5rem;
+  border: 2px solid hsl(var(--input));
+  background-color: hsl(var(--background));
+  padding: 0.75rem;
+  font-size: 1rem;
+  color: hsl(var(--foreground));
+  box-shadow: var(--shadow-sm);
+  transition: all var(--transition-base);
+}
+
+.input:hover {
+  border-color: hsl(var(--primary) / 0.5);
+}
+
+.input:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px hsl(var(--ring)),
+    0 0 0 4px hsl(var(--background));
+  border-color: hsl(var(--ring));
+}
+
+.input:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.input::file-selector-button {
+  border: 0;
+  background: transparent;
+  font-size: 0.875rem;
+  font-weight: var(--font-weight-medium);
+  color: hsl(var(--foreground));
+}
+
+.input::placeholder {
+  color: hsl(var(--muted-foreground));
+}
+
+/* Input Sizes */
+.input-sm {
+  height: 2.25rem;
+  padding: 0 0.75rem;
+  font-size: 0.875rem;
+}
+
+.input-md {
+  height: 2.75rem;
+  padding: 0 0.75rem;
+  font-size: 1rem;
+}
+
+.input-lg {
+  height: 3rem;
+  padding: 0 1rem;
+  font-size: 1.125rem;
+}
+
+/* Input States */
+.input-error {
+  border-color: hsl(var(--destructive));
+}
+
+.input-error:focus-visible {
+  box-shadow:
+    0 0 0 2px hsl(var(--destructive)),
+    0 0 0 4px hsl(var(--background));
+}
+
+/* Semantic Select Component Classes (Radix Select) */
+.select-trigger {
+  display: flex;
+  height: 2.25rem;
+  width: 100%;
+  align-items: center;
+  justify-content: space-between;
+  white-space: nowrap;
+  border-radius: 0.375rem;
+  border: 2px solid hsl(var(--input));
+  background-color: transparent;
+  padding: 0 0.75rem;
+  font-size: 0.875rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.select-trigger:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px hsl(var(--ring)),
+    0 0 0 4px hsl(var(--background));
+}
+
+.select-trigger:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.select-trigger[data-placeholder] {
+  color: hsl(var(--muted-foreground));
+}
+
+.select-content {
+  position: relative;
+  z-index: 50;
+  max-height: var(--radix-select-content-available-height);
+  min-width: 8rem;
+  overflow-y: auto;
+  overflow-x: hidden;
+  border-radius: 0.375rem;
+  border: 2px solid hsl(var(--border));
+  background-color: hsl(var(--popover));
+  color: hsl(var(--popover-foreground));
+  box-shadow: var(--shadow-md);
+}
+
+.select-viewport {
+  padding: 0.25rem;
+}
+
+.select-label {
+  padding: 0.375rem 0.5rem;
+  font-size: 0.875rem;
+  font-weight: var(--font-weight-semibold);
+}
+
+.select-item {
+  position: relative;
+  display: flex;
+  width: 100%;
+  cursor: default;
+  user-select: none;
+  align-items: center;
+  border-radius: 0.125rem;
+  padding: 0.375rem 0.5rem;
+  padding-right: 2rem;
+  font-size: 0.875rem;
+  outline: none;
+}
+
+.select-item:focus {
+  background-color: hsl(var(--accent));
+  color: hsl(var(--accent-foreground));
+}
+
+.select-item[data-disabled] {
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+.select-item-indicator {
+  position: absolute;
+  right: 0.5rem;
+  display: flex;
+  height: 0.875rem;
+  width: 0.875rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.select-separator {
+  margin: -0.25rem 0;
+  height: 1px;
+  background-color: hsl(var(--muted));
+}
+
+.select-scroll-button {
+  display: flex;
+  cursor: default;
+  align-items: center;
+  justify-content: center;
+  padding: 0.25rem;
+}
+
+/* Semantic Textarea Component Classes */
+.textarea {
+  display: flex;
+  min-height: 3.75rem;
+  width: 100%;
+  border-radius: 0.375rem;
+  border: 2px solid hsl(var(--input));
+  background-color: transparent;
+  padding: 0.5rem 0.75rem;
+  font-size: 1rem;
+  box-shadow: var(--shadow-sm);
+}
+
+.textarea::placeholder {
+  color: hsl(var(--muted-foreground));
+}
+
+.textarea:focus-visible {
+  outline: none;
+  box-shadow:
+    0 0 0 2px hsl(var(--ring)),
+    0 0 0 4px hsl(var(--background));
+}
+
+.textarea:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+@media (min-width: 768px) {
+  .textarea {
+    font-size: 0.875rem;
+  }
+}

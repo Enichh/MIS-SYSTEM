@@ -109,22 +109,23 @@ export default function EmployeeList() {
     <>
       <div className="grid gap-4">
         {employees.map((employee) => (
-          <Card key={employee.id}>
+          <Card key={employee.id} className="employee-card">
             <CardHeader>
-              <div className="flex justify-between items-start">
-                <div className="flex-1">
-                  <CardTitle>{employee.name}</CardTitle>
-                  <CardDescription>{employee.email}</CardDescription>
+              <div className="employee-header">
+                <div className="employee-avatar">
+                  {employee.name.charAt(0).toUpperCase()}
                 </div>
-                <Badge variant="secondary">{employee.role}</Badge>
+                <div className="employee-info">
+                  <CardTitle className="employee-name">{employee.name}</CardTitle>
+                  <CardDescription className="employee-email">{employee.email}</CardDescription>
+                </div>
+                <Badge className="employee-role-badge">{employee.role}</Badge>
               </div>
             </CardHeader>
             <CardContent>
-              <p className="text-sm">
-                <span className="font-medium">Department:</span> {employee.department}
-              </p>
+              <p className="employee-department">{employee.department}</p>
             </CardContent>
-            <CardFooter className="justify-end gap-2">
+            <CardFooter className="employee-card-actions">
               <Button
                 variant="secondary"
                 icon="edit"
