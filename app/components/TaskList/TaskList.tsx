@@ -1,5 +1,6 @@
 import type { Task, Project } from '@/types'
-import { getTasks, getProjects } from '@/lib/utils/api'
+import { getTasks } from '@/lib/services/taskService'
+import { getProjects } from '@/lib/services/projectService'
 
 export default async function TaskList() {
   try {

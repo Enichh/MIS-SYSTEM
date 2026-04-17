@@ -1,5 +1,5 @@
 import type { Project } from '@/types'
-import { getProjects } from '@/lib/utils/api'
+import { getProjects } from '@/lib/services/projectService'
 
 export default async function ProjectList() {
   try {

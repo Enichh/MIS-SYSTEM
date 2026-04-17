@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { fetchFromDatabase } from '@/lib/utils/database';
+import { getTasks } from '@/lib/services/taskService';
 import type { Task, ApiResponse } from '@/types';
 
 // Zod schema for query parameter validation
@@ -23,7 +23,7 @@ export async function GET(request: NextRequest) {
     const validatedParams = TaskQuerySchema.parse(queryParams);
 
     // Fetch tasks from database with filters
-    const tasks = await fetchFromDatabase('tasks', validatedParams) as Task[];
+    const tasks = await getTasks(validatedParams);
 
     return NextResponse.json(tasks, {
       status: 200,

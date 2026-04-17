@@ -1,5 +1,5 @@
 import type { Employee } from '@/types'
-import { getEmployees } from '@/lib/utils/api'
+import { getEmployees } from '@/lib/services/employeeService'
 
 export default async function EmployeeList() {
   try {

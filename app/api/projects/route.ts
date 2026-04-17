@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { fetchFromDatabase } from '@/lib/utils/database';
+import { getProjects } from '@/lib/services/projectService';
 import type { Project, ApiResponse } from '@/types';
 
 // Zod schema for query parameter validation
@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     const validatedParams = ProjectQuerySchema.parse(queryParams);
 
     // Fetch projects from database with filters
-    const projects = await fetchFromDatabase('projects', validatedParams) as Project[];
+    const projects = await getProjects(validatedParams);
 
     return NextResponse.json(projects, {
       status: 200,

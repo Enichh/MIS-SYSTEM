@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { fetchFromDatabase } from '@/lib/utils/database';
+import { getEmployees } from '@/lib/services/employeeService';
 import type { Employee, ApiResponse } from '@/types';
 
 // Zod schema for query parameter validation
@@ -21,7 +21,7 @@ export async function GET(request: NextRequest) {
     const validatedParams = EmployeeQuerySchema.parse(queryParams);
 
     // Fetch employees from database with filters
-    const employees = await fetchFromDatabase('employees', validatedParams) as Employee[];
+    const employees = await getEmployees(validatedParams);
 
     return NextResponse.json(employees, {
       status: 200,
