@@ -1,0 +1,216 @@
+/* SearchResults Component Styles */
+
+.search-results {
+  width: 100%;
+  max-width: 600px;
+  margin-top: var(--spacing-md);
+  background-color: var(--color-background);
+  border: 2px solid var(--color-border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+  animation: slideDown 0.3s ease;
+}
+
+.search-results__header {
+  padding: var(--spacing-sm) var(--spacing-md);
+  background-color: var(--color-background-secondary);
+  border-bottom: 2px solid var(--color-border-light);
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text-secondary);
+}
+
+.search-results__list {
+  display: flex;
+  flex-direction: column;
+  max-height: 400px;
+  overflow-y: auto;
+  padding: var(--spacing-sm);
+  gap: var(--spacing-xs);
+}
+
+.search-results__item {
+  padding: var(--spacing-md);
+  border-radius: 8px;
+  background-color: var(--color-background-secondary);
+  border: 2px solid var(--color-border);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  animation: fadeIn 0.3s ease forwards;
+  opacity: 0;
+}
+
+.search-results__item:nth-child(1) {
+  animation-delay: 0ms;
+}
+
+.search-results__item:nth-child(2) {
+  animation-delay: 50ms;
+}
+
+.search-results__item:nth-child(3) {
+  animation-delay: 100ms;
+}
+
+.search-results__item:nth-child(4) {
+  animation-delay: 150ms;
+}
+
+.search-results__item:nth-child(5) {
+  animation-delay: 200ms;
+}
+
+.search-results__item:nth-child(n+6) {
+  animation-delay: 250ms;
+}
+
+.search-results__item:hover {
+  border-color: var(--color-primary);
+  background-color: var(--color-background);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.search-results__item:focus {
+  outline: none;
+  border-color: var(--color-primary);
+  box-shadow: var(--focus-ring);
+  transform: translateY(-2px);
+}
+
+.search-results__item-name {
+  font-size: var(--text-base);
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+  margin-bottom: var(--spacing-xs);
+}
+
+.search-results__item-subtitle {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+  line-height: var(--line-height-body);
+}
+
+.search-results__loading {
+  padding: var(--spacing-xl);
+  text-align: center;
+  font-size: var(--text-base);
+  color: var(--color-text-muted);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+.search-results__empty {
+  padding: var(--spacing-xl);
+  text-align: center;
+  font-size: var(--text-base);
+  color: var(--color-text-muted);
+  font-style: italic;
+}
+
+/* Dark mode overrides */
+[data-theme='dark'] .search-results {
+  background-color: var(--color-background-tertiary);
+  border-color: var(--color-border);
+}
+
+[data-theme='dark'] .search-results__header {
+  background-color: var(--color-background-secondary);
+  border-bottom-color: var(--color-border);
+  color: var(--color-text-secondary);
+}
+
+[data-theme='dark'] .search-results__item {
+  background-color: var(--color-background-secondary);
+  border-color: var(--color-border);
+}
+
+[data-theme='dark'] .search-results__item:hover {
+  background-color: var(--color-background);
+  border-color: var(--color-primary);
+}
+
+[data-theme='dark'] .search-results__item-name {
+  color: var(--color-text);
+}
+
+[data-theme='dark'] .search-results__item-subtitle {
+  color: var(--color-text-secondary);
+}
+
+/* Responsive design */
+@media (max-width: 768px) {
+  .search-results {
+    max-width: 100%;
+    margin-top: var(--spacing-sm);
+  }
+
+  .search-results__list {
+    max-height: 300px;
+    padding: var(--spacing-xs);
+  }
+
+  .search-results__item {
+    padding: var(--spacing-sm);
+  }
+
+  .search-results__item-name {
+    font-size: var(--text-sm);
+  }
+
+  .search-results__item-subtitle {
+    font-size: var(--text-xs);
+  }
+}
+
+/* Animation keyframes */
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-4px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes pulse {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+/* Scrollbar styling for webkit browsers */
+.search-results__list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.search-results__list::-webkit-scrollbar-track {
+  background: var(--color-background-secondary);
+  border-radius: 4px;
+}
+
+.search-results__list::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+
+.search-results__list::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
+}
