@@ -4,6 +4,10 @@ import BaseModal from '@/app/components/modals/BaseModal/BaseModal';
 import { useModal } from '@/lib/hooks/useModal';
 import { useForm } from '@/lib/hooks/useForm';
 import { PROJECT_STATUS, PROJECT_PRIORITY } from '@/lib/constants';
+import { Button } from '@/app/components/ui/Button/Button';
+import { Input } from '@/app/components/ui/Input/Input';
+import { Textarea } from '@/app/components/ui/Textarea/Textarea';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/app/components/ui/Select/Select';
 import type { FormFieldConfig } from '@/types';
 
 const projectFields: FormFieldConfig[] = [
@@ -83,9 +87,9 @@ export default function ProjectForm() {
 
   return (
     <>
-      <button onClick={handleOpen} className="btn-primary" aria-label="Add new project">
+      <Button onClick={handleOpen} icon="plus" aria-label="Add new project">
         Add Project
-      </button>
+      </Button>
 
       <BaseModal
         isOpen={isOpen}
@@ -117,36 +121,39 @@ export default function ProjectForm() {
                 {field.required && <span className="required">*</span>}
               </label>
               {field.type === 'textarea' ? (
-                <textarea
+                <Textarea
                   id={field.name}
                   name={field.name}
                   value={formData[field.name as keyof FormData] as string}
                   onChange={handleInputChange}
                   required={field.required}
                   rows={3}
-                  className={`form-textarea ${errors[field.name] ? 'error' : ''}`}
+                  className={errors[field.name] ? 'border-destructive' : ''}
                   aria-describedby={errors[field.name] ? `${field.name}-error` : undefined}
                   aria-invalid={!!errors[field.name]}
                 />
               ) : field.type === 'select' ? (
-                <select
-                  id={field.name}
-                  name={field.name}
+                <Select
                   value={formData[field.name as keyof FormData] as string}
-                  onChange={handleInputChange}
+                  onValueChange={(value) => {
+                    const event = { target: { name: field.name, value } } as React.ChangeEvent<HTMLInputElement>;
+                    handleInputChange(event);
+                  }}
                   required={field.required}
-                  className={`form-select ${errors[field.name] ? 'error' : ''}`}
-                  aria-describedby={errors[field.name] ? `${field.name}-error` : undefined}
-                  aria-invalid={!!errors[field.name]}
                 >
-                  {field.options?.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
-                </select>
+                  <SelectTrigger className={errors[field.name] ? 'border-destructive' : ''}>
+                    <SelectValue placeholder={`Select ${field.label.toLowerCase()}`} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {field.options?.map((option) => (
+                      <SelectItem key={option} value={option}>
+                        {option}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               ) : (
-                <input
+                <Input
                   type={field.type}
                   id={field.name}
                   name={field.name}
@@ -155,7 +162,7 @@ export default function ProjectForm() {
                   required={field.required}
                   min={field.min}
                   max={field.max}
-                  className={`form-input ${errors[field.name] ? 'error' : ''}`}
+                  state={errors[field.name] ? 'error' : 'default'}
                   aria-describedby={errors[field.name] ? `${field.name}-error` : undefined}
                   aria-invalid={!!errors[field.name]}
                 />
@@ -168,23 +175,22 @@ export default function ProjectForm() {
             </div>
           ))}
 
-          <div className="form-actions">
-            <button
+          <div className="flex justify-end gap-2">
+            <Button
               type="button"
+              variant="secondary"
               onClick={close}
-              className="btn-secondary"
               disabled={isSubmitting}
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
-              className="btn-primary"
               disabled={isSubmitting}
               aria-label="Submit project form"
             >
               {isSubmitting ? 'Submitting...' : 'Submit'}
-            </button>
+            </Button>
           </div>
         </form>
       </BaseModal>

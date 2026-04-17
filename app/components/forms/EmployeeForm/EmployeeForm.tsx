@@ -3,6 +3,9 @@
 import BaseModal from '@/app/components/modals/BaseModal/BaseModal';
 import { useModal } from '@/lib/hooks/useModal';
 import { useForm } from '@/lib/hooks/useForm';
+import { Button } from '@/app/components/ui/Button/Button';
+import { Input } from '@/app/components/ui/Input/Input';
+import { Textarea } from '@/app/components/ui/Textarea/Textarea';
 import type { FormFieldConfig } from '@/types';
 
 const employeeFields: FormFieldConfig[] = [
@@ -74,9 +77,9 @@ export default function EmployeeForm() {
 
   return (
     <>
-      <button onClick={handleOpen} className="btn-primary" aria-label="Add new employee">
+      <Button onClick={handleOpen} icon="plus" aria-label="Add new employee">
         Add Employee
-      </button>
+      </Button>
 
       <BaseModal
         isOpen={isOpen}
@@ -108,26 +111,26 @@ export default function EmployeeForm() {
                 {field.required && <span className="required">*</span>}
               </label>
               {field.type === 'textarea' ? (
-                <textarea
+                <Textarea
                   id={field.name}
                   name={field.name}
                   value={formData[field.name as keyof FormData] as string}
                   onChange={handleInputChange}
                   required={field.required}
                   rows={3}
-                  className={`form-textarea ${errors[field.name] ? 'error' : ''}`}
+                  className={errors[field.name] ? 'border-destructive' : ''}
                   aria-describedby={errors[field.name] ? `${field.name}-error` : undefined}
                   aria-invalid={!!errors[field.name]}
                 />
               ) : (
-                <input
+                <Input
                   type={field.type}
                   id={field.name}
                   name={field.name}
                   value={formData[field.name as keyof FormData] as string}
                   onChange={handleInputChange}
                   required={field.required}
-                  className={`form-input ${errors[field.name] ? 'error' : ''}`}
+                  state={errors[field.name] ? 'error' : 'default'}
                   aria-describedby={errors[field.name] ? `${field.name}-error` : undefined}
                   aria-invalid={!!errors[field.name]}
                 />
@@ -140,23 +143,22 @@ export default function EmployeeForm() {
             </div>
           ))}
 
-          <div className="form-actions">
-            <button
+          <div className="flex justify-end gap-2">
+            <Button
               type="button"
+              variant="secondary"
               onClick={close}
-              className="btn-secondary"
               disabled={isSubmitting}
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
-              className="btn-primary"
               disabled={isSubmitting}
               aria-label="Submit employee form"
             >
               {isSubmitting ? 'Submitting...' : 'Submit'}
-            </button>
+            </Button>
           </div>
         </form>
       </BaseModal>

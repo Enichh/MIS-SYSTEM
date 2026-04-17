@@ -2,18 +2,26 @@
 
 import { useEffect, useState } from 'react'
 import { THEME_STORAGE_KEY } from '@/lib/constants'
+import { getIcon, IconName, ICON_SIZES } from '@/lib/utils/icon-utils'
+import { Button } from '@/components/ui/Button/Button'
 
 export default function ThemeToggle() {
   const [theme, setTheme] = useState<'light' | 'dark'>('light')
+  const [mounted, setMounted] = useState(false)
 
   useEffect(() => {
-    // Load theme from localStorage or detect system preference
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (!mounted) return
+
     const savedTheme = localStorage.getItem(THEME_STORAGE_KEY) as 'light' | 'dark' | null
     const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'
-    const initialTheme = savedTheme || systemTheme
+    const initialTheme = (savedTheme === 'light' || savedTheme === 'dark') ? savedTheme : systemTheme
     setTheme(initialTheme)
     document.documentElement.setAttribute('data-theme', initialTheme)
-  }, [])
+  }, [mounted])
 
   const toggleTheme = () => {
     const newTheme = theme === 'light' ? 'dark' : 'light'
@@ -22,34 +30,30 @@ export default function ThemeToggle() {
     localStorage.setItem(THEME_STORAGE_KEY, newTheme)
   }
 
+  const LightIcon = getIcon('check' as IconName)
+  const DarkIcon = getIcon('x' as IconName)
+
+  if (!mounted) {
+    return (
+      <Button
+        variant="ghost"
+        size="sm"
+        aria-label="Toggle theme"
+        disabled
+      >
+        <LightIcon size={ICON_SIZES[1]} />
+      </Button>
+    )
+  }
+
   return (
-    <button
-      className="theme-toggle-btn"
+    <Button
+      variant="ghost"
+      size="sm"
       onClick={toggleTheme}
       aria-label="Toggle theme"
     >
-      <svg
-        className="theme-icon sun-icon"
-        viewBox="0 0 24 24"
-        xmlns="http://www.w3.org/2000/svg"
-        style={{ display: theme === 'light' ? 'block' : 'none' }}
-      >
-        <circle cx="12" cy="12" r="5" fill="currentColor" />
-        <path
-          d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"
-          stroke="currentColor"
-          strokeWidth="2"
-          strokeLinecap="round"
-        />
-      </svg>
-      <svg
-        className="theme-icon moon-icon"
-        viewBox="0 0 24 24"
-        xmlns="http://www.w3.org/2000/svg"
-        style={{ display: theme === 'dark' ? 'block' : 'none' }}
-      >
-        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z" fill="currentColor" />
-      </svg>
-    </button>
+      {theme === 'light' ? <LightIcon size={ICON_SIZES[1]} /> : <DarkIcon size={ICON_SIZES[1]} />}
+    </Button>
   )
 }

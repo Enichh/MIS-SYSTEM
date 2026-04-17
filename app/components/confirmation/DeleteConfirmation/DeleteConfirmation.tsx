@@ -1,6 +1,7 @@
 'use client';
 
 import BaseModal from '@/components/modals/BaseModal/BaseModal';
+import { Button } from '@/components/ui/Button/Button';
 
 interface DeleteConfirmationProps {
   isOpen: boolean;
@@ -11,19 +12,16 @@ interface DeleteConfirmationProps {
   variant?: 'danger' | 'warning' | 'info';
 }
 
+const variantMap = {
+  danger: 'danger' as const,
+  warning: 'primary' as const,
+  info: 'primary' as const,
+};
+
 const variantStyles = {
-  danger: {
-    confirm: 'bg-red-600 hover:bg-red-700 text-white',
-    icon: 'text-red-600',
-  },
-  warning: {
-    confirm: 'bg-orange-500 hover:bg-orange-600 text-white',
-    icon: 'text-orange-500',
-  },
-  info: {
-    confirm: 'bg-blue-600 hover:bg-blue-700 text-white',
-    icon: 'text-blue-600',
-  },
+  danger: '',
+  warning: 'bg-orange-500 hover:bg-orange-600 text-white',
+  info: '',
 };
 
 export default function DeleteConfirmation({
@@ -34,7 +32,7 @@ export default function DeleteConfirmation({
   entityType,
   variant = 'danger',
 }: DeleteConfirmationProps) {
-  const styles = variantStyles[variant];
+  const buttonVariant = variantMap[variant];
 
   const title = `Delete ${entityType}`;
   const message = `Are you sure you want to delete "${entityName}"? This action cannot be undone.`;
@@ -48,33 +46,31 @@ export default function DeleteConfirmation({
       onClose={onCancel}
       title={title}
       size="sm"
-      showCloseButton={true}
       closeOnOverlayClick={true}
       ariaLabelledBy={ariaLabelledBy}
       ariaLabel={ariaLabel}
       ariaDescribedBy={ariaDescribedBy}
-      initialFocus='[aria-label="Cancel"]'
-      returnFocus={true}
     >
       <div className="space-y-4">
         <p id={ariaDescribedBy} className="text-gray-700">
           {message}
         </p>
         <div className="flex justify-end gap-3 mt-6">
-          <button
+          <Button
+            variant="outline"
             onClick={onCancel}
-            className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
             aria-label="Cancel"
           >
             Cancel
-          </button>
-          <button
+          </Button>
+          <Button
+            variant={buttonVariant}
             onClick={onConfirm}
-            className={`px-4 py-2 rounded-md transition-colors ${styles.confirm}`}
             aria-label={`Delete ${entityName}`}
+            className={variant === 'warning' ? variantStyles.warning : ''}
           >
             Delete
-          </button>
+          </Button>
         </div>
       </div>
     </BaseModal>

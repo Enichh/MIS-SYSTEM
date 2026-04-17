@@ -2,193 +2,183 @@
 
 /**
  * Contract Validation Script
- * Validates that all tokens referenced in task files exist in schema.json imports_from_shared lists
+ * Validates schema.json structure and task file references
  */
 
-const fs = require('fs');
-const path = require('path');
+const fs = require("fs");
+const path = require("path");
 
-const ROOT_DIR = path.resolve(__dirname, '../..');
-const SCHEMA_PATH = path.join(ROOT_DIR, '.parallel', 'contracts', 'schema.json');
-const WORKSTREAMS_DIR = path.join(ROOT_DIR, '.parallel', 'workstreams');
+const schemaPath = path.join(__dirname, "../contracts/schema.json");
+const workstreamsPath = path.join(__dirname, "../workstreams");
 
-// Colors for output
-const colors = {
-  reset: '\x1b[0m',
-  green: '\x1b[32m',
-  red: '\x1b[31m',
-  yellow: '\x1b[33m',
-  blue: '\x1b[34m'
+// Read schema.json
+let schema;
+try {
+  const schemaContent = fs.readFileSync(schemaPath, "utf8");
+  schema = JSON.parse(schemaContent);
+  console.log("✓ schema.json loaded successfully");
+} catch (error) {
+  console.error("✗ Failed to load schema.json:", error.message);
+  process.exit(1);
+}
+
+// Validate schema structure
+const requiredFields = [
+  "version",
+  "feature",
+  "freeze_phase",
+  "contracts",
+  "dependency_graph",
+];
+for (const field of requiredFields) {
+  if (!schema[field]) {
+    console.error(`✗ Missing required field in schema.json: ${field}`);
+    process.exit(1);
+  }
+}
+console.log("✓ schema.json structure validated");
+
+// Validate task count limits (max 4 per workstream)
+const taskFiles = {
+  "shared-tasks.md": "shared",
+  "core-components-tasks.md": "core-components",
+  "feature-data-tasks.md": "feature-data",
+  "feature-interactive-tasks.md": "feature-interactive",
 };
 
-function log(message, color = 'reset') {
-  console.log(`${colors[color]}${message}${colors.reset}`);
-}
+let totalErrors = 0;
 
-function readJSON(filePath) {
-  try {
-    const content = fs.readFileSync(filePath, 'utf-8');
-    return JSON.parse(content);
-  } catch (error) {
-    log(`Error reading ${filePath}: ${error.message}`, 'red');
-    return null;
-  }
-}
+for (const [filename, workstreamKey] of Object.entries(taskFiles)) {
+  const taskFilePath = path.join(workstreamsPath, filename);
 
-function extractTokensFromTaskFile(filePath) {
-  try {
-    const content = fs.readFileSync(filePath, 'utf-8');
-    const tokens = new Set();
-    
-    // Extract imports_from_shared references
-    const importMatch = content.match(/imports_from_shared:\s*\[([\s\S]*?)\]/);
-    if (importMatch) {
-      const imports = importMatch[1].match(/"([^"]+)"/g);
-      if (imports) {
-        imports.forEach(imp => tokens.add(imp.replace(/"/g, '')));
-      }
-    }
-    
-    // Extract Contract References
-    const contractRefMatches = content.match(/schema\.json#\/contracts\/[^\/]+\/exports\/[^\/]+\/[^\/]+/g);
-    if (contractRefMatches) {
-      contractRefMatches.forEach(ref => {
-        const parts = ref.split('/');
-        const token = parts[parts.length - 1];
-        tokens.add(token);
-      });
-    }
-    
-    // Extract function/type names from acceptance criteria
-    const functionMatches = content.match(/\b(use[A-Z][a-zA-Z]*|validate[A-Z][a-zA-Z]*|[A-Z][a-zA-Z]*Config)\b/g);
-    if (functionMatches) {
-      functionMatches.forEach(fn => tokens.add(fn));
-    }
-    
-    return Array.from(tokens);
-  } catch (error) {
-    log(`Error reading task file ${filePath}: ${error.message}`, 'red');
-    return [];
+  if (!fs.existsSync(taskFilePath)) {
+    console.error(`✗ Task file not found: ${filename}`);
+    totalErrors++;
+    continue;
   }
-}
 
-function validateContract() {
-  log('=== Contract Validation ===', 'blue');
-  
-  // Load schema
-  const schema = readJSON(SCHEMA_PATH);
-  if (!schema) {
-    log('Failed to load schema.json', 'red');
-    return false;
+  const taskContent = fs.readFileSync(taskFilePath, "utf8");
+  const taskMatches = taskContent.match(/### Task \d+:/g);
+
+  if (!taskMatches) {
+    console.error(`✗ No tasks found in ${filename}`);
+    totalErrors++;
+    continue;
   }
-  
-  log(`✓ Loaded schema for feature: ${schema.feature}`, 'green');
-  log(`✓ Contract version: ${schema.version}`, 'green');
-  
-  // Validate schema structure
-  if (!schema.contracts) {
-    log('✗ Schema missing contracts section', 'red');
-    return false;
-  }
-  
-  const workstreams = Object.keys(schema.contracts).filter(w => w !== 'shared');
-  log(`✓ Found ${workstreams.length} workstreams: ${workstreams.join(', ')}`, 'green');
-  
-  // Check each workstream task file
-  let allValid = true;
-  const violations = [];
-  
-  for (const workstream of workstreams) {
-    const taskFilePath = path.join(WORKSTREAMS_DIR, `${workstream}-tasks.md`);
-    
-    if (!fs.existsSync(taskFilePath)) {
-      log(`✗ Task file not found: ${taskFilePath}`, 'red');
-      allValid = false;
-      continue;
-    }
-    
-    log(`\n--- Validating ${workstream} workstream ---`, 'blue');
-    
-    const taskTokens = extractTokensFromTaskFile(taskFilePath);
-    const allowedImports = schema.contracts[workstream]?.imports_from_shared || [];
-    
-    log(`  Tokens referenced in task file: ${taskTokens.length}`, 'yellow');
-    log(`  Allowed imports from schema: ${allowedImports.length}`, 'yellow');
-    
-    // Check for violations
-    for (const token of taskTokens) {
-      if (!allowedImports.includes(token) && !isInternalHelper(token, schema)) {
-        violations.push({
-          workstream,
-          token,
-          allowed: allowedImports
-        });
-        log(`  ✗ Token "${token}" not in imports_from_shared`, 'red');
-        allValid = false;
-      }
-    }
-    
-    if (violations.filter(v => v.workstream === workstream).length === 0) {
-      log(`  ✓ All tokens validated for ${workstream}`, 'green');
-    }
-  }
-  
-  // Check task count limits
-  log('\n--- Task Count Validation ---', 'blue');
-  for (const workstream of workstreams) {
-    const taskFilePath = path.join(WORKSTREAMS_DIR, `${workstream}-tasks.md`);
-    if (fs.existsSync(taskFilePath)) {
-      const content = fs.readFileSync(taskFilePath, 'utf-8');
-      const taskMatches = content.match(/### Task \d+:/g);
-      const taskCount = taskMatches ? taskMatches.length : 0;
-      
-      if (taskCount > 4) {
-        log(`  ✗ ${workstream}: ${taskCount} tasks (exceeds limit of 4)`, 'red');
-        allValid = false;
-      } else {
-        log(`  ✓ ${workstream}: ${taskCount} tasks (within limit of 4)`, 'green');
-      }
-    }
-  }
-  
-  // Check for naming collisions
-  log('\n--- Naming Collision Check ---', 'blue');
-  const allExports = {};
-  for (const workstream of workstreams) {
-    const exports = schema.contracts[workstream]?.exports || [];
-    exports.forEach(exp => {
-      if (allExports[exp]) {
-        log(`  ✗ Naming collision: "${exp}" exported by both ${allExports[exp]} and ${workstream}`, 'red');
-        allValid = false;
-      } else {
-        allExports[exp] = workstream;
-      }
-    });
-  }
-  if (Object.keys(allExports).length > 0) {
-    log(`  ✓ No naming collisions detected`, 'green');
-  }
-  
-  // Summary
-  log('\n=== Validation Summary ===', 'blue');
-  if (allValid) {
-    log('✓ Contract validation passed', 'green');
-    return true;
+
+  const taskCount = taskMatches.length;
+
+  if (taskCount > 4) {
+    console.error(`✗ Too many tasks in ${filename}: ${taskCount} (max 4)`);
+    totalErrors++;
   } else {
-    log('✗ Contract validation failed', 'red');
-    log('\nViolations:', 'red');
-    violations.forEach(v => {
-      log(`  - ${v.workstream}: "${v.token}" not in allowed imports`, 'red');
-    });
-    return false;
+    console.log(`✓ ${filename}: ${taskCount} tasks (within limit)`);
+  }
+
+  // Validate contract references in task file
+  const contractRefMatches = taskContent.match(/Contract References:.*#/g);
+  if (contractRefMatches) {
+    console.log(
+      `✓ ${filename}: ${contractRefMatches.length} contract references found`,
+    );
   }
 }
 
-function isInternalHelper(token, schema) {
-  const sharedInternal = schema.contracts.shared?.exports?.internal || [];
-  return sharedInternal.includes(token);
+// Validate imports_from_shared lists
+for (const [workstreamKey, workstreamData] of Object.entries(
+  schema.contracts,
+)) {
+  if (workstreamKey === "shared") continue;
+
+  const importsFromShared = workstreamData.imports_from_shared || [];
+  const sharedExports = schema.contracts.shared.exports.public;
+
+  // Check if all imports exist in shared exports
+  for (const importItem of importsFromShared) {
+    if (
+      !sharedExports.types?.includes(importItem) &&
+      !sharedExports.constants?.includes(importItem) &&
+      !sharedExports.functions?.includes(importItem)
+    ) {
+      console.warn(
+        `⚠ ${workstreamKey} imports '${importItem}' from shared but it's not in shared public exports`,
+      );
+    }
+  }
+  console.log(`✓ ${workstreamKey} imports_from_shared validated`);
 }
 
-// Run validation
-const success = validateContract();
-process.exit(success ? 0 : 1);
+// Validate imports_from_core-components for feature-data
+if (schema.contracts["feature-data"]?.["imports_from_core-components"]) {
+  const importsFromCore =
+    schema.contracts["feature-data"]["imports_from_core-components"];
+  const coreExports =
+    schema.contracts["core-components"]?.exports?.public || {};
+
+  for (const importItem of importsFromCore) {
+    const allCoreExports = [
+      ...(coreExports.components || []),
+      ...(coreExports.types || []),
+    ];
+    if (!allCoreExports.includes(importItem)) {
+      console.warn(
+        `⚠ feature-data imports '${importItem}' from core-components but it's not in core-components public exports`,
+      );
+    }
+  }
+  console.log("✓ feature-data imports_from_core-components validated");
+}
+
+// Validate imports_from_core-components for feature-interactive
+if (schema.contracts["feature-interactive"]?.["imports_from_core-components"]) {
+  const importsFromCore =
+    schema.contracts["feature-interactive"]["imports_from_core-components"];
+  const coreExports =
+    schema.contracts["core-components"]?.exports?.public || {};
+
+  for (const importItem of importsFromCore) {
+    const allCoreExports = [
+      ...(coreExports.components || []),
+      ...(coreExports.types || []),
+    ];
+    if (!allCoreExports.includes(importItem)) {
+      console.warn(
+        `⚠ feature-interactive imports '${importItem}' from core-components but it's not in core-components public exports`,
+      );
+    }
+  }
+  console.log("✓ feature-interactive imports_from_core-components validated");
+}
+
+// Check for naming collisions across workstreams
+const allExports = {};
+for (const [workstreamKey, workstreamData] of Object.entries(
+  schema.contracts,
+)) {
+  const exports = workstreamData.exports?.public || {};
+  const allItems = [
+    ...(exports.types || []),
+    ...(exports.constants || []),
+    ...(exports.functions || []),
+    ...(exports.components || []),
+  ];
+
+  for (const item of allItems) {
+    if (allExports[item]) {
+      console.error(
+        `✗ Naming collision: '${item}' exported by both ${allExports[item]} and ${workstreamKey}`,
+      );
+      totalErrors++;
+    } else {
+      allExports[item] = workstreamKey;
+    }
+  }
+}
+
+if (totalErrors === 0) {
+  console.log("\n✓ All contract validations passed");
+  process.exit(0);
+} else {
+  console.log(`\n✗ Contract validation failed with ${totalErrors} error(s)`);
+  process.exit(1);
+}

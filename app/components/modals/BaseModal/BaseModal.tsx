@@ -1,7 +1,8 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
 import { ModalConfig, ModalSize } from '@/types';
+import { getIcon, IconName } from '@/lib/utils/icon-utils';
+import { Modal, ModalContent, ModalHeader, ModalTitle, ModalDescription } from '../../ui/Modal/Modal';
 
 interface BaseModalProps extends ModalConfig {
   children?: React.ReactNode;
@@ -19,111 +20,35 @@ export default function BaseModal({
   onClose,
   title,
   size = 'md',
-  showCloseButton = true,
   closeOnOverlayClick = true,
   ariaLabelledBy,
   ariaLabel,
   ariaDescribedBy,
-  initialFocus,
-  returnFocus = true,
   children,
 }: BaseModalProps) {
-  const dialogRef = useRef<HTMLDialogElement>(null);
-  const previousActiveElement = useRef<Element | null>(null);
+  const titleId = ariaLabelledBy || `${title?.replace(/\s+/g, '-').toLowerCase()}-title`;
+  const describedById = ariaDescribedBy || `${title?.replace(/\s+/g, '-').toLowerCase()}-description`;
 
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-
-    if (isOpen) {
-      previousActiveElement.current = document.activeElement;
-      // Check if dialog is already open to prevent errors
-      if (!dialog.open) {
-        dialog.showModal();
-      }
-      
-      if (initialFocus) {
-        const focusElement = dialog.querySelector(initialFocus) as HTMLElement;
-        focusElement?.focus();
-      } else {
-        const focusableElement = dialog.querySelector(
-          'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
-        ) as HTMLElement;
-        focusableElement?.focus();
-      }
-    } else {
-      dialog.close();
-      if (returnFocus && previousActiveElement.current instanceof HTMLElement) {
-        previousActiveElement.current.focus();
-      }
+  const handleOpenChange = (open: boolean) => {
+    // Call onClose when dialog is being closed (open becomes false)
+    if (!open) {
+      onClose()
     }
-  }, [isOpen, initialFocus, returnFocus]);
-
-  useEffect(() => {
-    const dialog = dialogRef.current;
-    if (!dialog) return;
-
-    const handleCancel = (event: Event) => {
-      event.preventDefault();
-      onClose();
-    };
-
-    dialog.addEventListener('cancel', handleCancel);
-
-    return () => {
-      dialog.removeEventListener('cancel', handleCancel);
-    };
-  }, [onClose]);
-
-  const handleOverlayClick = (event: React.MouseEvent<HTMLDialogElement>) => {
-    if (closeOnOverlayClick && event.target === dialogRef.current) {
-      onClose();
-    }
-  };
-
-  const titleId = ariaLabelledBy || `${title.replace(/\s+/g, '-').toLowerCase()}-title`;
-  const describedById = ariaDescribedBy || `${title.replace(/\s+/g, '-').toLowerCase()}-description`;
+  }
 
   return (
-    <dialog
-      ref={dialogRef}
-      className={`modal ${sizeClasses[size]}`}
-      onClick={handleOverlayClick}
-      aria-labelledby={titleId}
-      aria-describedby={ariaDescribedBy ? describedById : undefined}
-      aria-label={ariaLabel}
-      aria-modal="true"
-    >
-      <div className="modal-header">
-        <h2 id={titleId}>
-          {title}
-        </h2>
-        {showCloseButton && (
-          <button
-            onClick={onClose}
-            className="btn-close"
-            aria-label="Close modal"
-          >
-            <svg
-              className="w-6 h-6"
-              fill="none"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path d="M6 18L18 6M6 6l12 12" />
-            </svg>
-          </button>
+    <Modal open={isOpen} onOpenChange={handleOpenChange}>
+      <ModalContent className={sizeClasses[size]}>
+        <ModalHeader>
+          <ModalTitle id={titleId}>{title}</ModalTitle>
+        </ModalHeader>
+        {ariaDescribedBy && (
+          <ModalDescription id={describedById}>
+            {ariaDescribedBy}
+          </ModalDescription>
         )}
-      </div>
-      {ariaDescribedBy && (
-        <p id={describedById} className="sr-only">
-          {ariaDescribedBy}
-        </p>
-      )}
-      <div className="modal-body">{children}</div>
-    </dialog>
+        {children}
+      </ModalContent>
+    </Modal>
   );
 }

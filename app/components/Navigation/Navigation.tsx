@@ -1,53 +1,58 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
+import { Button } from '@/app/components/ui/Button/Button'
 
-export default function Navigation() {
+interface NavigationProps {
+  onSectionChange?: (section: string) => void
+}
+
+export default function Navigation({ onSectionChange }: NavigationProps) {
   const [activeSection, setActiveSection] = useState('employees')
 
   const handleSectionChange = (section: string) => {
     setActiveSection(section)
-    // Hide all sections
+    onSectionChange?.(section)
+    
+    // Maintain backward compatibility: update DOM for section visibility
     document.querySelectorAll('.section').forEach((el) => {
       el.classList.remove('active')
     })
-    // Show selected section
     const selectedSection = document.getElementById(`${section}-section`)
     if (selectedSection) {
       selectedSection.classList.add('active')
     }
-    // Update nav buttons
-    document.querySelectorAll('.nav-btn').forEach((btn) => {
-      btn.classList.remove('active')
-      if (btn.getAttribute('data-section') === section) {
-        btn.classList.add('active')
-      }
-    })
   }
 
   return (
-    <nav>
-      <button
-        data-section="employees"
-        className={`nav-btn ${activeSection === 'employees' ? 'active' : ''}`}
+    <nav className="flex gap-2 p-4 border-b">
+      <Button
+        variant={activeSection === 'employees' ? 'primary' : 'ghost'}
         onClick={() => handleSectionChange('employees')}
+        icon="user"
+        aria-label="Navigate to Employees section"
+        aria-pressed={activeSection === 'employees'}
       >
         Employees
-      </button>
-      <button
-        data-section="projects"
-        className={`nav-btn ${activeSection === 'projects' ? 'active' : ''}`}
+      </Button>
+      <Button
+        variant={activeSection === 'projects' ? 'primary' : 'ghost'}
         onClick={() => handleSectionChange('projects')}
+        icon="settings"
+        aria-label="Navigate to Projects section"
+        aria-pressed={activeSection === 'projects'}
       >
         Projects
-      </button>
-      <button
-        data-section="tasks"
-        className={`nav-btn ${activeSection === 'tasks' ? 'active' : ''}`}
+      </Button>
+      <Button
+        variant={activeSection === 'tasks' ? 'primary' : 'ghost'}
         onClick={() => handleSectionChange('tasks')}
+        icon="check"
+        aria-label="Navigate to Tasks section"
+        aria-pressed={activeSection === 'tasks'}
       >
         Tasks
-      </button>
+      </Button>
     </nav>
   )
 }

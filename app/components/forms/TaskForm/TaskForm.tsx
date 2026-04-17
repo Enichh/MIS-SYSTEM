@@ -5,6 +5,10 @@ import BaseModal from '@/app/components/modals/BaseModal/BaseModal';
 import { useModal } from '@/lib/hooks/useModal';
 import { useForm } from '@/lib/hooks/useForm';
 import { TASK_STATUS, TASK_PRIORITY } from '@/lib/constants';
+import { Button } from '@/app/components/ui/Button/Button';
+import { Input } from '@/app/components/ui/Input/Input';
+import { Textarea } from '@/app/components/ui/Textarea/Textarea';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/app/components/ui/Select/Select';
 import type { FormFieldConfig, Project, Employee } from '@/types';
 
 const taskFields: FormFieldConfig[] = [
@@ -161,9 +165,9 @@ export default function TaskForm() {
 
   return (
     <>
-      <button onClick={handleOpen} className="btn-primary" aria-label="Add new task">
+      <Button onClick={handleOpen} icon="plus" aria-label="Add new task">
         Add Task
-      </button>
+      </Button>
 
       <BaseModal
         isOpen={isOpen}
@@ -195,58 +199,55 @@ export default function TaskForm() {
                 {field.required && <span className="required">*</span>}
               </label>
               {field.type === 'textarea' ? (
-                <textarea
+                <Textarea
                   id={field.name}
                   name={field.name}
                   value={formData[field.name as keyof FormData] as string}
                   onChange={handleInputChange}
                   required={field.required}
                   rows={3}
-                  className={`form-textarea ${errors[field.name] ? 'error' : ''}`}
+                  className={errors[field.name] ? 'border-destructive' : ''}
                   aria-describedby={errors[field.name] ? `${field.name}-error` : undefined}
                   aria-invalid={!!errors[field.name]}
                 />
               ) : field.type === 'select' ? (
-                <select
-                  id={field.name}
-                  name={field.name}
+                <Select
                   value={field.name === 'projectId' ? getDisplayValue(formData[field.name as keyof FormData] as string, field.name) : formData[field.name as keyof FormData] as string}
-                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                  onValueChange={(value) => {
                     if (field.name === 'projectId') {
-                      const event = { target: { name: field.name, value: extractId(e.target.value) } } as React.ChangeEvent<HTMLInputElement>;
+                      const event = { target: { name: field.name, value: extractId(value) } } as React.ChangeEvent<HTMLInputElement>;
                       handleInputChange(event);
                     } else {
-                      const event = { target: { name: field.name, value: e.target.value } } as React.ChangeEvent<HTMLInputElement>;
+                      const event = { target: { name: field.name, value } } as React.ChangeEvent<HTMLInputElement>;
                       handleInputChange(event);
                     }
                   }}
                   required={field.required}
-                  className={`form-select ${errors[field.name] ? 'error' : ''}`}
-                  aria-describedby={errors[field.name] ? `${field.name}-error` : undefined}
-                  aria-invalid={!!errors[field.name]}
                 >
-                  <option value="">
-                    {field.name === 'projectId' ? 'Select a project' : field.name === 'status' ? 'Select a status' : field.name === 'priority' ? 'Select a priority' : 'Select an option'}
-                  </option>
-                  {field.options?.map((option) => {
-                    if (field.name === 'projectId') {
-                      const [id, name] = option.split('|');
+                  <SelectTrigger className={errors[field.name] ? 'border-destructive' : ''}>
+                    <SelectValue placeholder={field.name === 'projectId' ? 'Select a project' : field.name === 'status' ? 'Select a status' : field.name === 'priority' ? 'Select a priority' : 'Select an option'} />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {field.options?.map((option) => {
+                      if (field.name === 'projectId') {
+                        const [id, name] = option.split('|');
+                        return (
+                          <SelectItem key={id} value={option}>
+                            {name}
+                          </SelectItem>
+                        );
+                      }
                       return (
-                        <option key={id} value={option}>
-                          {name}
-                        </option>
+                        <SelectItem key={option} value={option}>
+                          {option}
+                        </SelectItem>
                       );
-                    }
-                    return (
-                      <option key={option} value={option}>
-                        {option}
-                      </option>
-                    );
-                  })}
-                </select>
+                    })}
+                  </SelectContent>
+                </Select>
               ) : field.type === 'searchable' ? (
-                <div className="searchable-dropdown">
-                  <input
+                <div className="relative">
+                  <Input
                     type="text"
                     id={field.name}
                     name={field.name}
@@ -255,12 +256,12 @@ export default function TaskForm() {
                       setEmployeeSearch(e.target.value);
                     }}
                     placeholder="Search employee by name or email..."
-                    className={`form-input ${errors[field.name] ? 'error' : ''}`}
+                    state={errors[field.name] ? 'error' : 'default'}
                     aria-describedby={errors[field.name] ? `${field.name}-error` : undefined}
                     aria-invalid={!!errors[field.name]}
                   />
                   {employeeSearch && filteredEmployees.length > 0 && (
-                    <ul className="dropdown-list">
+                    <ul className="absolute z-10 w-full mt-1 bg-background border rounded-md shadow-lg max-h-60 overflow-auto">
                       {filteredEmployees.map((emp) => (
                         <li
                           key={emp.id}
@@ -269,27 +270,27 @@ export default function TaskForm() {
                             const event = { target: { name: field.name, value: emp.id } } as React.ChangeEvent<HTMLInputElement>;
                             handleInputChange(event);
                           }}
-                          className="dropdown-item"
+                          className="px-3 py-2 hover:bg-accent cursor-pointer"
                         >
-                          <div className="employee-name">{emp.name}</div>
-                          <div className="employee-email">{emp.email}</div>
+                          <div className="font-medium">{emp.name}</div>
+                          <div className="text-sm text-muted-foreground">{emp.email}</div>
                         </li>
                       ))}
                     </ul>
                   )}
                   {employeeSearch && filteredEmployees.length === 0 && (
-                    <p className="no-results">No employees found</p>
+                    <p className="text-sm text-muted-foreground mt-1">No employees found</p>
                   )}
                 </div>
               ) : (
-                <input
+                <Input
                   type={field.type}
                   id={field.name}
                   name={field.name}
                   value={formData[field.name as keyof FormData] as string}
                   onChange={handleInputChange}
                   required={field.required}
-                  className={`form-input ${errors[field.name] ? 'error' : ''}`}
+                  state={errors[field.name] ? 'error' : 'default'}
                   aria-describedby={errors[field.name] ? `${field.name}-error` : undefined}
                   aria-invalid={!!errors[field.name]}
                 />
@@ -302,23 +303,22 @@ export default function TaskForm() {
             </div>
           ))}
 
-          <div className="form-actions">
-            <button
+          <div className="flex justify-end gap-2">
+            <Button
               type="button"
+              variant="secondary"
               onClick={close}
-              className="btn-secondary"
               disabled={isSubmitting}
             >
               Cancel
-            </button>
-            <button
+            </Button>
+            <Button
               type="submit"
-              className="btn-primary"
               disabled={isSubmitting}
               aria-label="Submit task form"
             >
               {isSubmitting ? 'Submitting...' : 'Submit'}
-            </button>
+            </Button>
           </div>
         </form>
       </BaseModal>

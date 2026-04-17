@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import type { Employee } from '@/types';
+import { Button } from '@/app/components/ui/Button/Button';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/app/components/ui/Card/Card';
+import { Badge } from '@/app/components/ui/Badge/Badge';
 import DeleteConfirmation from '@/components/confirmation/DeleteConfirmation/DeleteConfirmation';
 
 export default function EmployeeList() {
@@ -80,12 +83,12 @@ export default function EmployeeList() {
 
   if (error) {
     return (
-      <div className="empty-state">
-        <h3>Error Loading Employees</h3>
-        <p>Failed to load employees. Please refresh the page.</p>
-        <details style={{ marginTop: '1rem', textAlign: 'left', fontSize: '0.875rem' }}>
-          <summary style={{ cursor: 'pointer', color: '#dc2626' }}>Error Details</summary>
-          <pre style={{ marginTop: '0.5rem', padding: '0.5rem', background: '#fef2f2', borderRadius: '4px', overflow: 'auto' }}>
+      <div className="p-6 text-center">
+        <h3 className="text-lg font-semibold text-destructive">Error Loading Employees</h3>
+        <p className="text-sm text-muted-foreground mt-1">Failed to load employees. Please refresh the page.</p>
+        <details className="mt-4 text-left text-sm">
+          <summary className="cursor-pointer text-destructive font-medium">Error Details</summary>
+          <pre className="mt-2 p-2 bg-destructive/10 rounded overflow-auto text-xs">
             {error}
           </pre>
         </details>
@@ -104,40 +107,42 @@ export default function EmployeeList() {
 
   return (
     <>
-      <div className="data-list">
+      <div className="grid gap-4">
         {employees.map((employee) => (
-          <div key={employee.id} className="data-card">
-            <div className="data-card-header">
-              <div>
-                <div className="data-card-title">{employee.name}</div>
-                <div className="data-card-subtitle">{employee.email}</div>
+          <Card key={employee.id}>
+            <CardHeader>
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  <CardTitle>{employee.name}</CardTitle>
+                  <CardDescription>{employee.email}</CardDescription>
+                </div>
+                <Badge variant="secondary">{employee.role}</Badge>
               </div>
-              <span className="status-badge status-active">
-                {employee.role}
-              </span>
-            </div>
-            <div className="data-card-body">
-              <p>
-                <strong>Department:</strong> {employee.department}
+            </CardHeader>
+            <CardContent>
+              <p className="text-sm">
+                <span className="font-medium">Department:</span> {employee.department}
               </p>
-            </div>
-            <div className="data-card-actions">
-              <button
+            </CardContent>
+            <CardFooter className="justify-end gap-2">
+              <Button
+                variant="secondary"
+                icon="edit"
                 data-action="edit"
                 data-entity="employee"
                 data-id={employee.id}
-                className="btn-secondary"
               >
                 Edit
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="danger"
+                icon="trash"
                 onClick={() => handleDeleteClick(employee)}
-                className="btn-danger"
               >
                 Delete
-              </button>
-            </div>
-          </div>
+              </Button>
+            </CardFooter>
+          </Card>
         ))}
       </div>
       <DeleteConfirmation

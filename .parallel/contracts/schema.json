@@ -1,170 +1,158 @@
 {
   "version": "1.0.0",
-  "feature": "Reusable Modal Forms and Confirmation Dialogs",
+  "feature": "UI Overhaul - shadcn/ui Integration",
   "freeze_phase": "hot",
   "contracts": {
     "shared": {
       "exports": {
         "public": {
-          "types": [
-            "ModalConfig",
-            "FormFieldConfig",
-            "ConfirmationConfig",
-            "ModalSize"
-          ],
-          "functions": [
-            "useModal",
-            "useConfirmation",
-            "validateField"
-          ],
-          "constants": [
-            "MODAL_SIZES",
-            "DEFAULT_ANIMATION_DURATION",
-            "MODAL_Z_INDEX"
-          ]
+          "types": ["IconName", "IconProps", "ThemeColors", "SpacingScale"],
+          "constants": ["ICON_SIZES", "DEFAULT_ICON_SIZE"],
+          "functions": ["getIcon", "getThemeColor", "getSpacing"]
         },
-        "internal": [
-          "generateFormFieldId",
-          "sanitizeInput",
-          "formatValidationMessage"
-        ]
+        "internal": ["mapIconName", "validateIconProps"]
       },
       "schemas": {
-        "ModalConfig": {
-          "type": "object",
-          "properties": {
-            "isOpen": { "type": "boolean" },
-            "onClose": { "type": "function" },
-            "title": { "type": "string" },
-            "size": { "type": "string", "enum": ["sm", "md", "lg", "xl"] },
-            "showCloseButton": { "type": "boolean" },
-            "closeOnOverlayClick": { "type": "boolean" },
-            "ariaLabelledBy": { "type": "string" },
-            "ariaLabel": { "type": "string" },
-            "ariaDescribedBy": { "type": "string" },
-            "initialFocus": { "type": "string" },
-            "returnFocus": { "type": "boolean" }
-          },
-          "required": ["isOpen", "onClose", "title"]
+        "IconName": {
+          "type": "string",
+          "enum": ["menu", "house", "settings", "user", "trash", "edit", "plus", "x", "check", "bell", "search", "filter", "chevron-down", "chevron-up", "chevron-left", "chevron-right"]
         },
-        "FormFieldConfig": {
+        "IconProps": {
           "type": "object",
           "properties": {
             "name": { "type": "string" },
-            "label": { "type": "string" },
-            "type": { "type": "string", "enum": ["text", "email", "number", "date", "textarea", "select"] },
-            "required": { "type": "boolean" },
-            "options": { "type": "array", "items": { "type": "string" } },
-            "placeholder": { "type": "string" },
-            "validation": { "type": "object" },
-            "maxLength": { "type": "number" },
-            "minLength": { "type": "number" },
-            "pattern": { "type": "string" },
-            "min": { "type": "number" },
-            "max": { "type": "number" }
+            "size": { "type": "number", "enum": [16, 20, 24, 32] },
+            "color": { "type": "string" },
+            "className": { "type": "string" }
           },
-          "required": ["name", "label", "type", "required"]
+          "required": ["name"]
         },
-        "ConfirmationConfig": {
+        "ThemeColors": {
           "type": "object",
           "properties": {
-            "isOpen": { "type": "boolean" },
-            "onConfirm": { "type": "function" },
-            "onCancel": { "type": "function" },
-            "title": { "type": "string" },
-            "message": { "type": "string" },
-            "confirmText": { "type": "string" },
-            "cancelText": { "type": "string" },
-            "variant": { "type": "string", "enum": ["danger", "warning", "info"] },
-            "ariaLabelledBy": { "type": "string" },
-            "ariaLabel": { "type": "string" },
-            "ariaDescribedBy": { "type": "string" },
-            "initialFocus": { "type": "string" }
-          },
-          "required": ["isOpen", "onConfirm", "onCancel", "title", "message"]
+            "primary": { "type": "string" },
+            "background": { "type": "string" },
+            "text": { "type": "string" },
+            "border": { "type": "string" },
+            "success": { "type": "string" },
+            "error": { "type": "string" },
+            "warning": { "type": "string" }
+          }
         },
-        "ModalSize": {
-          "type": "string",
-          "enum": ["sm", "md", "lg", "xl"]
+        "SpacingScale": {
+          "type": "object",
+          "properties": {
+            "xs": { "type": "number", "const": 4 },
+            "sm": { "type": "number", "const": 8 },
+            "md": { "type": "number", "const": 16 },
+            "lg": { "type": "number", "const": 24 },
+            "xl": { "type": "number", "const": 32 },
+            "2xl": { "type": "number", "const": 48 }
+          }
         }
       }
     },
-    "forms": {
-      "imports_from_shared": [
-        "ModalConfig",
-        "FormFieldConfig",
-        "useModal",
-        "validateField",
-        "MODAL_SIZES"
-      ],
-      "exports": [
-        "EmployeeForm",
-        "ProjectForm",
-        "TaskForm"
-      ],
+    "core-components": {
+      "imports_from_shared": ["IconName", "IconProps", "ICON_SIZES", "DEFAULT_ICON_SIZE", "getIcon"],
+      "exports": {
+        "public": {
+          "components": ["Button", "Input", "Textarea", "Select", "Card", "Badge", "Modal"],
+          "types": ["ButtonVariant", "ButtonSize", "InputProps"]
+        },
+        "internal": ["buttonVariants", "inputVariants"]
+      },
       "allowed_internal_helpers": true,
       "file_naming": {
-        "pattern": "app/components/forms/{PascalName}/{PascalName}.tsx",
-        "example": "app/components/forms/EmployeeForm/EmployeeForm.tsx"
-      },
-      "react_best_practices": {
-        "use_functional_components": true,
-        "use_hooks": true,
-        "typescript_strict": true,
-        "controlled_components": true
+        "pattern": "app/components/ui/{PascalName}/{PascalName}.tsx",
+        "example": "app/components/ui/Button/Button.tsx"
       }
     },
-    "confirmation": {
-      "imports_from_shared": [
-        "ConfirmationConfig",
-        "useConfirmation",
-        "DEFAULT_ANIMATION_DURATION"
-      ],
-      "exports": [
-        "DeleteConfirmation",
-        "ActionConfirmation"
-      ],
+    "feature-data": {
+      "imports_from_shared": ["IconName", "IconProps", "getIcon", "ICON_SIZES"],
+      "imports_from_core-components": ["Button", "Input", "Textarea", "Select", "Card", "Badge", "ButtonVariant"],
+      "exports": {
+        "public": {
+          "components": ["Navigation", "EmployeeList", "ProjectList", "TaskList", "EmployeeForm", "ProjectForm", "TaskForm"]
+        }
+      },
       "allowed_internal_helpers": true,
       "file_naming": {
-        "pattern": "app/components/confirmation/{PascalName}/{PascalName}.tsx",
-        "example": "app/components/confirmation/DeleteConfirmation/DeleteConfirmation.tsx"
+        "pattern": "app/components/{PascalName}/{PascalName}.tsx",
+        "example": "app/components/Navigation/Navigation.tsx"
+      }
+    },
+    "feature-interactive": {
+      "imports_from_shared": ["IconName", "IconProps", "getIcon", "ICON_SIZES"],
+      "imports_from_core-components": ["Button", "Input", "Modal", "Badge", "ButtonVariant"],
+      "exports": {
+        "public": {
+          "components": ["ChatModal", "ThemeToggle", "Header", "BaseModal", "ActionConfirmation", "DeleteConfirmation"]
+        }
       },
-      "react_best_practices": {
-        "use_functional_components": true,
-        "use_hooks": true,
-        "typescript_strict": true,
-        "controlled_components": true
+      "allowed_internal_helpers": true,
+      "file_naming": {
+        "pattern": "app/components/{PascalName}/{PascalName}.tsx",
+        "example": "app/components/ChatModal/ChatModal.tsx"
       }
     }
   },
   "boundaries": {
-    "shared_to_forms": {
-      "data_shape": "ModalConfig | FormFieldConfig[]",
-      "serialization": "React props",
-      "error_shape": { "field": "string", "message": "string" }
+    "shared_to_core-components": {
+      "data_shape": "IconName, IconProps, ICON_SIZES",
+      "icon_system": "Lucide icons with centralized management",
+      "theme_integration": "OKLCH color palette preservation"
     },
-    "shared_to_confirmation": {
-      "data_shape": "ConfirmationConfig",
-      "serialization": "React props",
-      "error_shape": { "type": "string", "message": "string" }
+    "shared_to_feature-data": {
+      "data_shape": "IconName, IconProps, getIcon, ICON_SIZES",
+      "icon_system": "Lucide icons with centralized management"
     },
-    "forms_to_existing": {
-      "components": ["EmployeeList", "ProjectList", "TaskList"],
-      "integration_pattern": "Replace data-action attributes with React state and event handlers"
+    "shared_to_feature-interactive": {
+      "data_shape": "IconName, IconProps, getIcon, ICON_SIZES",
+      "icon_system": "Lucide icons with centralized management"
+    },
+    "core-components_to_feature-data": {
+      "component_usage": "shadcn/ui components (Button, Input, Textarea, Select, Card, Badge)",
+      "styling_approach": "CSS classes (no inline styles)",
+      "state_management": "React state (no DOM manipulation)"
+    },
+    "core-components_to_feature-interactive": {
+      "component_usage": "shadcn/ui components (Button, Input, Modal, Badge)",
+      "styling_approach": "CSS classes (no inline styles)",
+      "state_management": "React state (no DOM manipulation)"
     }
   },
   "dependency_graph": {
     "shared": {
       "depends_on": [],
-      "blocks": ["forms", "confirmation"]
+      "blocks": ["core-components", "feature-data", "feature-interactive"]
     },
-    "forms": {
+    "core-components": {
       "depends_on": ["shared"],
+      "blocks": ["feature-data", "feature-interactive"]
+    },
+    "feature-data": {
+      "depends_on": ["shared", "core-components"],
       "blocks": []
     },
-    "confirmation": {
-      "depends_on": ["shared"],
+    "feature-interactive": {
+      "depends_on": ["shared", "core-components"],
       "blocks": []
+    }
+  },
+  "best_practices": {
+    "shadcn_ui": {
+      "installation": "npx shadcn@latest init",
+      "components": "Use copy-paste model, customize to use existing OKLCH variables",
+      "icons": "Lucide icons as default icon library"
+    },
+    "react_patterns": {
+      "navigation": "Use React state (useState) instead of DOM manipulation (classList, getElementById)",
+      "styling": "Use CSS classes instead of inline styles",
+      "accessibility": "Maintain ARIA labels, focus management, keyboard navigation"
+    },
+    "nextjs_15": {
+      "app_router": "Use 'use client' directive for client components",
+      "hooks": "Use next/navigation hooks (useRouter, usePathname) for navigation"
     }
   }
 }

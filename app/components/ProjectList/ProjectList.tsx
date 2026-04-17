@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import type { Project } from '@/types';
+import { Button } from '@/app/components/ui/Button/Button';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/app/components/ui/Card/Card';
+import { Badge } from '@/app/components/ui/Badge/Badge';
 import DeleteConfirmation from '@/components/confirmation/DeleteConfirmation/DeleteConfirmation';
 
 export default function ProjectList() {
@@ -98,49 +101,53 @@ export default function ProjectList() {
 
   return (
     <>
-      <div className="data-list">
+      <div className="grid gap-4">
         {projects.map((project) => (
-          <div key={project.id} className="data-card">
-            <div className="data-card-header">
-              <div>
-                <div className="data-card-title">{project.name}</div>
-                <div className="data-card-subtitle">
-                  {project.description || 'No description'}
+          <Card key={project.id}>
+            <CardHeader>
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  <CardTitle>{project.name}</CardTitle>
+                  <CardDescription>
+                    {project.description || 'No description'}
+                  </CardDescription>
                 </div>
+                <Badge variant={project.status === 'active' ? 'default' : project.status === 'completed' ? 'secondary' : 'outline'}>
+                  {project.status}
+                </Badge>
               </div>
-              <span className={`status-badge status-${project.status}`}>
-                {project.status}
-              </span>
-            </div>
-            <div className="data-card-body">
+            </CardHeader>
+            <CardContent>
               {project.startDate && (
-                <p>
-                  <strong>Start Date:</strong> {project.startDate}
+                <p className="text-sm">
+                  <span className="font-medium">Start Date:</span> {project.startDate}
                 </p>
               )}
               {project.endDate && (
-                <p>
-                  <strong>End Date:</strong> {project.endDate}
+                <p className="text-sm">
+                  <span className="font-medium">End Date:</span> {project.endDate}
                 </p>
               )}
-            </div>
-            <div className="data-card-actions">
-              <button
+            </CardContent>
+            <CardFooter className="justify-end gap-2">
+              <Button
+                variant="secondary"
+                icon="edit"
                 data-action="edit"
                 data-entity="project"
                 data-id={project.id}
-                className="btn-secondary"
               >
                 Edit
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="danger"
+                icon="trash"
                 onClick={() => handleDeleteClick(project)}
-                className="btn-danger"
               >
                 Delete
-              </button>
-            </div>
-          </div>
+              </Button>
+            </CardFooter>
+          </Card>
         ))}
       </div>
       <DeleteConfirmation

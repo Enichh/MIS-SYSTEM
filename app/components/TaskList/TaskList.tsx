@@ -2,6 +2,9 @@
 
 import { useState, useEffect } from 'react';
 import type { Task, Project } from '@/types';
+import { Button } from '@/app/components/ui/Button/Button';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/app/components/ui/Card/Card';
+import { Badge } from '@/app/components/ui/Badge/Badge';
 import DeleteConfirmation from '@/components/confirmation/DeleteConfirmation/DeleteConfirmation';
 
 export default function TaskList() {
@@ -108,54 +111,58 @@ export default function TaskList() {
 
   return (
     <>
-      <div className="data-list">
+      <div className="grid gap-4">
         {tasks.map((task) => (
-          <div key={task.id} className="data-card">
-            <div className="data-card-header">
-              <div>
-                <div className="data-card-title">{task.title}</div>
-                <div className="data-card-subtitle">
-                  {projectMap.get(task.projectId) || 'Unknown Project'}
+          <Card key={task.id}>
+            <CardHeader>
+              <div className="flex justify-between items-start">
+                <div className="flex-1">
+                  <CardTitle>{task.title}</CardTitle>
+                  <CardDescription>
+                    {projectMap.get(task.projectId) || 'Unknown Project'}
+                  </CardDescription>
                 </div>
+                <Badge variant={task.status === 'completed' ? 'default' : task.status === 'in_progress' ? 'secondary' : 'outline'}>
+                  {task.status}
+                </Badge>
               </div>
-              <span className={`status-badge status-${task.status}`}>
-                {task.status}
-              </span>
-            </div>
-            <div className="data-card-body">
+            </CardHeader>
+            <CardContent>
               {task.description && (
-                <p>
-                  <strong>Description:</strong> {task.description}
+                <p className="text-sm">
+                  <span className="font-medium">Description:</span> {task.description}
                 </p>
               )}
               {task.assignedTo && (
-                <p>
-                  <strong>Assigned To:</strong> {task.assignedTo}
+                <p className="text-sm">
+                  <span className="font-medium">Assigned To:</span> {task.assignedTo}
                 </p>
               )}
               {task.dueDate && (
-                <p>
-                  <strong>Due Date:</strong> {task.dueDate}
+                <p className="text-sm">
+                  <span className="font-medium">Due Date:</span> {task.dueDate}
                 </p>
               )}
-            </div>
-            <div className="data-card-actions">
-              <button
+            </CardContent>
+            <CardFooter className="justify-end gap-2">
+              <Button
+                variant="secondary"
+                icon="edit"
                 data-action="edit"
                 data-entity="task"
                 data-id={task.id}
-                className="btn-secondary"
               >
                 Edit
-              </button>
-              <button
+              </Button>
+              <Button
+                variant="danger"
+                icon="trash"
                 onClick={() => handleDeleteClick(task)}
-                className="btn-danger"
               >
                 Delete
-              </button>
-            </div>
-          </div>
+              </Button>
+            </CardFooter>
+          </Card>
         ))}
       </div>
       <DeleteConfirmation

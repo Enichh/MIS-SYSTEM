@@ -2,24 +2,22 @@
 
 import BaseModal from '@/components/modals/BaseModal/BaseModal';
 import type { ConfirmationConfig } from '@/types';
+import { Button } from '@/components/ui/Button/Button';
 
 interface ActionConfirmationProps extends Omit<ConfirmationConfig, 'initialFocus'> {
   initialFocus?: string;
 }
 
+const variantMap = {
+  danger: 'danger' as const,
+  warning: 'primary' as const,
+  info: 'primary' as const,
+};
+
 const variantStyles = {
-  danger: {
-    confirm: 'bg-red-600 hover:bg-red-700 text-white',
-    icon: 'text-red-600',
-  },
-  warning: {
-    confirm: 'bg-orange-500 hover:bg-orange-600 text-white',
-    icon: 'text-orange-500',
-  },
-  info: {
-    confirm: 'bg-blue-600 hover:bg-blue-700 text-white',
-    icon: 'text-blue-600',
-  },
+  danger: '',
+  warning: 'bg-orange-500 hover:bg-orange-600 text-white',
+  info: '',
 };
 
 export default function ActionConfirmation({
@@ -36,8 +34,7 @@ export default function ActionConfirmation({
   ariaDescribedBy,
   initialFocus = '[aria-label="Cancel"]',
 }: ActionConfirmationProps) {
-  const styles = variantStyles[variant];
-
+  const buttonVariant = variantMap[variant];
   const titleId = ariaLabelledBy || `${title.replace(/\s+/g, '-').toLowerCase()}-title`;
   const describedById = ariaDescribedBy || `${title.replace(/\s+/g, '-').toLowerCase()}-description`;
 
@@ -47,33 +44,31 @@ export default function ActionConfirmation({
       onClose={onCancel}
       title={title}
       size="sm"
-      showCloseButton={true}
       closeOnOverlayClick={true}
       ariaLabelledBy={titleId}
       ariaLabel={ariaLabel}
       ariaDescribedBy={describedById}
-      initialFocus={initialFocus}
-      returnFocus={true}
     >
       <div className="space-y-4">
         <p id={describedById} className="text-gray-700">
           {message}
         </p>
         <div className="flex justify-end gap-3 mt-6">
-          <button
+          <Button
+            variant="outline"
             onClick={onCancel}
-            className="px-4 py-2 text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-md transition-colors"
             aria-label="Cancel"
           >
             {cancelText}
-          </button>
-          <button
+          </Button>
+          <Button
+            variant={buttonVariant}
             onClick={onConfirm}
-            className={`px-4 py-2 rounded-md transition-colors ${styles.confirm}`}
             aria-label={confirmText}
+            className={variant === 'warning' ? variantStyles.warning : ''}
           >
             {confirmText}
-          </button>
+          </Button>
         </div>
       </div>
     </BaseModal>

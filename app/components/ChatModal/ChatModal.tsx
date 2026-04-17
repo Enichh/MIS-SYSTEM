@@ -3,6 +3,10 @@
 import { useState, useRef, useEffect } from 'react'
 import { CHAT_STORAGE_KEY } from '@/lib/constants'
 import type { KnowledgeQuery, KnowledgeResponse } from '@/types'
+import { getIcon, IconName, ICON_SIZES } from '@/lib/utils/icon-utils'
+import { Button } from '@/components/ui/Button/Button'
+import { Input } from '@/components/ui/Input/Input'
+import { Modal, ModalContent, ModalHeader, ModalTitle, ModalDescription, ModalFooter } from '@/components/ui/Modal/Modal'
 
 interface ChatMessage {
   id: string
@@ -18,7 +22,6 @@ export default function ChatModal() {
   const [input, setInput] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement>(null)
-  const textareaRef = useRef<HTMLTextAreaElement>(null)
 
   useEffect(() => {
     // Load chat history from localStorage
@@ -106,7 +109,7 @@ export default function ChatModal() {
     }
   }
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault()
       handleSend()
@@ -127,59 +130,36 @@ export default function ChatModal() {
     return `${displayHours}:${minutes} ${ampm}`
   }
 
-  const autoResize = () => {
-    if (textareaRef.current) {
-      textareaRef.current.style.height = 'auto'
-      textareaRef.current.style.height = Math.min(textareaRef.current.scrollHeight, 120) + 'px'
-    }
-  }
+  const ChatIcon = getIcon('bell' as IconName)
+  const TrashIcon = getIcon('trash' as IconName)
 
   return (
     <>
-      <button
+      <Button
         className="fab-button"
         onClick={() => setIsOpen(true)}
         aria-label="Open chat"
+        icon="bell"
       >
-        <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-          <path
-            d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z"
-          />
-        </svg>
-      </button>
+        <ChatIcon size={ICON_SIZES[2]} />
+      </Button>
 
-      <div className={`chat-modal-overlay ${isOpen ? '' : 'hidden'}`}>
-        <div className="chat-modal">
-          <div className="chat-modal-header">
-            <h3>AI Chat Assistant</h3>
+      <Modal open={isOpen} onOpenChange={setIsOpen}>
+        <ModalContent className="chat-modal">
+          <ModalHeader>
+            <ModalTitle>AI Chat Assistant</ModalTitle>
             <div className="chat-modal-header-actions">
-              <button
-                className="chat-modal-delete"
+              <Button
+                variant="ghost"
+                size="sm"
                 onClick={handleClearHistory}
                 aria-label="Delete chat history"
+                icon="trash"
               >
-                <svg
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <polyline points="3 6 5 6 21 6"></polyline>
-                  <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
-                </svg>
-              </button>
-              <button
-                className="chat-modal-close"
-                onClick={() => setIsOpen(false)}
-                aria-label="Close chat"
-              >
-                &times;
-              </button>
+                <TrashIcon size={ICON_SIZES[1]} />
+              </Button>
             </div>
-          </div>
+          </ModalHeader>
           <div className="chat-responsive-container">
             <div className="chat-message-list-container">
               <div className="chat-message-list">
@@ -191,7 +171,7 @@ export default function ChatModal() {
                 {messages.map((msg) => (
                   <div key={msg.id} className={`chat-message chat-message-${msg.role}`}>
                     <div className="chat-message-content">
-                      {msg.role === 'assistant' ? msg.content : msg.content}
+                      {msg.content}
                     </div>
                     <div className="chat-message-meta">
                       <span className="chat-message-role">{msg.role === 'user' ? 'User' : 'AI'}</span>
@@ -213,31 +193,27 @@ export default function ChatModal() {
             </div>
             <div className="chat-input-container">
               <div className="chat-input-wrapper">
-                <textarea
-                  ref={textareaRef}
+                <Input
                   className="chat-input-textarea"
                   placeholder="Type your message..."
                   value={input}
-                  onChange={(e) => {
-                    setInput(e.target.value)
-                    autoResize()
-                  }}
+                  onChange={(e) => setInput(e.target.value)}
                   onKeyDown={handleKeyDown}
-                  rows={1}
                   aria-label="Chat message input"
                 />
-                <button
+                <Button
                   className="chat-input-send"
                   onClick={handleSend}
                   disabled={!input.trim() || isLoading}
+                  icon="check"
                 >
                   {isLoading ? 'Sending...' : 'Send'}
-                </button>
+                </Button>
               </div>
             </div>
           </div>
-        </div>
-      </div>
+        </ModalContent>
+      </Modal>
     </>
   )
 }
