@@ -1,29 +1,45 @@
 import { z } from 'zod';
 
 export const EmployeeSchema = z.object({
-  id: z.string().regex(/^emp-[0-9]{3}$/, 'ID must match pattern emp-XXX'),
+  id: z.string().uuid('ID must be a valid UUID'),
   name: z.string().min(1, 'Name is required'),
   email: z.string().email('Invalid email format'),
   role: z.string().min(1, 'Role is required'),
   department: z.string().min(1, 'Department is required'),
-  projects: z.array(z.string()).optional(),
+  skills: z.array(z.string()).default([]),
+  created_at: z.string(),
+  updated_at: z.string(),
 });
 
 export const ProjectSchema = z.object({
-  id: z.string().regex(/^proj-[0-9]{3}$/, 'ID must match pattern proj-XXX'),
+  id: z.string().uuid('ID must be a valid UUID'),
   name: z.string().min(1, 'Name is required'),
-  description: z.string().optional(),
+  description: z.string(),
   status: z.enum(['active', 'completed', 'on_hold']),
-  startDate: z.string().optional(),
-  endDate: z.string().optional(),
+  priority: z.enum(['high', 'medium', 'low']),
+  progress: z.number().int().min(0).max(100).default(0),
+  startDate: z.string(),
+  endDate: z.string(),
+  created_at: z.string(),
+  updated_at: z.string(),
 });
 
 export const TaskSchema = z.object({
-  id: z.string().regex(/^task-[0-9]{3}$/, 'ID must match pattern task-XXX'),
+  id: z.string().uuid('ID must be a valid UUID'),
   title: z.string().min(1, 'Title is required'),
-  description: z.string().optional(),
+  description: z.string(),
   status: z.enum(['completed', 'in_progress', 'pending']),
-  projectId: z.string().min(1, 'Project ID is required'),
-  assignedTo: z.string().optional(),
-  dueDate: z.string().optional(),
+  priority: z.enum(['high', 'medium', 'low']),
+  dependencies: z.array(z.string()).default([]),
+  projectId: z.string().uuid('Project ID must be a valid UUID'),
+  assignedTo: z.string().uuid().nullable(),
+  dueDate: z.string(),
+  created_at: z.string(),
+  updated_at: z.string(),
+});
+
+export const EmployeeProjectSchema = z.object({
+  employee_id: z.string().uuid('Employee ID must be a valid UUID'),
+  project_id: z.string().uuid('Project ID must be a valid UUID'),
+  created_at: z.string(),
 });

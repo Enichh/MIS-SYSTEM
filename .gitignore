@@ -35,3 +35,6 @@ yarn-error.log*
 
 # Netlify
 .netlify/
+
+# Supabase (sensitive schema and seed data)
+supabase/

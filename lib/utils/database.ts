@@ -1,25 +1,38 @@
-import { mockData } from '../data/mockData';
+import { createClient } from '../supabase/server';
+
+const supabase = createClient();
 
 export async function fetchFromDatabase(
-  storeName: string,
+  tableName: string,
   filters: Record<string, unknown> = {}
 ): Promise<unknown[]> {
-  const data = mockData[storeName as keyof typeof mockData] || [];
-
-  let result = Array.isArray(data) ? [...data] : [];
+  let query = supabase.from(tableName).select('*');
 
   if (filters.id) {
-    result = result.filter((item: any) => item.id === filters.id);
+    query = query.eq('id', filters.id as string);
   }
   if (filters.status) {
-    result = result.filter((item: any) => item.status === filters.status);
+    query = query.eq('status', filters.status as string);
   }
   if (filters.projectId) {
-    result = result.filter((item: any) => item.projectId === filters.projectId);
+    query = query.eq('projectId', filters.projectId as string);
   }
   if (filters.assignedTo) {
-    result = result.filter((item: any) => item.assignedTo === filters.assignedTo);
+    query = query.eq('assignedTo', filters.assignedTo as string);
+  }
+  if (filters.employee_id) {
+    query = query.eq('employee_id', filters.employee_id as string);
+  }
+  if (filters.project_id) {
+    query = query.eq('project_id', filters.project_id as string);
   }
 
-  return result;
+  const { data, error } = await query;
+
+  if (error) {
+    console.error('Database query error:', error);
+    throw new Error(`Failed to fetch from ${tableName}: ${error.message}`);
+  }
+
+  return data || [];
 }
