@@ -1340,6 +1340,72 @@ dialog[open]::backdrop {
   color: var(--color-text);
 }
 
+/* Searchable Dropdown Styles */
+.searchable-dropdown {
+  position: relative;
+}
+
+.dropdown-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background-color: var(--color-background);
+  border: 2px solid var(--color-border);
+  border-radius: 12px;
+  box-shadow: var(--shadow-lg);
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 10;
+  margin-top: 4px;
+  list-style: none;
+  padding: 0.5rem 0;
+  animation: fadeIn 0.2s ease;
+}
+
+.dropdown-item {
+  padding: 0.75rem 1rem;
+  cursor: pointer;
+  transition: all var(--transition-base);
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.dropdown-item:last-child {
+  border-bottom: none;
+}
+
+.dropdown-item:hover {
+  background-color: var(--color-background-secondary);
+  border-color: var(--color-primary);
+}
+
+.employee-name {
+  font-weight: var(--font-weight-semibold);
+  color: var(--color-text);
+  margin-bottom: 0.25rem;
+}
+
+.employee-email {
+  font-size: var(--text-sm);
+  color: var(--color-text-secondary);
+}
+
+.no-results {
+  padding: 1rem;
+  color: var(--color-text-muted);
+  font-style: italic;
+  text-align: center;
+}
+
+[data-theme="dark"] .dropdown-list {
+  background-color: var(--color-background-tertiary);
+  border-color: var(--color-border);
+}
+
+[data-theme="dark"] .dropdown-item:hover {
+  background-color: var(--color-background-secondary);
+}
+
 [data-theme="dark"] .form-input:hover,
 [data-theme="dark"] .form-textarea:hover,
 [data-theme="dark"] .form-select:hover {

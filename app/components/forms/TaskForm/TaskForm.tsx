@@ -1,18 +1,19 @@
 'use client';
 
+import { useState, useEffect } from 'react';
 import BaseModal from '@/app/components/modals/BaseModal/BaseModal';
 import { useModal } from '@/lib/hooks/useModal';
 import { useForm } from '@/lib/hooks/useForm';
 import { TASK_STATUS, TASK_PRIORITY } from '@/lib/constants';
-import type { FormFieldConfig } from '@/types';
+import type { FormFieldConfig, Project, Employee } from '@/types';
 
 const taskFields: FormFieldConfig[] = [
   { name: 'title', label: 'Title', type: 'text', required: true, maxLength: 100 },
   { name: 'description', label: 'Description', type: 'textarea', required: false, maxLength: 1000 },
   { name: 'status', label: 'Status', type: 'select', required: true, options: [...TASK_STATUS] },
   { name: 'priority', label: 'Priority', type: 'select', required: true, options: [...TASK_PRIORITY] },
-  { name: 'projectId', label: 'Project ID', type: 'text', required: true, maxLength: 50 },
-  { name: 'assignedTo', label: 'Assigned To (Employee ID)', type: 'text', required: false, maxLength: 50 },
+  { name: 'projectId', label: 'Assign to Project', type: 'select', required: true, options: [] },
+  { name: 'assignedTo', label: 'Assign to Employee', type: 'searchable', required: false, options: [] },
   { name: 'dueDate', label: 'Due Date', type: 'date', required: false },
 ];
 
@@ -28,6 +29,50 @@ interface FormData {
 
 export default function TaskForm() {
   const { isOpen, open, close } = useModal();
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [employeeSearch, setEmployeeSearch] = useState('');
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [projectsRes, employeesRes] = await Promise.all([
+          fetch('/api/projects'),
+          fetch('/api/employees'),
+        ]);
+
+        if (projectsRes.ok) {
+          const projectsData = await projectsRes.json();
+          setProjects(projectsData);
+        }
+
+        if (employeesRes.ok) {
+          const employeesData = await employeesRes.json();
+          setEmployees(employeesData);
+        }
+      } catch (error) {
+        console.error('Failed to fetch data:', error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
+  const dynamicTaskFields: FormFieldConfig[] = taskFields.map(field => {
+    if (field.name === 'projectId') {
+      return {
+        ...field,
+        options: projects.map(p => `${p.id}|${p.name}`),
+      };
+    }
+    if (field.name === 'assignedTo') {
+      return {
+        ...field,
+        options: employees.map(e => `${e.id}|${e.name}`),
+      };
+    }
+    return field;
+  });
 
   const {
     formData,
@@ -38,7 +83,7 @@ export default function TaskForm() {
     handleSubmit,
     resetForm,
   } = useForm<FormData>({
-    fields: taskFields,
+    fields: dynamicTaskFields,
     initialValues: {
       title: '',
       description: '',
@@ -76,9 +121,42 @@ export default function TaskForm() {
     },
   });
 
+  const filteredEmployees = employees.filter(emp =>
+    emp.name.toLowerCase().includes(employeeSearch.toLowerCase()) ||
+    emp.email.toLowerCase().includes(employeeSearch.toLowerCase())
+  );
+
   const handleOpen = () => {
     resetForm();
+    setEmployeeSearch('');
     open();
+  };
+
+  useEffect(() => {
+    if (formData.assignedTo) {
+      const employee = employees.find(e => e.id === formData.assignedTo);
+      if (employee) {
+        setEmployeeSearch(employee.name);
+      }
+    } else {
+      setEmployeeSearch('');
+    }
+  }, [formData.assignedTo, employees]);
+
+  const getDisplayValue = (value: string, fieldName: string) => {
+    if (fieldName === 'projectId') {
+      const project = projects.find(p => p.id === value);
+      return project ? `${project.id}|${project.name}` : value;
+    }
+    if (fieldName === 'assignedTo') {
+      const employee = employees.find(e => e.id === value);
+      return employee ? `${employee.id}|${employee.name}` : value;
+    }
+    return value;
+  };
+
+  const extractId = (value: string) => {
+    return value.split('|')[0];
   };
 
   return (
@@ -110,7 +188,7 @@ export default function TaskForm() {
         )}
 
         <form onSubmit={handleSubmit} noValidate>
-          {taskFields.map((field) => (
+          {dynamicTaskFields.map((field) => (
             <div key={field.name} className="form-field">
               <label htmlFor={field.name} className="form-label">
                 {field.label}
@@ -132,19 +210,77 @@ export default function TaskForm() {
                 <select
                   id={field.name}
                   name={field.name}
-                  value={formData[field.name as keyof FormData] as string}
-                  onChange={handleInputChange}
+                  value={field.name === 'projectId' ? getDisplayValue(formData[field.name as keyof FormData] as string, field.name) : formData[field.name as keyof FormData] as string}
+                  onChange={(e: React.ChangeEvent<HTMLSelectElement>) => {
+                    if (field.name === 'projectId') {
+                      const event = { target: { name: field.name, value: extractId(e.target.value) } } as React.ChangeEvent<HTMLInputElement>;
+                      handleInputChange(event);
+                    } else {
+                      const event = { target: { name: field.name, value: e.target.value } } as React.ChangeEvent<HTMLInputElement>;
+                      handleInputChange(event);
+                    }
+                  }}
                   required={field.required}
                   className={`form-select ${errors[field.name] ? 'error' : ''}`}
                   aria-describedby={errors[field.name] ? `${field.name}-error` : undefined}
                   aria-invalid={!!errors[field.name]}
                 >
-                  {field.options?.map((option) => (
-                    <option key={option} value={option}>
-                      {option}
-                    </option>
-                  ))}
+                  <option value="">
+                    {field.name === 'projectId' ? 'Select a project' : field.name === 'status' ? 'Select a status' : field.name === 'priority' ? 'Select a priority' : 'Select an option'}
+                  </option>
+                  {field.options?.map((option) => {
+                    if (field.name === 'projectId') {
+                      const [id, name] = option.split('|');
+                      return (
+                        <option key={id} value={option}>
+                          {name}
+                        </option>
+                      );
+                    }
+                    return (
+                      <option key={option} value={option}>
+                        {option}
+                      </option>
+                    );
+                  })}
                 </select>
+              ) : field.type === 'searchable' ? (
+                <div className="searchable-dropdown">
+                  <input
+                    type="text"
+                    id={field.name}
+                    name={field.name}
+                    value={employeeSearch}
+                    onChange={(e) => {
+                      setEmployeeSearch(e.target.value);
+                    }}
+                    placeholder="Search employee by name or email..."
+                    className={`form-input ${errors[field.name] ? 'error' : ''}`}
+                    aria-describedby={errors[field.name] ? `${field.name}-error` : undefined}
+                    aria-invalid={!!errors[field.name]}
+                  />
+                  {employeeSearch && filteredEmployees.length > 0 && (
+                    <ul className="dropdown-list">
+                      {filteredEmployees.map((emp) => (
+                        <li
+                          key={emp.id}
+                          onClick={() => {
+                            setEmployeeSearch(emp.name);
+                            const event = { target: { name: field.name, value: emp.id } } as React.ChangeEvent<HTMLInputElement>;
+                            handleInputChange(event);
+                          }}
+                          className="dropdown-item"
+                        >
+                          <div className="employee-name">{emp.name}</div>
+                          <div className="employee-email">{emp.email}</div>
+                        </li>
+                      ))}
+                    </ul>
+                  )}
+                  {employeeSearch && filteredEmployees.length === 0 && (
+                    <p className="no-results">No employees found</p>
+                  )}
+                </div>
               ) : (
                 <input
                   type={field.type}

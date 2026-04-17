@@ -82,7 +82,7 @@ export interface ModalConfig {
 export interface FormFieldConfig {
   name: string;
   label: string;
-  type: 'text' | 'email' | 'number' | 'date' | 'textarea' | 'select';
+  type: 'text' | 'email' | 'number' | 'date' | 'textarea' | 'select' | 'searchable';
   required: boolean;
   options?: string[];
   placeholder?: string;
