@@ -7,7 +7,7 @@ import { NavigationLinks } from '@/app/components/NavigationLinks/NavigationLink
 export function Sidebar() {
   const { activeSection, setActiveSection } = useNavigationContext();
 
-  const handleSectionChange = (section: 'employees' | 'projects' | 'tasks') => {
+  const handleSectionChange = (section: 'employees' | 'projects' | 'tasks' | 'ai') => {
     setActiveSection(section);
   };
 

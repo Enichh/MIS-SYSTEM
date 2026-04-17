@@ -4,8 +4,9 @@ import React from 'react';
 import { UserIcon } from '@/app/components/ui/icons/custom/UserIcon';
 import { SettingsIcon } from '@/app/components/ui/icons/custom/SettingsIcon';
 import { CheckIcon } from '@/app/components/ui/icons/custom/CheckIcon';
+import { MessageIcon } from '@/app/components/ui/icons/custom/MessageIcon';
 
-type Section = 'employees' | 'projects' | 'tasks';
+type Section = 'employees' | 'projects' | 'tasks' | 'ai';
 
 interface NavigationLinksProps {
   activeSection: Section;
@@ -46,6 +47,17 @@ export function NavigationLinks({ activeSection, onSectionChange }: NavigationLi
         >
           <SettingsIcon size={20} />
           <span>Tasks</span>
+        </button>
+      </li>
+      <li>
+        <button
+          className={`sidebar-link ${activeSection === 'ai' ? 'active' : ''}`}
+          onClick={() => onSectionChange('ai')}
+          aria-label="Navigate to AI Chat section"
+          aria-current={activeSection === 'ai' ? 'page' : undefined}
+        >
+          <MessageIcon size={20} />
+          <span>AI Chat</span>
         </button>
       </li>
     </ul>

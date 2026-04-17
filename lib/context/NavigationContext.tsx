@@ -9,7 +9,7 @@ export const SIDEBAR_WIDTH_DESKTOP = 260;
 export const DRAWER_WIDTH_MOBILE = 280;
 
 // Types
-export type Section = 'employees' | 'projects' | 'tasks'
+export type Section = 'employees' | 'projects' | 'tasks' | 'ai'
 
 export interface NavigationState {
   isDrawerOpen: boolean;

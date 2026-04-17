@@ -6,7 +6,7 @@ import { Drawer } from './components/Drawer/Drawer'
 import EmployeeList from './components/EmployeeList/EmployeeList'
 import ProjectList from './components/ProjectList/ProjectList'
 import TaskList from './components/TaskList/TaskList'
-import ChatModal from './components/ChatModal/ChatModal'
+import { DrawerChat } from './components/DrawerChat/DrawerChat'
 import EmployeeForm from './components/forms/EmployeeForm/EmployeeForm'
 import ProjectForm from './components/forms/ProjectForm/ProjectForm'
 import TaskForm from './components/forms/TaskForm/TaskForm'
@@ -46,10 +46,12 @@ export default function HomePage() {
             </div>
             <TaskList />
           </section>
+
+          <section id="ai-section" className={`section ${activeSection === 'ai' ? 'section-active' : ''}`}>
+            <DrawerChat />
+          </section>
         </main>
       </div>
-
-      <ChatModal />
     </>
   )
 }

@@ -1,0 +1,60 @@
+/* Drawer Chat Component Module
+ * Chat component integrated into drawer navigation
+ */
+
+.drawer-chat {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  background-color: var(--color-background-secondary);
+}
+
+.drawer-chat .chat-modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: var(--spacing-lg);
+  border-bottom: 1px solid var(--color-border-light);
+  background-color: var(--color-background-secondary);
+}
+
+.drawer-chat .chat-modal-header h3 {
+  color: var(--color-primary);
+  font-weight: var(--font-weight-semibold);
+  font-size: var(--text-lg);
+  margin: 0;
+}
+
+.drawer-chat .chat-message-list-container {
+  flex: 1;
+  overflow-y: auto;
+  padding: var(--spacing-md);
+  min-height: 0;
+  background-color: var(--color-background);
+}
+
+.drawer-chat .chat-input-container {
+  border-top: 1px solid var(--color-border-light);
+  padding: var(--spacing-md);
+  background-color: var(--color-background-secondary);
+}
+
+/* Responsive adjustments for drawer chat */
+@media (max-width: 768px) {
+  .drawer-chat {
+    height: calc(100vh - var(--spacing-lg) * 2);
+  }
+}
+
+/* Text utility classes */
+.drawer-chat .font-semibold {
+  font-weight: var(--font-weight-semibold);
+}
+
+.drawer-chat .text-small {
+  font-size: var(--text-sm);
+}
+
+.drawer-chat .mb-1 {
+  margin-bottom: var(--spacing-sm);
+}

@@ -340,3 +340,16 @@
   opacity: 0.6;
   cursor: not-allowed;
 }
+
+/* Text utility classes for chat components */
+.chat-modal .font-semibold {
+  font-weight: var(--font-weight-semibold);
+}
+
+.chat-modal .text-small {
+  font-size: var(--text-sm);
+}
+
+.chat-modal .mb-1 {
+  margin-bottom: var(--spacing-sm);
+}

@@ -7,7 +7,7 @@ import { NavigationLinks } from '@/app/components/NavigationLinks/NavigationLink
 export function Drawer() {
   const { activeSection, setActiveSection, isDrawerOpen, isMobile, closeDrawer } = useNavigationContext();
 
-  const handleSectionChange = (section: 'employees' | 'projects' | 'tasks') => {
+  const handleSectionChange = (section: 'employees' | 'projects' | 'tasks' | 'ai') => {
     setActiveSection(section);
     closeDrawer();
   };
