@@ -14,7 +14,7 @@ vi.mock('@/lib/utils/api-handler', () => ({
 }));
 
 // Import the route handler after mocking
-import { DELETE as deleteHandler } from '../app/api/employees/[id]/route';
+import { DELETE as deleteHandler } from './route';
 
 describe('DELETE /api/employees/[id]', () => {
   beforeEach(() => {
