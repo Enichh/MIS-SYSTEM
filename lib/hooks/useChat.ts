@@ -3,6 +3,7 @@ import { useChat as useVercelChat } from '@ai-sdk/react';
 import { CHAT_STORAGE_KEY } from '@/lib/constants';
 import { StreamingChatMessage } from '@/lib/types/ai';
 import { STREAMING_CONFIG } from '@/lib/utils/ai-config';
+import { applyRollingWindow, DEFAULT_ROLLING_WINDOW_CONFIG } from '@/lib/utils/rolling-window';
 import type { KnowledgeQuery, KnowledgeResponse } from '@/types';
 
 const FALLBACK_ENDPOINT = '/api/knowledge/query';
@@ -75,7 +76,8 @@ export function useChat() {
   useEffect(() => {
     if (localMessages.length > 0) {
       try {
-        localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(localMessages));
+        const prunedMessages = applyRollingWindow(localMessages, DEFAULT_ROLLING_WINDOW_CONFIG);
+        localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(prunedMessages));
       } catch (error) {
         console.error('Failed to save chat history:', error);
         if (error instanceof DOMException && (error.name === 'QuotaExceededError' || error.code === 22)) {

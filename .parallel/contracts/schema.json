@@ -1,182 +1,136 @@
 {
   "version": "1.0.0",
-  "feature": "Streaming AI Responses and AI-Powered Quick Actions",
+  "feature": "AI Answer Markdown Formatting and Chat Context Persistence with Rolling Window",
   "freeze_phase": "hot",
   "contracts": {
     "shared": {
       "exports": {
         "public": {
           "types": [
-            "QuickActionType",
-            "QuickActionConfig",
-            "StreamingChatMessage"
+            "MarkdownConfig",
+            "RollingWindowConfig"
           ],
           "functions": [
-            "createQuickActionConfig",
-            "validateQuickActionPayload"
+            "applyRollingWindow",
+            "sanitizeMarkdown"
           ],
           "constants": [
-            "QUICK_ACTION_TYPES",
-            "STREAMING_CONFIG"
+            "DEFAULT_MARKDOWN_CONFIG",
+            "DEFAULT_ROLLING_WINDOW_CONFIG"
           ]
         },
         "internal": [
-          "parseQuickActionIntent",
-          "buildStreamingContext"
+          "pruneOldestMessages",
+          "validateMarkdownContent"
         ]
       },
       "schemas": {
-        "QuickActionConfig": {
+        "MarkdownConfig": {
           "type": "object",
           "properties": {
-            "type": { "type": "string", "enum": ["create_task", "assign_employee"] },
-            "label": { "type": "string" },
-            "payload": { "type": "object" }
+            "allowedElements": { "type": "array", "items": { "type": "string" } },
+            "disallowedElements": { "type": "array", "items": { "type": "string" } },
+            "sanitize": { "type": "boolean" }
           },
-          "required": ["type", "label", "payload"]
+          "required": ["sanitize"]
+        },
+        "RollingWindowConfig": {
+          "type": "object",
+          "properties": {
+            "maxMessages": { "type": "number", "minimum": 1 },
+            "preserveSystemMessages": { "type": "boolean" }
+          },
+          "required": ["maxMessages"]
         }
       }
     },
-    "backend": {
+    "frontend": {
       "imports_from_shared": [
-        "QuickActionConfig",
-        "validateQuickActionPayload",
-        "QUICK_ACTION_TYPES"
+        "MarkdownConfig",
+        "RollingWindowConfig",
+        "applyRollingWindow",
+        "DEFAULT_MARKDOWN_CONFIG",
+        "DEFAULT_ROLLING_WINDOW_CONFIG"
       ],
       "exports": [
-        "streamingKnowledgeHandler",
-        "quickActionHandler"
-      ],
-      "allowed_internal_helpers": true,
-      "file_naming": {
-        "pattern": "app/api/{kebab-name}/route.ts",
-        "example": "app/api/knowledge/streaming/route.ts"
-      }
-    },
-    "frontend-chat": {
-      "imports_from_shared": [
-        "StreamingChatMessage",
-        "STREAMING_CONFIG"
-      ],
-      "exports": [
-        "StreamingChat"
+        "MarkdownRenderer"
       ],
       "allowed_internal_helpers": true,
       "file_naming": {
         "pattern": "app/components/{PascalName}/{PascalName}.tsx",
-        "example": "app/components/StreamingChat/StreamingChat.tsx"
-      }
-    },
-    "frontend-quickactions": {
-      "imports_from_shared": [
-        "QuickActionType",
-        "QuickActionConfig",
-        "createQuickActionConfig"
-      ],
-      "exports": [
-        "QuickActionsBar"
-      ],
-      "allowed_internal_helpers": true,
-      "file_naming": {
-        "pattern": "app/components/{PascalName}/{PascalName}.tsx",
-        "example": "app/components/QuickActionsBar/QuickActionsBar.tsx"
+        "example": "app/components/MarkdownRenderer/MarkdownRenderer.tsx"
       }
     }
   },
   "boundaries": {
-    "shared_to_backend": {
-      "data_shape": "QuickActionConfig",
+    "shared_to_frontend": {
+      "data_shape": "MarkdownConfig | RollingWindowConfig",
       "serialization": "JSON",
       "error_shape": { "code": "string", "message": "string" }
-    },
-    "shared_to_frontend-chat": {
-      "data_shape": "StreamingChatMessage",
-      "serialization": "JSON",
-      "error_shape": { "code": "string", "message": "string" }
-    },
-    "shared_to_frontend-quickactions": {
-      "data_shape": "QuickActionConfig[]",
-      "serialization": "JSON",
-      "error_shape": { "code": "string", "message": "string" }
-    },
-    "frontend-chat_to_backend": {
-      "endpoint": "POST /api/knowledge/streaming",
-      "request_shape": { "messages": "array", "context": "object" },
-      "response_shape": "stream"
-    },
-    "frontend-quickactions_to_backend": {
-      "endpoint": "POST /api/quick-action",
-      "request_shape": { "type": "string", "payload": "object" },
-      "response_shape": { "success": "boolean", "result": "object" }
     }
   },
   "dependency_graph": {
     "shared": {
       "depends_on": [],
-      "blocks": ["backend", "frontend-chat", "frontend-quickactions"]
+      "blocks": ["frontend"]
     },
-    "backend": {
+    "frontend": {
       "depends_on": ["shared"],
-      "blocks": ["frontend-chat", "frontend-quickactions"]
-    },
-    "frontend-chat": {
-      "depends_on": ["shared", "backend"],
-      "blocks": []
-    },
-    "frontend-quickactions": {
-      "depends_on": ["shared", "backend"],
       "blocks": []
     }
   },
   "best_practices": {
-    "vercel_ai_sdk": {
-      "streaming": "Use Vercel AI SDK's useChat hook with streaming enabled for real-time AI responses",
-      "transport": "Configure DefaultChatTransport with /api/knowledge/streaming endpoint",
-      "error_handling": "Implement proper error boundaries and loading states for streaming responses"
+    "markdown_security": {
+      "library": "Use react-markdown with rehype-sanitize plugin for XSS protection",
+      "configuration": "Restrict allowed elements to safe HTML tags (p, strong, em, code, pre, ul, ol, li, blockquote, a)",
+      "url_filtering": "Block javascript: and data: protocols in URLs via urlTransform",
+      "custom_components": "Use custom components for code blocks with syntax highlighting if needed"
+    },
+    "rolling_window": {
+      "implementation": "Apply rolling window logic in useChat hook before saving to localStorage",
+      "pruning_strategy": "Remove oldest messages first when maxMessages exceeded",
+      "system_messages": "Preserve system messages if preserveSystemMessages is true",
+      "performance": "Limit to 20-50 messages to prevent localStorage quota issues"
     },
     "react_patterns": {
-      "state_management": "Use Vercel AI SDK's built-in state management for chat messages",
-      "component_isolation": "Quick Actions component should be independent and reusable",
-      "context_updates": "No context updates required - use existing NavigationContext",
-      "accessibility": "Maintain ARIA labels and keyboard navigation for quick action buttons"
+      "component_isolation": "MarkdownRenderer should be a reusable, independent component",
+      "memoization": "Use React.memo for MarkdownRenderer to prevent unnecessary re-renders",
+      "error_boundaries": "Wrap markdown rendering in error boundary to handle parsing errors"
     },
     "css_styling": {
       "custom_css": "Use app/styles/ for all styling (no Tailwind)",
-      "chat_styling": "Reuse existing chat.css classes for message styling",
-      "quick_actions_styling": "Create new CSS module for QuickActionsBar component",
-      "responsive": "Maintain mobile-first responsive design patterns"
+      "markdown_styling": "Create markdown.css module for markdown-specific styles",
+      "code_blocks": "Style code blocks with dark theme and proper spacing",
+      "responsive": "Ensure markdown content is responsive on mobile devices"
     },
-    "component_architecture": {
-      "single_responsibility": "StreamingChat handles streaming, QuickActionsBar handles quick actions",
-      "prop_drilling": "Use Vercel AI SDK's useChat hook for state (no prop drilling)",
-      "code_reuse": "Reuse existing chat message rendering logic from DrawerChat"
+    "storage_best_practices": {
+      "error_handling": "Handle QuotaExceededError gracefully with user notification",
+      "validation": "Validate stored data structure before loading from localStorage",
+      "fallback": "Provide fallback to empty array if localStorage data is corrupted"
     }
   },
   "codebase_impact": {
     "files_to_modify": [
-      "lib/hooks/useChat.ts - Replace with Vercel AI SDK's useChat hook or create new hook",
-      "app/components/DrawerChat/DrawerChat.tsx - Update to use streaming chat",
-      "app/components/ChatModal/ChatModal.tsx - Update to use streaming chat",
-      "package.json - Add @ai-sdk/react and ai dependencies"
+      "lib/hooks/useChat.ts - Add rolling window logic and update ChatMessage type",
+      "lib/constants.ts - Add rolling window constants",
+      "app/components/StreamingChat/StreamingChat.tsx - Replace plain text with MarkdownRenderer",
+      "lib/types/ai.ts - Add markdown-related types if needed",
+      "package.json - Add react-markdown, rehype-sanitize dependencies"
     ],
     "files_to_create": [
-      "lib/types/ai.ts - AI-related type definitions",
-      "lib/utils/ai-config.ts - AI configuration and utilities",
-      "lib/utils/quick-actions.ts - Quick action utilities",
-      "app/api/knowledge/streaming/route.ts - Streaming knowledge API route",
-      "app/api/quick-action/route.ts - Quick action API endpoint",
-      "app/components/StreamingChat/StreamingChat.tsx - Streaming chat component",
-      "app/components/StreamingChat/StreamingChat.css - Streaming chat styling",
-      "app/components/QuickActionsBar/QuickActionsBar.tsx - Quick actions bar component",
-      "app/components/QuickActionsBar/QuickActionsBar.css - Quick actions bar styling"
+      "lib/utils/markdown-config.ts - Markdown configuration and utilities",
+      "lib/utils/rolling-window.ts - Rolling window logic utilities",
+      "app/components/MarkdownRenderer/MarkdownRenderer.tsx - Markdown rendering component",
+      "app/components/MarkdownRenderer/MarkdownRenderer.css - Markdown styling",
+      "app/styles/markdown.css - Global markdown styles"
     ],
     "css_best_practices": [
       "Use custom CSS classes from app/styles/ (no Tailwind)",
-      "Reuse existing chat.css classes for message styling",
-      "Create new CSS module for QuickActionsBar with consistent naming",
-      "Ensure mobile responsiveness with existing breakpoints",
-      "Maintain focus states for accessibility",
-      "Add loading indicators for streaming states"
+      "Create markdown.css for markdown-specific styles",
+      "Style code blocks with proper syntax highlighting colors",
+      "Ensure links have proper hover states and external link indicators",
+      "Style blockquotes with left border and background color",
+      "Style tables with proper borders and responsive behavior"
     ]
   }
 }

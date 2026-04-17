@@ -1,82 +1,97 @@
 const fs = require('fs');
 const path = require('path');
 
-// Contract validation script
-// Validates that task files reference only tokens defined in schema.json
+const schemaPath = '.parallel/contracts/schema.json';
+const workstreamsDir = '.parallel/workstreams';
 
-const schemaPath = path.join('.parallel', 'contracts', 'schema.json');
-const workstreamsPath = path.join('.parallel', 'workstreams');
-
-console.log('=== Contract Validation ===\n');
+console.log('=== Contract Validation ===');
 
 // Load schema
 let schema;
 try {
   schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
-  console.log('✓ Loaded schema.json');
+  console.log('✓ Schema loaded');
 } catch (error) {
-  console.error('✗ Failed to load schema.json:', error.message);
+  console.error('❌ ERROR: Failed to load schema.json');
   process.exit(1);
 }
 
-// Extract allowed imports from schema
-const allowedImports = {
-  backend: new Set(),
-  'frontend-chat': new Set(),
-  'frontend-quickactions': new Set()
-};
-
-if (schema.contracts.backend?.imports_from_shared) {
-  schema.contracts.backend.imports_from_shared.forEach(imp => {
-    allowedImports.backend.add(imp);
-  });
+// Validate schema structure
+if (!schema.contracts || !schema.dependency_graph) {
+  console.error('❌ ERROR: Invalid schema structure');
+  process.exit(1);
 }
+console.log('✓ Schema structure valid');
 
-if (schema.contracts['frontend-chat']?.imports_from_shared) {
-  schema.contracts['frontend-chat'].imports_from_shared.forEach(imp => {
-    allowedImports['frontend-chat'].add(imp);
-  });
-}
+// Check task files exist and validate references
+const taskFiles = fs.readdirSync(workstreamsDir).filter(f => f.endsWith('-tasks.md'));
 
-if (schema.contracts['frontend-quickactions']?.imports_from_shared) {
-  schema.contracts['frontend-quickactions'].imports_from_shared.forEach(imp => {
-    allowedImports['frontend-quickactions'].add(imp);
-  });
-}
+let hasErrors = false;
 
-console.log(`✓ Backend allowed imports: ${Array.from(allowedImports.backend).join(', ')}`);
-console.log(`✓ Frontend-Chat allowed imports: ${Array.from(allowedImports['frontend-chat']).join(', ')}`);
-console.log(`✓ Frontend-QuickActions allowed imports: ${Array.from(allowedImports['frontend-quickactions']).join(', ')}\n`);
-
-// Validate task files
-const taskFiles = {
-  backend: path.join(workstreamsPath, 'backend-tasks.md'),
-  'frontend-chat': path.join(workstreamsPath, 'frontend-chat-tasks.md'),
-  'frontend-quickactions': path.join(workstreamsPath, 'frontend-quickactions-tasks.md')
-};
-
-let violations = [];
-
-for (const [workstream, filePath] of Object.entries(taskFiles)) {
-  console.log(`Validating ${workstream}...`);
+for (const taskFile of taskFiles) {
+  const workstreamName = taskFile.replace('-tasks.md', '');
+  const taskPath = path.join(workstreamsDir, taskFile);
+  const content = fs.readFileSync(taskPath, 'utf8');
   
-  if (!fs.existsSync(filePath)) {
-    console.error(`✗ Task file not found: ${filePath}`);
-    process.exit(1);
+  console.log(`\nValidating ${workstreamName}...`);
+  
+  // Check task count (max 3 per workstream)
+  const taskMatches = content.match(/### Task \d+:/g);
+  const taskCount = taskMatches ? taskMatches.length : 0;
+  
+  if (taskCount > 3) {
+    console.error(`❌ ERROR: ${workstreamName} has ${taskCount} tasks (max 3 allowed)`);
+    hasErrors = true;
+  } else {
+    console.log(`✓ ${workstreamName} has ${taskCount} tasks (within limit)`);
   }
-
-  const content = fs.readFileSync(filePath, 'utf8');
-  const allowed = allowedImports[workstream];
   
-  // Check for imports from shared in the task file
-  const importMatches = content.matchAll(/imports_from_shared|from ['"]@\/shared|from ['"]@\/lib\/types|from ['"]@\/lib\/utils/g);
+  // Check acceptance criteria count (max 7 per task)
+  const acceptanceMatches = content.match(/\- \[ \]/g);
+  const acceptanceCount = acceptanceMatches ? acceptanceMatches.length : 0;
   
-  for (const match of importMatches) {
-    // Extract the actual import if possible
-    const line = content.substring(Math.max(0, match.index - 50), match.index + 50);
-    console.log(`  Found import reference: ${line.trim()}`);
+  if (acceptanceCount > 15) {
+    console.error(`❌ ERROR: ${workstreamName} has ${acceptanceCount} acceptance criteria (max 15 allowed)`);
+    hasErrors = true;
+  } else {
+    console.log(`✓ ${workstreamName} has ${acceptanceCount} acceptance criteria (within limit)`);
+  }
+  
+  // Verify imports_from_shared references exist in schema
+  const workstreamContract = schema.contracts[workstreamName];
+  if (workstreamContract && workstreamContract.imports_from_shared) {
+    const sharedExports = schema.contracts.shared.exports.public;
+    for (const importItem of workstreamContract.imports_from_shared) {
+      if (!sharedExports.types.includes(importItem) && 
+          !sharedExports.functions.includes(importItem) && 
+          !sharedExports.constants.includes(importItem)) {
+        console.error(`❌ ERROR: ${importItem} not found in shared exports`);
+        hasErrors = true;
+      }
+    }
   }
 }
 
-console.log('\n=== Contract Validation Passed ===');
-console.log('All task files reference valid schema exports.');
+// Check prompt lengths
+const promptsDir = '.parallel/prompts';
+const promptFiles = fs.readdirSync(promptsDir).filter(f => f.endsWith('-prompt.md'));
+
+for (const promptFile of promptFiles) {
+  const promptPath = path.join(promptsDir, promptFile);
+  const content = fs.readFileSync(promptPath, 'utf8');
+  const lines = content.split('\n').length;
+  
+  if (lines > 60) {
+    console.error(`❌ ERROR: ${promptFile} has ${lines} lines (max 60 allowed)`);
+    hasErrors = true;
+  } else {
+    console.log(`✓ ${promptFile} has ${lines} lines (within limit)`);
+  }
+}
+
+if (hasErrors) {
+  console.error('\n❌ Contract validation FAILED');
+  process.exit(1);
+}
+
+console.log('\n✓ Contract validation PASSED');

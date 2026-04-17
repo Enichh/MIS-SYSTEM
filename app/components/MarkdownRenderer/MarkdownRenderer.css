@@ -1,0 +1,226 @@
+/* MarkdownRenderer Component Styles
+ * Custom styling for markdown-rendered content
+ */
+
+.markdown-renderer {
+  line-height: var(--line-height-body);
+  color: var(--color-text);
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Headings */
+.markdown-renderer h1,
+.markdown-renderer h2,
+.markdown-renderer h3,
+.markdown-renderer h4,
+.markdown-renderer h5,
+.markdown-renderer h6 {
+  font-family: var(--font-sans);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-heading);
+  margin-top: var(--spacing-lg);
+  margin-bottom: var(--spacing-sm);
+  color: var(--color-text);
+}
+
+.markdown-renderer h1 {
+  font-size: var(--text-3xl);
+  border-bottom: 2px solid var(--color-border);
+  padding-bottom: var(--spacing-sm);
+}
+
+.markdown-renderer h2 {
+  font-size: var(--text-2xl);
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: var(--spacing-xs);
+}
+
+.markdown-renderer h3 {
+  font-size: var(--text-xl);
+}
+
+.markdown-renderer h4 {
+  font-size: var(--text-lg);
+}
+
+.markdown-renderer h5 {
+  font-size: var(--text-base);
+}
+
+.markdown-renderer h6 {
+  font-size: var(--text-sm);
+}
+
+/* Paragraphs */
+.markdown-renderer p {
+  margin-bottom: var(--spacing-md);
+}
+
+/* Links */
+.markdown-renderer .markdown-link {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  transition: color var(--transition-fast);
+}
+
+.markdown-renderer .markdown-link:hover {
+  color: var(--color-primary-hover);
+}
+
+.markdown-renderer .markdown-link:focus {
+  outline: none;
+  box-shadow: var(--focus-ring);
+}
+
+/* Inline Code */
+.markdown-renderer .markdown-code-inline {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 0.9em;
+  background-color: var(--color-background-tertiary);
+  color: var(--color-text);
+  padding: 2px 6px;
+  border-radius: 4px;
+  display: inline;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* Code Blocks */
+.markdown-renderer .markdown-pre {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: var(--text-sm);
+  background-color: var(--color-background-tertiary);
+  border: 1px solid var(--color-border);
+  border-radius: 8px;
+  padding: var(--spacing-md);
+  margin: var(--spacing-md) 0;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+
+.markdown-renderer .markdown-code-block {
+  background-color: transparent;
+  color: var(--color-text);
+  padding: 0;
+  border: none;
+  border-radius: 0;
+}
+
+/* Lists */
+.markdown-renderer ul,
+.markdown-renderer ol {
+  margin-bottom: var(--spacing-md);
+  padding-left: var(--spacing-lg);
+}
+
+.markdown-renderer ul {
+  list-style-type: disc;
+}
+
+.markdown-renderer ol {
+  list-style-type: decimal;
+}
+
+.markdown-renderer li {
+  margin-bottom: var(--spacing-xs);
+  line-height: var(--line-height-body);
+}
+
+.markdown-renderer li::marker {
+  color: var(--color-text-secondary);
+}
+
+/* Nested Lists */
+.markdown-renderer ul ul,
+.markdown-renderer ol ol,
+.markdown-renderer ul ol,
+.markdown-renderer ol ul {
+  margin-top: var(--spacing-xs);
+  margin-bottom: var(--spacing-xs);
+}
+
+/* Blockquotes */
+.markdown-renderer blockquote {
+  border-left: 4px solid var(--color-primary);
+  background-color: var(--color-background-tertiary);
+  padding: var(--spacing-md);
+  margin: var(--spacing-md) 0;
+  border-radius: 0 8px 8px 0;
+}
+
+.markdown-renderer blockquote p {
+  margin-bottom: 0;
+}
+
+/* Horizontal Rule */
+.markdown-renderer hr {
+  border: none;
+  border-top: 1px solid var(--color-border);
+  margin: var(--spacing-lg) 0;
+}
+
+/* Strong/Bold */
+.markdown-renderer strong {
+  font-weight: var(--font-weight-bold);
+}
+
+/* Em/Italic */
+.markdown-renderer em {
+  font-style: italic;
+}
+
+/* Tables */
+.markdown-renderer table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: var(--spacing-md) 0;
+  font-size: var(--text-sm);
+}
+
+.markdown-renderer th,
+.markdown-renderer td {
+  border: 1px solid var(--color-border);
+  padding: var(--spacing-sm);
+  text-align: left;
+}
+
+.markdown-renderer th {
+  background-color: var(--color-background-tertiary);
+  font-weight: var(--font-weight-semibold);
+}
+
+.markdown-renderer tr:nth-child(even) {
+  background-color: var(--color-background-secondary);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .markdown-renderer h1 {
+    font-size: var(--text-2xl);
+  }
+
+  .markdown-renderer h2 {
+    font-size: var(--text-xl);
+  }
+
+  .markdown-renderer h3 {
+    font-size: var(--text-lg);
+  }
+
+  .markdown-renderer .markdown-pre {
+    padding: var(--spacing-sm);
+    font-size: var(--text-xs);
+  }
+
+  .markdown-renderer table {
+    font-size: var(--text-xs);
+  }
+
+  .markdown-renderer th,
+  .markdown-renderer td {
+    padding: var(--spacing-xs);
+  }
+}

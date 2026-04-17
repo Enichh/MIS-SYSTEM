@@ -4,6 +4,7 @@ import { useChat } from '@/lib/hooks/useChat';
 import { TrashIcon } from '@/app/components/ui/icons/custom/TrashIcon';
 import { Button } from '@/app/components/ui/Button/Button';
 import { Input } from '@/app/components/ui/Input/Input';
+import { MarkdownRenderer } from '@/app/components/MarkdownRenderer/MarkdownRenderer';
 import './StreamingChat.css';
 
 export function StreamingChat() {
@@ -52,7 +53,13 @@ export function StreamingChat() {
                 key={msg.id}
                 className={`chat-message ${msg.role === 'user' ? 'chat-message-user' : 'chat-message-assistant'}`}
               >
-                <div className="chat-message-content">{msg.content}</div>
+                <div className="chat-message-content">
+                  {msg.role === 'assistant' ? (
+                    <MarkdownRenderer content={msg.content} />
+                  ) : (
+                    msg.content
+                  )}
+                </div>
                 <div className="chat-message-meta">
                   <span className="chat-message-timestamp">{formatTimestamp(msg.timestamp)}</span>
                 </div>
