@@ -1,20 +1,100 @@
-import type { Project } from '@/types'
-import { getProjects } from '@/lib/services/projectService'
+'use client';
 
-export default async function ProjectList() {
-  try {
-    const projects = await getProjects()
+import { useState, useEffect } from 'react';
+import type { Project } from '@/types';
+import { getProjects } from '@/lib/services/projectService';
+import DeleteConfirmation from '@/components/confirmation/DeleteConfirmation/DeleteConfirmation';
 
-    if (!projects || projects.length === 0) {
-      return (
-        <div className="empty-state">
+export default function ProjectList() {
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{
+    isOpen: boolean;
+    projectId: string | null;
+    projectName: string;
+  }>({
+    isOpen: false,
+    projectId: null,
+    projectName: '',
+  });
+
+  useEffect(() => {
+    loadProjects();
+  }, []);
+
+  const loadProjects = async () => {
+    try {
+      setLoading(true);
+      const data = await getProjects();
+      setProjects(data);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load projects');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleDeleteClick = (project: Project) => {
+    setDeleteConfirmation({
+      isOpen: true,
+      projectId: project.id,
+      projectName: project.name,
+    });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteConfirmation.projectId) return;
+
+    try {
+      const response = await fetch(`/api/projects/${deleteConfirmation.projectId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete project');
+      }
+
+      setDeleteConfirmation({ isOpen: false, projectId: null, projectName: '' });
+      await loadProjects();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete project');
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteConfirmation({ isOpen: false, projectId: null, projectName: '' });
+  };
+
+  if (loading) {
+    return (
+      <div className="empty-state">
+        <h3>Loading Projects...</h3>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="empty-state">
+        <h3>Error Loading Projects</h3>
+        <p>Failed to load projects. Please refresh the page.</p>
+      </div>
+    );
+  }
+
+  if (!projects || projects.length === 0) {
+    return (
+      <div className="empty-state">
         <h3>No Projects Found</h3>
         <p>Click &quot;Add Project&quot; to create your first project.</p>
-        </div>
-      )
-    }
+      </div>
+    );
+  }
 
-    return (
+  return (
+    <>
       <div className="data-list">
         {projects.map((project) => (
           <div key={project.id} className="data-card">
@@ -51,9 +131,7 @@ export default async function ProjectList() {
                 Edit
               </button>
               <button
-                data-action="delete"
-                data-entity="project"
-                data-id={project.id}
+                onClick={() => handleDeleteClick(project)}
                 className="btn-danger"
               >
                 Delete
@@ -62,13 +140,14 @@ export default async function ProjectList() {
           </div>
         ))}
       </div>
-    )
-  } catch (error) {
-    return (
-      <div className="empty-state">
-        <h3>Error Loading Projects</h3>
-        <p>Failed to load projects. Please refresh the page.</p>
-      </div>
-    )
-  }
+      <DeleteConfirmation
+        isOpen={deleteConfirmation.isOpen}
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+        entityName={deleteConfirmation.projectName}
+        entityType="Project"
+        variant="danger"
+      />
+    </>
+  );
 }

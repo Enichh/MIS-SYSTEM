@@ -1,23 +1,105 @@
-import type { Task, Project } from '@/types'
-import { getTasks } from '@/lib/services/taskService'
-import { getProjects } from '@/lib/services/projectService'
+'use client';
 
-export default async function TaskList() {
-  try {
-    const [tasks, projects] = await Promise.all([getTasks(), getProjects()])
+import { useState, useEffect } from 'react';
+import type { Task, Project } from '@/types';
+import { getTasks } from '@/lib/services/taskService';
+import { getProjects } from '@/lib/services/projectService';
+import DeleteConfirmation from '@/components/confirmation/DeleteConfirmation/DeleteConfirmation';
 
-    const projectMap = new Map(projects.map((p) => [p.id, p.name]))
+export default function TaskList() {
+  const [tasks, setTasks] = useState<Task[]>([]);
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [deleteConfirmation, setDeleteConfirmation] = useState<{
+    isOpen: boolean;
+    taskId: string | null;
+    taskTitle: string;
+  }>({
+    isOpen: false,
+    taskId: null,
+    taskTitle: '',
+  });
 
-    if (!tasks || tasks.length === 0) {
-      return (
-        <div className="empty-state">
+  useEffect(() => {
+    loadData();
+  }, []);
+
+  const loadData = async () => {
+    try {
+      setLoading(true);
+      const [tasksData, projectsData] = await Promise.all([getTasks(), getProjects()]);
+      setTasks(tasksData);
+      setProjects(projectsData);
+      setError(null);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to load tasks');
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const projectMap = new Map(projects.map((p) => [p.id, p.name]));
+
+  const handleDeleteClick = (task: Task) => {
+    setDeleteConfirmation({
+      isOpen: true,
+      taskId: task.id,
+      taskTitle: task.title,
+    });
+  };
+
+  const handleConfirmDelete = async () => {
+    if (!deleteConfirmation.taskId) return;
+
+    try {
+      const response = await fetch(`/api/tasks/${deleteConfirmation.taskId}`, {
+        method: 'DELETE',
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to delete task');
+      }
+
+      setDeleteConfirmation({ isOpen: false, taskId: null, taskTitle: '' });
+      await loadData();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to delete task');
+    }
+  };
+
+  const handleCancelDelete = () => {
+    setDeleteConfirmation({ isOpen: false, taskId: null, taskTitle: '' });
+  };
+
+  if (loading) {
+    return (
+      <div className="empty-state">
+        <h3>Loading Tasks...</h3>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="empty-state">
+        <h3>Error Loading Tasks</h3>
+        <p>Failed to load tasks. Please refresh the page.</p>
+      </div>
+    );
+  }
+
+  if (!tasks || tasks.length === 0) {
+    return (
+      <div className="empty-state">
         <h3>No Tasks Found</h3>
         <p>Click &quot;Add Task&quot; to create your first task.</p>
-        </div>
-      )
-    }
+      </div>
+    );
+  }
 
-    return (
+  return (
+    <>
       <div className="data-list">
         {tasks.map((task) => (
           <div key={task.id} className="data-card">
@@ -59,9 +141,7 @@ export default async function TaskList() {
                 Edit
               </button>
               <button
-                data-action="delete"
-                data-entity="task"
-                data-id={task.id}
+                onClick={() => handleDeleteClick(task)}
                 className="btn-danger"
               >
                 Delete
@@ -70,13 +150,14 @@ export default async function TaskList() {
           </div>
         ))}
       </div>
-    )
-  } catch (error) {
-    return (
-      <div className="empty-state">
-        <h3>Error Loading Tasks</h3>
-        <p>Failed to load tasks. Please refresh the page.</p>
-      </div>
-    )
-  }
+      <DeleteConfirmation
+        isOpen={deleteConfirmation.isOpen}
+        onConfirm={handleConfirmDelete}
+        onCancel={handleCancelDelete}
+        entityName={deleteConfirmation.taskTitle}
+        entityType="Task"
+        variant="danger"
+      />
+    </>
+  );
 }

@@ -1,216 +1,169 @@
 {
   "version": "1.0.0",
-  "feature": "Next.js Migration - Backend First",
+  "feature": "Reusable Modal Forms and Confirmation Dialogs",
   "freeze_phase": "hot",
   "contracts": {
     "shared": {
       "exports": {
         "public": {
           "types": [
-            "Employee",
-            "Project",
-            "Task",
-            "ApiResponse",
-            "KnowledgeQuery",
-            "KnowledgeResponse"
+            "ModalConfig",
+            "FormFieldConfig",
+            "ConfirmationConfig",
+            "ModalSize"
           ],
           "functions": [
-            "fetchFromDatabase",
-            "validateEmployee",
-            "validateProject",
-            "validateTask"
+            "useModal",
+            "useConfirmation",
+            "validateField"
           ],
           "constants": [
-            "API_BASE_URL",
-            "KNOWLEDGE_ENDPOINTS",
-            "CHAT_STORAGE_KEY"
+            "MODAL_SIZES",
+            "DEFAULT_ANIMATION_DURATION",
+            "MODAL_Z_INDEX"
           ]
         },
         "internal": [
-          "sanitizeQuery",
-          "formatKnowledgeResponse",
-          "detectQueryIntent",
-          "buildKnowledgeContext"
+          "generateFormFieldId",
+          "sanitizeInput",
+          "formatValidationMessage"
         ]
       },
       "schemas": {
-        "Employee": {
+        "ModalConfig": {
           "type": "object",
           "properties": {
-            "id": { "type": "string", "pattern": "^emp-[0-9]{3}$" },
-            "name": { "type": "string" },
-            "email": { "type": "string", "format": "email" },
-            "role": { "type": "string" },
-            "department": { "type": "string" },
-            "projects": { "type": "array", "items": { "type": "string" } }
-          },
-          "required": ["id", "name", "email", "role", "department"]
-        },
-        "Project": {
-          "type": "object",
-          "properties": {
-            "id": { "type": "string", "pattern": "^proj-[0-9]{3}$" },
-            "name": { "type": "string" },
-            "description": { "type": "string" },
-            "status": { "type": "string", "enum": ["active", "completed", "on_hold"] },
-            "startDate": { "type": "string", "format": "date" },
-            "endDate": { "type": "string", "format": "date" }
-          },
-          "required": ["id", "name", "status"]
-        },
-        "Task": {
-          "type": "object",
-          "properties": {
-            "id": { "type": "string", "pattern": "^task-[0-9]{3}$" },
+            "isOpen": { "type": "boolean" },
+            "onClose": { "type": "function" },
             "title": { "type": "string" },
-            "description": { "type": "string" },
-            "status": { "type": "string", "enum": ["completed", "in_progress", "pending"] },
-            "projectId": { "type": "string" },
-            "assignedTo": { "type": "string" },
-            "dueDate": { "type": "string", "format": "date" }
+            "size": { "type": "string", "enum": ["sm", "md", "lg", "xl"] },
+            "showCloseButton": { "type": "boolean" },
+            "closeOnOverlayClick": { "type": "boolean" },
+            "ariaLabelledBy": { "type": "string" },
+            "ariaLabel": { "type": "string" },
+            "ariaDescribedBy": { "type": "string" },
+            "initialFocus": { "type": "string" },
+            "returnFocus": { "type": "boolean" }
           },
-          "required": ["id", "title", "status", "projectId"]
+          "required": ["isOpen", "onClose", "title"]
         },
-        "ApiResponse": {
+        "FormFieldConfig": {
           "type": "object",
           "properties": {
-            "code": { "type": "string" },
-            "message": { "type": "string" }
-          }
+            "name": { "type": "string" },
+            "label": { "type": "string" },
+            "type": { "type": "string", "enum": ["text", "email", "number", "date", "textarea", "select"] },
+            "required": { "type": "boolean" },
+            "options": { "type": "array", "items": { "type": "string" } },
+            "placeholder": { "type": "string" },
+            "validation": { "type": "object" },
+            "maxLength": { "type": "number" },
+            "minLength": { "type": "number" },
+            "pattern": { "type": "string" },
+            "min": { "type": "number" },
+            "max": { "type": "number" }
+          },
+          "required": ["name", "label", "type", "required"]
         },
-        "KnowledgeQuery": {
+        "ConfirmationConfig": {
           "type": "object",
           "properties": {
-            "query": { "type": "string" },
-            "context": {
-              "type": "object",
-              "properties": {
-                "employeeId": { "type": "string" },
-                "projectId": { "type": "string" },
-                "taskId": { "type": "string" }
-              }
-            }
+            "isOpen": { "type": "boolean" },
+            "onConfirm": { "type": "function" },
+            "onCancel": { "type": "function" },
+            "title": { "type": "string" },
+            "message": { "type": "string" },
+            "confirmText": { "type": "string" },
+            "cancelText": { "type": "string" },
+            "variant": { "type": "string", "enum": ["danger", "warning", "info"] },
+            "ariaLabelledBy": { "type": "string" },
+            "ariaLabel": { "type": "string" },
+            "ariaDescribedBy": { "type": "string" },
+            "initialFocus": { "type": "string" }
           },
-          "required": ["query"]
+          "required": ["isOpen", "onConfirm", "onCancel", "title", "message"]
         },
-        "KnowledgeResponse": {
-          "type": "object",
-          "properties": {
-            "answer": { "type": "string" },
-            "sources": { "type": "array", "items": { "type": "string" } },
-            "confidence": { "type": "number" },
-            "relatedEntities": { "type": "object" }
-          },
-          "required": ["answer"]
+        "ModalSize": {
+          "type": "string",
+          "enum": ["sm", "md", "lg", "xl"]
         }
       }
     },
-    "backend": {
+    "forms": {
       "imports_from_shared": [
-        "Employee",
-        "Project",
-        "Task",
-        "ApiResponse",
-        "KnowledgeQuery",
-        "KnowledgeResponse",
-        "fetchFromDatabase",
-        "detectQueryIntent",
-        "buildKnowledgeContext"
+        "ModalConfig",
+        "FormFieldConfig",
+        "useModal",
+        "validateField",
+        "MODAL_SIZES"
       ],
       "exports": [
-        "GET /api/employees",
-        "GET /api/projects",
-        "GET /api/tasks",
-        "POST /api/knowledge/query"
+        "EmployeeForm",
+        "ProjectForm",
+        "TaskForm"
       ],
       "allowed_internal_helpers": true,
       "file_naming": {
-        "pattern": "app/api/{route-name}/route.ts",
-        "example": "app/api/employees/route.ts"
+        "pattern": "app/components/forms/{PascalName}/{PascalName}.tsx",
+        "example": "app/components/forms/EmployeeForm/EmployeeForm.tsx"
       },
-      "nextjs_best_practices": {
-        "use_app_router": true,
-        "use_next_request_response": true,
-        "export_http_methods": ["GET", "POST"],
-        "default_dynamic_caching": true,
-        "use_typescript": true,
-        "input_validation": "zod",
-        "cors_configuration": "middleware"
+      "react_best_practices": {
+        "use_functional_components": true,
+        "use_hooks": true,
+        "typescript_strict": true,
+        "controlled_components": true
       }
     },
-    "frontend": {
+    "confirmation": {
       "imports_from_shared": [
-        "Employee",
-        "Project",
-        "Task",
-        "ApiResponse",
-        "KnowledgeQuery",
-        "KnowledgeResponse",
-        "API_BASE_URL",
-        "KNOWLEDGE_ENDPOINTS",
-        "CHAT_STORAGE_KEY"
+        "ConfirmationConfig",
+        "useConfirmation",
+        "DEFAULT_ANIMATION_DURATION"
       ],
       "exports": [
-        "EmployeeList",
-        "ProjectList",
-        "TaskList",
-        "ChatModal",
-        "ThemeToggle"
+        "DeleteConfirmation",
+        "ActionConfirmation"
       ],
       "allowed_internal_helpers": true,
       "file_naming": {
-        "pattern": "app/components/{PascalName}/{PascalName}.tsx",
-        "example": "app/components/EmployeeList/EmployeeList.tsx"
+        "pattern": "app/components/confirmation/{PascalName}/{PascalName}.tsx",
+        "example": "app/components/confirmation/DeleteConfirmation/DeleteConfirmation.tsx"
       },
-      "nextjs_best_practices": {
-        "use_app_router": true,
-        "use_server_components": true,
-        "use_typescript": true,
-        "incremental_migration": true,
-        "maintain_api_compatibility": true
+      "react_best_practices": {
+        "use_functional_components": true,
+        "use_hooks": true,
+        "typescript_strict": true,
+        "controlled_components": true
       }
     }
   },
   "boundaries": {
-    "shared_to_backend": {
-      "data_shape": "Employee[] | Project[] | Task[]",
-      "serialization": "JSON",
-      "error_shape": { "code": "string", "message": "string" }
+    "shared_to_forms": {
+      "data_shape": "ModalConfig | FormFieldConfig[]",
+      "serialization": "React props",
+      "error_shape": { "field": "string", "message": "string" }
     },
-    "shared_to_frontend": {
-      "data_shape": "Employee[] | Project[] | Task[] | KnowledgeResponse",
-      "serialization": "JSON",
-      "error_shape": { "code": "string", "message": "string" }
+    "shared_to_confirmation": {
+      "data_shape": "ConfirmationConfig",
+      "serialization": "React props",
+      "error_shape": { "type": "string", "message": "string" }
     },
-    "frontend_to_backend": {
-      "endpoints": [
-        "GET /api/employees",
-        "GET /api/projects",
-        "GET /api/tasks",
-        "POST /api/knowledge/query"
-      ],
-      "request_shape": {
-        "query": "string",
-        "context": "object"
-      },
-      "response_shape": {
-        "data": "array | object",
-        "code": "string",
-        "message": "string"
-      }
+    "forms_to_existing": {
+      "components": ["EmployeeList", "ProjectList", "TaskList"],
+      "integration_pattern": "Replace data-action attributes with React state and event handlers"
     }
   },
   "dependency_graph": {
     "shared": {
       "depends_on": [],
-      "blocks": ["backend", "frontend"]
+      "blocks": ["forms", "confirmation"]
     },
-    "backend": {
+    "forms": {
       "depends_on": ["shared"],
-      "blocks": ["frontend"]
+      "blocks": []
     },
-    "frontend": {
-      "depends_on": ["shared", "backend"],
+    "confirmation": {
+      "depends_on": ["shared"],
       "blocks": []
     }
   }

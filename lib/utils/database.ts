@@ -71,3 +71,34 @@ export async function insertToDatabase<T = unknown>(
 
   return insertedData;
 }
+
+/**
+ * Deletes a record from the specified database table
+ * @param tableName - The name of the table to delete from (must be in VALID_TABLES)
+ * @param id - The ID of the record to delete
+ * @returns The deleted record
+ * @throws Error if table name is invalid or delete fails
+ */
+export async function deleteFromDatabase<T = unknown>(
+  tableName: string,
+  id: string
+): Promise<T> {
+  if (!VALID_TABLES.includes(tableName as any)) {
+    throw new Error(`Invalid table name: ${tableName}`);
+  }
+
+  const supabase = await createClient();
+  const { data: deletedData, error } = await supabase
+    .from(tableName)
+    .delete()
+    .eq('id', id)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Database delete error:', error);
+    throw new Error(`Failed to delete from ${tableName}: ${error.message}`);
+  }
+
+  return deletedData;
+}
