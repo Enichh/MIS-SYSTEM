@@ -20,7 +20,7 @@ function matchesSearchTerm(term: string, searchTerm: string): boolean {
  * @param delay - Delay in milliseconds (default 300)
  * @returns Debounced function
  */
-export function debounceSearch<T extends (...args: unknown[]) => unknown>(
+export function debounceSearch<T extends (...args: any[]) => unknown>(
   func: T,
   delay: number = 300
 ): (...args: Parameters<T>) => void {

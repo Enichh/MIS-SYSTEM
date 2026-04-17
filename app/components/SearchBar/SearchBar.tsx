@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useDeferredValue, useEffect, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import type { SearchQuery } from '@/types';
 import { debounceSearch } from '@/lib/utils/search';
 import { SEARCH_DEBOUNCE_MS, MIN_SEARCH_LENGTH } from '@/lib/constants';
@@ -20,23 +20,27 @@ export function SearchBar({
   ariaLabel = 'Search input',
 }: SearchBarProps) {
   const [inputValue, setInputValue] = useState('');
-  const deferredQuery = useDeferredValue(inputValue);
+  const onSearchRef = useRef(onSearch);
+  const entityTypeRef = useRef(entityType);
 
-  const debouncedSearchHandler = useCallback(
-    debounceSearch((query: unknown) => {
-      const queryString = query as string;
-      if (queryString.length >= MIN_SEARCH_LENGTH || queryString.length === 0) {
-        if (onSearch) {
-          onSearch({ query: queryString, entityType });
-        }
+  // Keep refs in sync with latest props
+  useEffect(() => {
+    onSearchRef.current = onSearch;
+    entityTypeRef.current = entityType;
+  }, [onSearch, entityType]);
+
+  // Stable debounced search handler that doesn't get recreated
+  const debouncedSearchRef = useRef(
+    debounceSearch((query: string) => {
+      if (query.length >= MIN_SEARCH_LENGTH || query.length === 0) {
+        onSearchRef.current({ query, entityType: entityTypeRef.current });
       }
-    }, SEARCH_DEBOUNCE_MS),
-    [entityType, onSearch, SEARCH_DEBOUNCE_MS, MIN_SEARCH_LENGTH]
+    }, SEARCH_DEBOUNCE_MS)
   );
 
   useEffect(() => {
-    debouncedSearchHandler(deferredQuery);
-  }, [deferredQuery, debouncedSearchHandler]);
+    debouncedSearchRef.current(inputValue);
+  }, [inputValue]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setInputValue(e.target.value);
