@@ -30,7 +30,7 @@ export interface Task {
   priority: 'high' | 'medium' | 'low';
   dependencies: string[];
   projectId: string;
-  assignedTo?: string;
+  assignedTo: string | null;
   dueDate?: string;
   created_at: string;
   updated_at: string;
