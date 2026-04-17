@@ -102,10 +102,10 @@ export default function EmployeeForm() {
 
         <form onSubmit={handleSubmit} noValidate>
           {employeeFields.map((field) => (
-            <div key={field.name} className="mb-4">
-              <label htmlFor={field.name} className="block text-sm font-medium text-gray-700 mb-1">
+            <div key={field.name} className="form-field">
+              <label htmlFor={field.name} className="form-label">
                 {field.label}
-                {field.required && <span className="text-red-500 ml-1">*</span>}
+                {field.required && <span className="required">*</span>}
               </label>
               {field.type === 'textarea' ? (
                 <textarea
@@ -115,9 +115,7 @@ export default function EmployeeForm() {
                   onChange={handleInputChange}
                   required={field.required}
                   rows={3}
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors[field.name] ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  className={`form-textarea ${errors[field.name] ? 'error' : ''}`}
                   aria-describedby={errors[field.name] ? `${field.name}-error` : undefined}
                   aria-invalid={!!errors[field.name]}
                 />
@@ -129,33 +127,31 @@ export default function EmployeeForm() {
                   value={formData[field.name as keyof FormData] as string}
                   onChange={handleInputChange}
                   required={field.required}
-                  className={`w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                    errors[field.name] ? 'border-red-500' : 'border-gray-300'
-                  }`}
+                  className={`form-input ${errors[field.name] ? 'error' : ''}`}
                   aria-describedby={errors[field.name] ? `${field.name}-error` : undefined}
                   aria-invalid={!!errors[field.name]}
                 />
               )}
               {errors[field.name] && (
-                <p id={`${field.name}-error`} className="mt-1 text-sm text-red-600" role="alert">
+                <p id={`${field.name}-error`} className="form-error" role="alert">
                   {errors[field.name]}
                 </p>
               )}
             </div>
           ))}
 
-          <div className="flex justify-end gap-3 mt-6">
+          <div className="form-actions">
             <button
               type="button"
               onClick={close}
-              className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-gray-500"
+              className="btn-secondary"
               disabled={isSubmitting}
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="px-4 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="btn-primary"
               disabled={isSubmitting}
               aria-label="Submit employee form"
             >
