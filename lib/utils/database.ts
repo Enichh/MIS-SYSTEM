@@ -10,7 +10,7 @@ export async function fetchFromDatabase(
     throw new Error(`Invalid table name: ${tableName}`);
   }
 
-  const supabase = createClient();
+  const supabase = await createClient();
   let query = supabase.from(tableName).select('*');
 
   if (filters.id) {
