@@ -1,17 +1,19 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import type { Task, Project } from '@/types';
+import { useState, useEffect, useCallback } from 'react';
+import type { Task, Project, SearchQuery } from '@/types';
 import { Button } from '@/app/components/ui/Button/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/app/components/ui/Card/Card';
 import { Badge } from '@/app/components/ui/Badge/Badge';
 import DeleteConfirmation from '@/app/components/confirmation/DeleteConfirmation/DeleteConfirmation';
+import { SearchBar } from '@/app/components/SearchBar/SearchBar';
 
 export default function TaskList() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const [deleteConfirmation, setDeleteConfirmation] = useState<{
     isOpen: boolean;
     taskId: string | null;
@@ -22,15 +24,12 @@ export default function TaskList() {
     taskTitle: '',
   });
 
-  useEffect(() => {
-    loadData();
-  }, []);
-
-  const loadData = async () => {
+  const loadData = useCallback(async () => {
     try {
       setLoading(true);
+      const tasksUrl = searchQuery ? `/api/tasks?name=${encodeURIComponent(searchQuery)}` : '/api/tasks';
       const [tasksResponse, projectsResponse] = await Promise.all([
-        fetch('/api/tasks'),
+        fetch(tasksUrl),
         fetch('/api/projects'),
       ]);
       
@@ -48,6 +47,14 @@ export default function TaskList() {
     } finally {
       setLoading(false);
     }
+  }, [searchQuery]);
+
+  useEffect(() => {
+    loadData();
+  }, [loadData]);
+
+  const handleSearch = (query: SearchQuery) => {
+    setSearchQuery(query.query);
   };
 
   const projectMap = new Map(projects.map((p) => [p.id, p.name]));
@@ -111,6 +118,12 @@ export default function TaskList() {
 
   return (
     <>
+      <SearchBar
+        entityType="tasks"
+        onSearch={handleSearch}
+        placeholder="Search tasks by title..."
+        ariaLabel="Search tasks"
+      />
       <div className="grid-layout">
         {tasks.map((task) => (
           <Card key={task.id}>

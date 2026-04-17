@@ -1,16 +1,18 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import type { Employee } from '@/types';
+import { useState, useEffect, useCallback } from 'react';
+import type { Employee, SearchQuery } from '@/types';
 import { Button } from '@/app/components/ui/Button/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/app/components/ui/Card/Card';
 import { Badge } from '@/app/components/ui/Badge/Badge';
 import DeleteConfirmation from '@/app/components/confirmation/DeleteConfirmation/DeleteConfirmation';
+import { SearchBar } from '@/app/components/SearchBar/SearchBar';
 
 export default function EmployeeList() {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>('');
   const [deleteConfirmation, setDeleteConfirmation] = useState<{
     isOpen: boolean;
     employeeId: string | null;
@@ -21,14 +23,11 @@ export default function EmployeeList() {
     employeeName: '',
   });
 
-  useEffect(() => {
-    loadEmployees();
-  }, []);
-
-  const loadEmployees = async () => {
+  const loadEmployees = useCallback(async () => {
     try {
       setLoading(true);
-      const response = await fetch('/api/employees');
+      const url = searchQuery ? `/api/employees?name=${encodeURIComponent(searchQuery)}` : '/api/employees';
+      const response = await fetch(url);
       if (!response.ok) {
         throw new Error('Failed to fetch employees');
       }
@@ -40,6 +39,14 @@ export default function EmployeeList() {
     } finally {
       setLoading(false);
     }
+  }, [searchQuery]);
+
+  useEffect(() => {
+    loadEmployees();
+  }, [loadEmployees]);
+
+  const handleSearch = (query: SearchQuery) => {
+    setSearchQuery(query.query);
   };
 
   const handleDeleteClick = (employee: Employee) => {
@@ -107,6 +114,12 @@ export default function EmployeeList() {
 
   return (
     <>
+      <SearchBar
+        entityType="employees"
+        onSearch={handleSearch}
+        placeholder="Search employees by name..."
+        ariaLabel="Search employees"
+      />
       <div className="grid-layout">
         {employees.map((employee) => (
           <Card key={employee.id} className="employee-card">
