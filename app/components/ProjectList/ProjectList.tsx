@@ -120,12 +120,12 @@ export default function ProjectList() {
             <CardContent>
               {project.startDate && (
                 <p className="text-sm">
-                  <span className="font-medium">Start Date:</span> {project.startDate}
+                  <span className="font-semibold">Start Date:</span> {project.startDate}
                 </p>
               )}
               {project.endDate && (
                 <p className="text-sm">
-                  <span className="font-medium">End Date:</span> {project.endDate}
+                  <span className="font-semibold">End Date:</span> {project.endDate}
                 </p>
               )}
             </CardContent>

@@ -130,17 +130,17 @@ export default function TaskList() {
             <CardContent>
               {task.description && (
                 <p className="text-sm">
-                  <span className="font-medium">Description:</span> {task.description}
+                  <span className="font-semibold">Description:</span> {task.description}
                 </p>
               )}
               {task.assignedTo && (
                 <p className="text-sm">
-                  <span className="font-medium">Assigned To:</span> {task.assignedTo}
+                  <span className="font-semibold">Assigned To:</span> {task.assignedTo}
                 </p>
               )}
               {task.dueDate && (
                 <p className="text-sm">
-                  <span className="font-medium">Due Date:</span> {task.dueDate}
+                  <span className="font-semibold">Due Date:</span> {task.dueDate}
                 </p>
               )}
             </CardContent>

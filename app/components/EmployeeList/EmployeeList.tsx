@@ -87,8 +87,8 @@ export default function EmployeeList() {
         <h3 className="text-lg font-semibold text-destructive">Error Loading Employees</h3>
         <p className="text-sm text-muted-foreground mt-1">Failed to load employees. Please refresh the page.</p>
         <details className="mt-4 text-left text-sm">
-          <summary className="cursor-pointer text-destructive font-medium">Error Details</summary>
-          <pre className="mt-2 p-2 bg-destructive/10 rounded overflow-auto text-xs">
+          <summary className="cursor-pointer text-destructive font-semibold">Error Details</summary>
+          <pre className="mt-2 p-2 bg-destructive rounded overflow-auto text-xs">
             {error}
           </pre>
         </details>

@@ -41,10 +41,13 @@ export default function ChatModal() {
 
   useEffect(() => {
     // Save chat history to localStorage
-    try {
-      localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messages))
-    } catch (error) {
-      console.error('Failed to save chat history:', error)
+    if (messages.length > 0) {
+      try {
+        localStorage.setItem(CHAT_STORAGE_KEY, JSON.stringify(messages))
+      } catch (error)
+      {
+        console.error('Failed to save chat history:', error)
+      }
     }
   }, [messages])
 
@@ -133,99 +136,85 @@ export default function ChatModal() {
 
   return (
     <>
+      {/* This button floats on the bottom right of the screen */}
       <Button
-        className="fab-button"
+        className="chat-fab"
         onClick={() => setIsOpen(true)}
         aria-label="Open chat"
       >
-        <MessageIcon size={24} />
+        <MessageIcon size={28} />
       </Button>
 
       <Modal open={isOpen} onOpenChange={setIsOpen}>
-        <ModalContent className="fixed right-4 bottom-4 left-auto top-auto translate-x-0 translate-y-0 max-w-md w-[calc(100vw-2rem)]">
-          <ModalHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
-            <ModalTitle className="text-lg font-semibold">AI Chat Assistant</ModalTitle>
+        <ModalContent className="chat-modal">
+          <ModalHeader className="chat-modal-header">
+            <h3>AI Chat Assistant</h3>
             <Button
               variant="ghost"
               size="sm"
               onClick={handleClearHistory}
               aria-label="Delete chat history"
-              className="h-8 w-8 rounded-lg p-0"
+              className="chat-modal-delete"
             >
               <TrashIcon size={16} />
             </Button>
           </ModalHeader>
-          <div className="flex flex-col gap-4 max-h-[60vh] overflow-hidden">
-            <div className="flex-1 overflow-y-auto rounded-lg bg-muted/30 p-4">
-              <div className="flex flex-col gap-3">
-                {messages.length === 0 && !isLoading && (
-                  <div className="text-center py-8 text-muted-foreground">
-                    <p className="text-sm">No messages yet. Start a conversation!</p>
-                  </div>
-                )}
-                {messages.map((msg) => (
+
+          <div className="chat-message-list-container">
+            <div className="chat-message-list">
+              {messages.length === 0 && !isLoading ? (
+                <div className="chat-message-empty">
+                  <p className="font-semibold mb-1">Start a conversation</p>
+                  <p className="text-sm">Ask me anything about your MIS system</p>
+                </div>
+              ) : (
+                messages.map((msg) => (
                   <div
                     key={msg.id}
-                    className={`flex flex-col gap-1 max-w-[85%] ${
-                      msg.role === 'user' ? 'ml-auto items-end' : 'mr-auto items-start'
-                    }`}
+                    className={`chat-message ${msg.role === 'user' ? 'chat-message-user' : 'chat-message-assistant'}`}
                   >
-                    <div
-                      className={`rounded-2xl px-4 py-2.5 text-sm ${
-                        msg.role === 'user'
-                          ? 'bg-primary text-primary-foreground'
-                          : 'bg-muted text-foreground'
-                      }`}
-                    >
-                      {msg.content}
+                    <div className="chat-message-content">{msg.content}</div>
+                    <div className="chat-message-meta">
+                      <span className="chat-message-timestamp">{formatTimestamp(msg.timestamp)}</span>
                     </div>
-                    <span className="text-[10px] text-muted-foreground">
-                      {formatTimestamp(msg.timestamp)}
-                    </span>
                   </div>
-                ))}
-                {isLoading && (
-                  <div className="flex items-center gap-1.5 py-2">
-                    <span className="h-2 w-2 animate-bounce rounded-full bg-primary" />
-                    <span className="h-2 w-2 animate-bounce rounded-full bg-primary" style={{ animationDelay: '0.1s' }} />
-                    <span className="h-2 w-2 animate-bounce rounded-full bg-primary" style={{ animationDelay: '0.2s' }} />
+                ))
+              )}
+
+              {isLoading && (
+                <div className="chat-message-loading">
+                  <div className="loading-dots">
+                    <span />
+                    <span />
+                    <span />
                   </div>
-                )}
-                <div ref={messagesEndRef} />
-              </div>
+                </div>
+              )}
+              <div ref={messagesEndRef} />
             </div>
-            <div className="flex gap-2">
+          </div>
+
+          <div className="chat-input-container">
+            <div className="chat-input-wrapper">
               <Input
                 placeholder="Type your message..."
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  onKeyDown={handleKeyDown}
-                  aria-label="Chat message input"
-                  className="flex-1"
-                />
-                <Button
-                  onClick={handleSend}
-                  disabled={!input.trim() || isLoading}
-                  size="sm"
-                  className="h-10 w-10 rounded-xl shrink-0 p-0"
-                >
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="16"
-                    height="16"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                  >
-                    <path d="m22 2-7 20-4-9-9-4Z" />
-                    <path d="M22 2 11 13" />
-                  </svg>
-                </Button>
-              </div>
+                value={input}
+                onChange={(e) => setInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                aria-label="Chat message input"
+                className="chat-input-textarea"
+                disabled={isLoading}
+              />
+              <button
+                onClick={handleSend}
+                disabled={!input.trim() || isLoading}
+                className="chat-input-send"
+                aria-label="Send message"
+              >
+                Send
+              </button>
             </div>
+          </div>
         </ModalContent>
       </Modal>
     </>

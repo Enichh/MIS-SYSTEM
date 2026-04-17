@@ -94,14 +94,14 @@
 }
 
 .btn-danger:hover:not(:disabled) {
-  background-color: hsl(25 60% 60%);
+  background-color: hsl(var(--destructive) / 0.9);
   transform: translateY(-1px);
   box-shadow: var(--shadow-lg);
 }
 
 .btn-danger:focus {
   outline: none;
-  box-shadow: 0 0 0 3px hsl(25 60% 55% / 0.3);
+  box-shadow: 0 0 0 3px hsl(var(--destructive) / 0.3);
 }
 
 .btn-danger:disabled {

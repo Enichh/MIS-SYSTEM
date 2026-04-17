@@ -2,6 +2,18 @@
  * Chat modal, messages, input, and related components
  */
 
+/* Chat FAB Button */
+.chat-fab {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  z-index: 50;
+  height: 3.5rem;
+  width: 3.5rem;
+  border-radius: 9999px;
+  box-shadow: var(--shadow-lg);
+}
+
 /* Chat Modal Overlay */
 .chat-modal-overlay {
   position: fixed;
@@ -25,7 +37,7 @@
 /* Chat Modal */
 .chat-modal {
   background-color: var(--color-background-secondary);
-  border: 1px solid var(--color-border);
+  border: none;
   border-radius: 12px;
   width: 100%;
   max-width: 400px;
@@ -49,7 +61,7 @@
   justify-content: space-between;
   align-items: center;
   padding: var(--spacing-lg);
-  border-bottom: 1px solid var(--color-border-light);
+  border-bottom: none;
 }
 
 .chat-modal-header h3 {
@@ -141,7 +153,7 @@
 
 /* Chat Input Container */
 .chat-input-container {
-  border-top: 1px solid var(--color-border-light);
+  border-top: none;
   padding: var(--spacing-md);
   background-color: var(--color-background);
 }
@@ -327,14 +339,4 @@
 .chat-input-send:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-}
-
-/* Dark mode overrides for chat input send button */
-.dark .chat-input-send {
-  background-color: #dc2626;
-  color: white;
-}
-
-.dark .chat-input-send:hover:not(:disabled) {
-  background-color: #b91c1c;
 }

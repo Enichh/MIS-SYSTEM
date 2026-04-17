@@ -270,9 +270,9 @@ export default function TaskForm() {
                             const event = { target: { name: field.name, value: emp.id } } as React.ChangeEvent<HTMLInputElement>;
                             handleInputChange(event);
                           }}
-                          className="px-3 py-2 hover:bg-accent cursor-pointer"
+                          className="px-3 py-2 hover-bg-accent cursor-pointer"
                         >
-                          <div className="font-medium">{emp.name}</div>
+                          <div className="font-semibold">{emp.name}</div>
                           <div className="text-sm text-muted-foreground">{emp.email}</div>
                         </li>
                       ))}

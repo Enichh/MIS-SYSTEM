@@ -39,7 +39,7 @@ const DialogContent = React.forwardRef<
     >
       {children}
       <DialogPrimitive.Close className="modal-close">
-        <X className="w-5 h-5" />
+        <X className="icon-md" />
         <span className="sr-only">Close</span>
       </DialogPrimitive.Close>
     </DialogPrimitive.Content>

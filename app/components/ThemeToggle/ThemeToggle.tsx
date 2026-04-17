@@ -2,7 +2,8 @@
 
 import { useEffect, useState } from 'react'
 import { THEME_STORAGE_KEY } from '@/lib/constants'
-import { Icon } from '@/components/ui/icons/Icon'
+import { SunIcon } from '@/components/ui/icons/custom/SunIcon'
+import { MoonIcon } from '@/components/ui/icons/custom/MoonIcon'
 import { Button } from '@/components/ui/Button/Button'
 
 export default function ThemeToggle() {
@@ -40,7 +41,7 @@ export default function ThemeToggle() {
         aria-label="Toggle theme"
         disabled
       >
-        <Icon name="check" size={20} />
+        <SunIcon size={20} />
       </Button>
     )
   }
@@ -52,7 +53,7 @@ export default function ThemeToggle() {
       onClick={toggleTheme}
       aria-label="Toggle theme"
     >
-      {theme === 'light' ? <Icon name="check" size={20} /> : <Icon name="x" size={20} />}
+      {theme === 'light' ? <SunIcon size={20} /> : <MoonIcon size={20} />}
     </Button>
   )
 }

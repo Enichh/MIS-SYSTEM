@@ -121,52 +121,52 @@
 /* Dark Mode Theme - MSI Red and Black Design */
 [data-theme="dark"],
 .dark {
-  --color-primary: oklch(0.6 0.25 25);
-  --color-primary-hover: oklch(0.65 0.27 25);
-  --color-primary-light: oklch(0.7 0.2 25);
-  --color-background: oklch(0.15 0.02 240);
-  --color-background-secondary: oklch(0.18 0.02 240);
-  --color-background-tertiary: oklch(0.22 0.03 240);
-  --color-surface: oklch(0.25 0.03 240);
-  --color-text: oklch(0.9 0.01 240);
+  --color-primary: oklch(0.6 0.22 25);
+  --color-primary-hover: oklch(0.65 0.24 25);
+  --color-primary-light: oklch(0.7 0.18 25);
+  --color-background: oklch(0.12 0.01 240);
+  --color-background-secondary: oklch(0.15 0.02 240);
+  --color-background-tertiary: oklch(0.18 0.02 240);
+  --color-surface: oklch(0.2 0.02 240);
+  --color-text: oklch(0.92 0.01 240);
   --color-text-secondary: oklch(0.75 0.02 240);
-  --color-text-muted: oklch(0.6 0.02 240);
-  --color-border: oklch(0.35 0.02 240);
-  --color-border-light: oklch(0.4 0.02 240);
+  --color-text-muted: oklch(0.55 0.02 240);
+  --color-border: oklch(0.3 0.02 240);
+  --color-border-light: oklch(0.35 0.02 240);
   --color-success: oklch(0.65 0.2 142);
-  --color-error: oklch(0.6 0.24 25);
+  --color-error: oklch(0.6 0.22 25);
   --color-warning: oklch(0.75 0.17 65);
   --color-info: oklch(0.65 0.2 220);
-  --focus-ring: 0 0 0 3px hsl(25 60% 60% / 0.4);
+  --focus-ring: 0 0 0 3px hsl(0 72% 51% / 0.4);
 
   /* shadcn/ui CSS Variables - Dark Mode - HSL format */
-  --background: 240 4% 15%;
-  --foreground: 240 1% 90%;
+  --background: 240 3% 12%;
+  --foreground: 240 1% 92%;
 
-  --card: 240 4% 18%;
-  --card-foreground: 240 1% 90%;
+  --card: 240 3% 15%;
+  --card-foreground: 240 1% 92%;
 
-  --popover: 240 4% 18%;
-  --popover-foreground: 240 1% 90%;
+  --popover: 240 3% 15%;
+  --popover-foreground: 240 1% 92%;
 
-  --primary: 25 60% 60%;
+  --primary: 0 72% 51%;
   --primary-foreground: 0 0% 98%;
 
-  --secondary: 240 5% 22%;
-  --secondary-foreground: 240 1% 90%;
+  --secondary: 240 4% 18%;
+  --secondary-foreground: 240 1% 92%;
 
-  --muted: 240 5% 22%;
-  --muted-foreground: 240 3% 75%;
+  --muted: 240 4% 18%;
+  --muted-foreground: 240 3% 70%;
 
-  --accent: 240 5% 22%;
-  --accent-foreground: 240 1% 90%;
+  --accent: 240 4% 18%;
+  --accent-foreground: 240 1% 92%;
 
-  --destructive: 25 60% 60%;
+  --destructive: 0 72% 51%;
   --destructive-foreground: 0 0% 98%;
 
-  --border: 240 4% 35%;
-  --input: 240 4% 35%;
-  --ring: 25 60% 60%;
+  --border: 240 4% 30%;
+  --input: 240 4% 30%;
+  --ring: 0 72% 51%;
 }
 
 /* Theme Transition Support */
