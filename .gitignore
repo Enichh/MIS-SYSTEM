@@ -38,3 +38,9 @@ yarn-error.log*
 
 # Supabase (sensitive schema and seed data)
 supabase/
+
+# Test files
+**/*.test.ts
+**/*.test.tsx
+**/*.test.js
+**/*.test.jsx

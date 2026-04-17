@@ -108,3 +108,20 @@ export interface ConfirmationConfig {
   ariaDescribedBy?: string;
   initialFocus?: string;
 }
+
+export interface SearchQuery {
+  query: string;
+  entityType: 'employees' | 'projects' | 'tasks';
+}
+
+export interface SearchFilters {
+  name?: string;
+  status?: string;
+  projectId?: string;
+  assignedTo?: string;
+}
+
+export interface SearchResult<T> {
+  data: T[];
+  total: number;
+}

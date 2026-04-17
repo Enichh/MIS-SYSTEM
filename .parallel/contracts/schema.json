@@ -1,138 +1,159 @@
 {
   "version": "1.0.0",
-  "feature": "Hybrid Sidebar + Mobile Drawer Navigation",
+  "feature": "Search by Name for Tasks, Employees, and Projects",
   "freeze_phase": "hot",
   "contracts": {
     "shared": {
       "exports": {
         "public": {
-          "types": ["NavigationContextType", "NavigationState"],
-          "constants": ["BREAKPOINT_MOBILE", "BREAKPOINT_TABLET", "SIDEBAR_WIDTH_DESKTOP", "DRAWER_WIDTH_MOBILE"],
-          "functions": ["useNavigationContext", "NavigationProvider"]
+          "types": {
+            "SearchQuery": "Search query interface with query and entityType properties",
+            "SearchFilters": "Search filters interface with optional name, status, projectId, assignedTo",
+            "SearchResult": "Generic search result interface for type-safe responses"
+          },
+          "functions": {
+            "debounceSearch": "Debounce function with 300ms delay",
+            "filterByName": "Case-insensitive string matching function",
+            "buildSearchFilters": "Function to construct filter objects"
+          },
+          "constants": {
+            "SEARCH_DEBOUNCE_MS": "300",
+            "MIN_SEARCH_LENGTH": "2"
+          }
         },
-        "internal": ["getBreakpoint", "isMobile", "isDesktop"]
+        "internal": ["normalizeSearchQuery", "matchesSearchTerm"]
       },
       "schemas": {
-        "NavigationContextType": {
+        "SearchQuery": {
           "type": "object",
           "properties": {
-            "isDrawerOpen": { "type": "boolean" },
-            "isMobile": { "type": "boolean" },
-            "toggleDrawer": { "type": "function" },
-            "closeDrawer": { "type": "function" }
+            "query": { "type": "string", "minLength": 0 },
+            "entityType": { "type": "string", "enum": ["employees", "projects", "tasks"] }
           },
-          "required": ["isDrawerOpen", "isMobile", "toggleDrawer", "closeDrawer"]
+          "required": ["query", "entityType"]
         },
-        "NavigationState": {
+        "SearchFilters": {
           "type": "object",
           "properties": {
-            "isDrawerOpen": { "type": "boolean" },
-            "isMobile": { "type": "boolean" }
-          },
-          "required": ["isDrawerOpen", "isMobile"]
+            "name": { "type": "string", "optional": true },
+            "status": { "type": "string", "optional": true },
+            "projectId": { "type": "string", "optional": true },
+            "assignedTo": { "type": "string", "optional": true }
+          }
         }
       }
     },
-    "components": {
-      "imports_from_shared": ["NavigationContextType", "useNavigationContext", "NavigationProvider", "BREAKPOINT_MOBILE", "SIDEBAR_WIDTH_DESKTOP", "DRAWER_WIDTH_MOBILE"],
+    "backend": {
+      "imports_from_shared": ["SearchQuery", "SearchFilters", "filterByName", "buildSearchFilters"],
       "exports": {
         "public": {
-          "components": ["Sidebar", "Drawer", "HamburgerButton"]
+          "api_routes": ["GET /api/employees with search", "GET /api/projects with search", "GET /api/tasks with search"]
+        },
+        "internal": []
+      },
+      "allowed_internal_helpers": true,
+      "file_naming": {
+        "pattern": "app/api/{entity}/route.ts",
+        "example": "app/api/employees/route.ts"
+      }
+    },
+    "frontend": {
+      "imports_from_shared": ["SearchQuery", "debounceSearch", "SEARCH_DEBOUNCE_MS", "MIN_SEARCH_LENGTH"],
+      "exports": {
+        "public": {
+          "components": ["SearchBar", "SearchResults"]
         },
         "internal": []
       },
       "allowed_internal_helpers": true,
       "file_naming": {
         "pattern": "app/components/{PascalName}/{PascalName}.tsx",
-        "example": "app/components/Sidebar/Sidebar.tsx"
-      }
-    },
-    "integration": {
-      "imports_from_shared": ["NavigationProvider", "useNavigationContext"],
-      "imports_from_components": ["Sidebar", "Drawer", "HamburgerButton"],
-      "exports": {
-        "public": []
-      },
-      "allowed_internal_helpers": true,
-      "file_naming": {
-        "pattern": "app/{path}/{filename}.{ext}",
-        "example": "app/components/Header/Header.tsx"
+        "example": "app/components/SearchBar/SearchBar.tsx"
       }
     }
   },
   "boundaries": {
-    "shared_to_components": {
-      "data_shape": "NavigationContextType, NavigationState",
-      "state_management": "React Context API for navigation state",
-      "responsive_logic": "Media query detection for mobile/desktop"
+    "shared_to_backend": {
+      "data_shape": "SearchFilters object with optional name field",
+      "search_logic": "Server-side filtering using Supabase ilike for case-insensitive search",
+      "validation": "Zod schemas for query parameters"
     },
-    "shared_to_integration": {
-      "data_shape": "NavigationProvider, useNavigationContext",
-      "context_usage": "Wrap application with NavigationProvider",
-      "hook_usage": "Consume navigation state in components"
+    "shared_to_frontend": {
+      "data_shape": "SearchQuery interface with debouncing constants",
+      "state_management": "React useState with useDeferredValue for performance",
+      "styling_approach": "CSS classes from app/styles/ (no Tailwind)"
     },
-    "components_to_integration": {
-      "component_usage": "Sidebar (desktop), Drawer (mobile), HamburgerButton (trigger)",
-      "styling_approach": "CSS classes from app/styles/ (no inline styles)",
-      "responsive_behavior": "CSS media queries for layout switching"
+    "frontend_to_backend": {
+      "endpoint": "GET /api/{entity}?name={query}",
+      "request_shape": { "name": "string" },
+      "response_shape": "Array of entities matching search criteria"
     }
   },
   "dependency_graph": {
     "shared": {
       "depends_on": [],
-      "blocks": ["components", "integration"]
+      "blocks": ["backend", "frontend"]
     },
-    "components": {
+    "backend": {
       "depends_on": ["shared"],
-      "blocks": ["integration"]
+      "blocks": []
     },
-    "integration": {
-      "depends_on": ["shared", "components"],
+    "frontend": {
+      "depends_on": ["shared"],
       "blocks": []
     }
   },
   "best_practices": {
-    "css_responsive": {
-      "breakpoints": "Mobile: < 768px, Desktop: >= 768px",
-      "sidebar_width": "240-280px on desktop using CSS max() function",
-      "drawer_width": "280px on mobile with slide-in animation",
-      "transitions": "CSS transitions for smooth drawer open/close (300ms ease)",
-      "media_queries": "Use @media (max-width: 768px) for mobile breakpoint"
+    "search_performance": {
+      "debouncing": "300ms debounce delay to reduce API calls",
+      "min_length": "Minimum 2 characters before triggering search",
+      "deferred_value": "Use React useDeferredValue for responsive typing",
+      "server_side": "All filtering done server-side via Supabase queries"
+    },
+    "api_design": {
+      "query_params": "Use ?name={query} for search parameter",
+      "case_insensitive": "Use Supabase ilike for case-insensitive matching",
+      "partial_match": "Support partial string matching (contains)",
+      "backward_compatible": "Search parameter is optional, maintains existing API behavior"
     },
     "react_patterns": {
-      "state_management": "Use React Context API for navigation state (useState, useEffect)",
-      "responsive_detection": "Use window.matchMedia or useEffect with resize listener",
-      "accessibility": "ARIA labels, focus management, keyboard navigation for drawer",
-      "no_dom_manipulation": "Use React state instead of classList, getElementById"
+      "state_management": "useState for immediate input, useDeferredValue for search",
+      "performance": "Debounce search input to avoid excessive re-renders",
+      "accessibility": "ARIA labels for search input, keyboard navigation",
+      "error_handling": "Graceful fallback on API errors"
     },
-    "layout_architecture": {
-      "desktop_layout": "CSS Grid with persistent sidebar on left, main content on right",
-      "mobile_layout": "Overlay drawer triggered by hamburger, backdrop for click-to-close",
-      "css_grid": "Use grid-template-areas for responsive layout switching",
-      "container_queries": "Consider @container for component-level responsiveness"
+    "css_styling": {
+      "custom_css": "Use app/styles/ for all styling (no Tailwind)",
+      "responsive": "Mobile-first responsive design",
+      "transitions": "Smooth transitions for search results",
+      "focus_states": "Clear focus states for accessibility"
     }
   },
   "codebase_impact": {
     "files_to_modify": [
-      "app/styles/navigation.css - Add sidebar/drawer styles, responsive breakpoints",
-      "app/styles/utilities.css - Add responsive utility classes if needed",
-      "app/components/Navigation/Navigation.tsx - DEPRECATED: Replace with Sidebar/Drawer",
-      "app/components/Header/Header.tsx - Add HamburgerButton for mobile",
-      "app/layout.tsx - Wrap with NavigationProvider",
-      "app/page.tsx - Update layout structure for sidebar/drawer integration"
+      "app/api/employees/route.ts - Add name query parameter to EmployeeQuerySchema",
+      "app/api/projects/route.ts - Add name query parameter to ProjectQuerySchema",
+      "app/api/tasks/route.ts - Add name query parameter to TaskQuerySchema",
+      "lib/utils/database.ts - Add ilike filter support for name search",
+      "lib/services/employeeService.ts - No changes needed (already accepts filters)",
+      "lib/services/projectService.ts - No changes needed (already accepts filters)",
+      "lib/services/taskService.ts - No changes needed (already accepts filters)",
+      "types/index.ts - Add SearchQuery, SearchFilters, SearchResult types"
     ],
     "files_to_create": [
-      "app/components/Sidebar/Sidebar.tsx - New desktop sidebar component",
-      "app/components/Drawer/Drawer.tsx - New mobile drawer component",
-      "app/components/HamburgerButton/HamburgerButton.tsx - New hamburger trigger",
-      "lib/context/NavigationContext.tsx - New navigation context provider"
+      "lib/utils/search.ts - Search utility functions (debounce, filterByName, buildSearchFilters)",
+      "lib/constants.ts - Add SEARCH_DEBOUNCE_MS, MIN_SEARCH_LENGTH constants",
+      "app/components/SearchBar/SearchBar.tsx - Search input component with debouncing",
+      "app/components/SearchBar/SearchBar.css - Search bar styling",
+      "app/components/SearchResults/SearchResults.tsx - Search results display component",
+      "app/components/SearchResults/SearchResults.css - Search results styling"
     ],
     "css_best_practices": [
-      "Use CSS Grid with grid-template-areas for layout",
-      "Use media queries at 768px breakpoint for mobile/desktop switch",
-      "Use CSS transitions for smooth drawer animations",
-      "Use CSS max() function for flexible sidebar widths",
-      "No Tailwind or framework CSS - use custom CSS classes only"
+      "Use custom CSS classes from app/styles/ (no Tailwind)",
+      "Implement responsive design with media queries",
+      "Add smooth transitions for search results",
+      "Ensure clear focus states for accessibility",
+      "Use CSS Grid/Flexbox for layout"
     ]
   }
 }

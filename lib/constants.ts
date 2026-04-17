@@ -13,3 +13,6 @@ export const PROJECT_PRIORITY = ['high', 'medium', 'low'] as const;
 
 export const TASK_STATUS = ['completed', 'in_progress', 'pending'] as const;
 export const TASK_PRIORITY = ['high', 'medium', 'low'] as const;
+
+export const SEARCH_DEBOUNCE_MS = 300;
+export const MIN_SEARCH_LENGTH = 2;

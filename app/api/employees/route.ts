@@ -8,6 +8,7 @@ import type { Employee, ApiResponse } from '@/types';
 const EmployeeQuerySchema = z.object({
   id: z.string().optional(),
   status: z.string().optional(),
+  name: z.string().max(100).optional(), // Optional name filter for case-insensitive partial matching
 });
 
 // Zod schema for employee creation

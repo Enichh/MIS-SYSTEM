@@ -25,6 +25,10 @@ export async function fetchFromDatabase<T = unknown>(
   if (filters.assignedTo) {
     query = query.eq('assignedTo', filters.assignedTo as string);
   }
+  if (filters.name) {
+    const nameColumn = tableName === 'tasks' ? 'title' : 'name';
+    query = query.ilike(nameColumn, `%${filters.name as string}%`);
+  }
   if (filters.employee_id) {
     query = query.eq('employee_id', filters.employee_id as string);
   }

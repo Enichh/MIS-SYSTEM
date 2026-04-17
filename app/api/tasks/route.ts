@@ -11,6 +11,7 @@ const TaskQuerySchema = z.object({
   status: z.string().optional(),
   projectId: z.string().optional(),
   assignedTo: z.string().optional(),
+  name: z.string().max(100).optional(), // Optional name/title filter for case-insensitive partial matching
 });
 
 // Zod schema for task creation

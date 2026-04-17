@@ -9,6 +9,7 @@ import type { Project, ApiResponse } from '@/types';
 const ProjectQuerySchema = z.object({
   id: z.string().optional(),
   status: z.string().optional(),
+  name: z.string().max(100).optional(), // Optional name filter for case-insensitive partial matching
 });
 
 // Zod schema for project creation
