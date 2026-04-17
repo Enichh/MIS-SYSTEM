@@ -1,7 +1,13 @@
 import type { Project } from '@/types'
+import { headers } from 'next/headers'
 
 async function fetchProjects(): Promise<Project[]> {
-  const response = await fetch('/api/projects', {
+  const headersList = await headers()
+  const host = headersList.get('host') || 'localhost:3000'
+  const protocol = headersList.get('x-forwarded-proto') || 'http'
+  const baseUrl = `${protocol}://${host}`
+
+  const response = await fetch(`${baseUrl}/api/projects`, {
     cache: 'no-store',
   })
   if (!response.ok) {

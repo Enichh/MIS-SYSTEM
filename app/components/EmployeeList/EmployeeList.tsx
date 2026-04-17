@@ -1,7 +1,13 @@
 import type { Employee } from '@/types'
+import { headers } from 'next/headers'
 
 async function fetchEmployees(): Promise<Employee[]> {
-  const response = await fetch('/api/employees', {
+  const headersList = await headers()
+  const host = headersList.get('host') || 'localhost:3000'
+  const protocol = headersList.get('x-forwarded-proto') || 'http'
+  const baseUrl = `${protocol}://${host}`
+
+  const response = await fetch(`${baseUrl}/api/employees`, {
     cache: 'no-store',
   })
   if (!response.ok) {
