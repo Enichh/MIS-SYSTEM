@@ -134,8 +134,8 @@ dialog[open]::backdrop {
   max-width: 32rem;
   transform: translate(-50%, -50%);
   gap: 1rem;
-  border: 2px solid hsl(var(--border) / 0.5);
-  background-color: hsl(var(--background) / 0.95);
+  border: 2px solid var(--color-border);
+  background-color: var(--color-background);
   backdrop-filter: blur(24px);
   padding: 1.5rem;
   box-shadow: var(--shadow-2xl);
@@ -154,15 +154,13 @@ dialog[open]::backdrop {
 
 .modal-close:hover {
   opacity: 1;
-  background-color: hsl(var(--accent) / 0.5);
+  background-color: var(--color-background-secondary);
   transform: scale(1.1);
 }
 
 .modal-close:focus-visible {
   outline: none;
-  box-shadow:
-    0 0 0 2px hsl(var(--ring)),
-    0 0 0 4px hsl(var(--background));
+  box-shadow: var(--focus-ring);
 }
 
 .modal-header {
@@ -177,12 +175,12 @@ dialog[open]::backdrop {
   font-weight: var(--font-weight-semibold);
   line-height: 1;
   letter-spacing: -0.025em;
-  color: hsl(var(--foreground));
+  color: var(--color-text);
 }
 
 .modal-description {
   font-size: 0.875rem;
-  color: hsl(var(--muted-foreground));
+  color: var(--color-text-muted);
   line-height: 1.6;
 }
 

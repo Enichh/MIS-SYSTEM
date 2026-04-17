@@ -107,7 +107,7 @@ export default function EmployeeList() {
 
   return (
     <>
-      <div className="grid gap-4">
+      <div className="grid-layout">
         {employees.map((employee) => (
           <Card key={employee.id} className="employee-card">
             <CardHeader>

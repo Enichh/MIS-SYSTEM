@@ -94,8 +94,8 @@ export default function EmployeeForm() {
 
         {notification && (
           <div
-            className={`mb-4 p-3 rounded-md ${
-              notification.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
+            className={`notification ${
+              notification.type === 'success' ? 'notification-success' : 'notification-error'
             }`}
             role="alert"
           >
@@ -143,7 +143,7 @@ export default function EmployeeForm() {
             </div>
           ))}
 
-          <div className="flex justify-end gap-2">
+          <div className="form-actions">
             <Button
               type="button"
               variant="secondary"

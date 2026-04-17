@@ -160,11 +160,11 @@
 }
 
 .text-muted-foreground {
-  color: hsl(var(--muted-foreground));
+  color: var(--color-text-muted);
 }
 
 .text-destructive {
-  color: hsl(var(--destructive));
+  color: var(--color-error);
 }
 
 .text-gray-700 {
@@ -283,15 +283,15 @@
 
 /* Background & Opacity Utilities */
 .bg-background {
-  background-color: hsl(var(--background));
+  background-color: var(--color-background);
 }
 
 .bg-destructive {
-  background-color: hsl(var(--destructive) / 0.1);
+  background-color: var(--color-error);
 }
 
 .hover-bg-accent:hover {
-  background-color: hsl(var(--accent) / 0.5);
+  background-color: var(--color-background-secondary);
 }
 
 .opacity-50 {

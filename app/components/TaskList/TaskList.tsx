@@ -111,11 +111,11 @@ export default function TaskList() {
 
   return (
     <>
-      <div className="grid gap-4">
+      <div className="grid-layout">
         {tasks.map((task) => (
           <Card key={task.id}>
             <CardHeader>
-              <div className="flex justify-between items-start">
+              <div className="flex-between-start">
                 <div className="flex-1">
                   <CardTitle>{task.title}</CardTitle>
                   <CardDescription>
@@ -144,7 +144,7 @@ export default function TaskList() {
                 </p>
               )}
             </CardContent>
-            <CardFooter className="justify-end gap-2">
+            <CardFooter className="flex-between-end">
               <Button
                 variant="secondary"
                 icon="edit"

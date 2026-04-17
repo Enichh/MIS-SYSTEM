@@ -149,50 +149,50 @@
 
 .badge:focus-visible {
   outline: none;
-  box-shadow:
-    0 0 0 2px hsl(var(--ring)),
-    0 0 0 4px hsl(var(--background));
+  box-shadow: var(--focus-ring);
 }
 
 .badge-default {
-  background-color: hsl(var(--primary));
-  color: hsl(var(--primary-foreground));
+  background-color: var(--color-primary);
+  color: var(--color-background);
   box-shadow: var(--shadow-sm);
 }
 
 .badge-default:hover {
-  background-color: hsl(var(--primary) / 0.8);
+  background-color: var(--color-primary-hover);
 }
 
 .badge-secondary {
-  background-color: hsl(var(--secondary));
-  color: hsl(var(--secondary-foreground));
+  background-color: var(--color-background-secondary);
+  color: var(--color-text);
+  border: 2px solid var(--color-border);
 }
 
 .badge-secondary:hover {
-  background-color: hsl(var(--secondary) / 0.8);
+  background-color: var(--color-background-tertiary);
 }
 
 .badge-destructive {
-  background-color: hsl(var(--destructive));
-  color: hsl(var(--destructive-foreground));
+  background-color: var(--color-error);
+  color: var(--color-background);
   box-shadow: var(--shadow-sm);
 }
 
 .badge-destructive:hover {
-  background-color: hsl(var(--destructive) / 0.8);
+  background-color: var(--color-primary-hover);
 }
 
 .badge-outline {
-  color: hsl(var(--foreground));
+  color: var(--color-text);
+  border: 2px solid var(--color-border);
 }
 
 /* Semantic Card Component Classes */
 .card {
   border-radius: 0.75rem;
-  border: 2px solid hsl(var(--border));
-  background-color: hsl(var(--card));
-  color: hsl(var(--card-foreground));
+  border: 2px solid var(--color-border);
+  background-color: var(--color-background-secondary);
+  color: var(--color-text);
   box-shadow: var(--shadow-sm);
 }
 
@@ -211,7 +211,7 @@
 
 .card-description {
   font-size: 0.875rem;
-  color: hsl(var(--muted-foreground));
+  color: var(--color-text-secondary);
 }
 
 .card-content {
@@ -224,4 +224,125 @@
   align-items: center;
   padding: 1.5rem;
   padding-top: 0;
+}
+
+/* Grid Layout */
+.grid-layout {
+  display: grid;
+  gap: var(--spacing-md);
+}
+
+/* Flex Layouts */
+.flex-between-start {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.flex-between-end {
+  display: flex;
+  justify-content: flex-end;
+  gap: var(--spacing-sm);
+}
+
+.flex-1 {
+  flex: 1;
+}
+
+/* Text Styles */
+.text-sm {
+  font-size: var(--text-sm);
+}
+
+.text-lg {
+  font-size: var(--text-lg);
+}
+
+.font-semibold {
+  font-weight: var(--font-weight-semibold);
+}
+
+.text-destructive {
+  color: var(--color-error);
+}
+
+.text-muted-foreground {
+  color: var(--color-text-secondary);
+}
+
+.text-center {
+  text-align: center;
+}
+
+.text-left {
+  text-align: left;
+}
+
+/* Spacing */
+.p-6 {
+  padding: var(--spacing-xl);
+}
+
+.mt-1 {
+  margin-top: var(--spacing-xs);
+}
+
+.mt-2 {
+  margin-top: var(--spacing-sm);
+}
+
+.mt-4 {
+  margin-top: var(--spacing-md);
+}
+
+.mt-6 {
+  margin-top: var(--spacing-xl);
+}
+
+.mb-1 {
+  margin-bottom: var(--spacing-xs);
+}
+
+.mb-4 {
+  margin-bottom: var(--spacing-md);
+}
+
+/* Border and Background */
+.border-b {
+  border-bottom: 1px solid var(--color-border-light);
+}
+
+.bg-destructive {
+  background-color: var(--color-error);
+}
+
+.bg-background {
+  background-color: var(--color-background);
+}
+
+.rounded {
+  border-radius: var(--radius);
+}
+
+.rounded-md {
+  border-radius: 8px;
+}
+
+/* Utility */
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.overflow-auto {
+  overflow: auto;
+}
+
+.space-y-4 {
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-md);
+}
+
+.text-gray-700 {
+  color: var(--color-text);
 }

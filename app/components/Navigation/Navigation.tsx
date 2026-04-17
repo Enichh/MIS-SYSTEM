@@ -28,7 +28,7 @@ export default function Navigation({ onSectionChange }: NavigationProps) {
   }
 
   return (
-    <nav className="flex gap-2 p-4 border-b">
+    <nav className="nav-container">
       <Button
         variant={activeSection === 'employees' ? 'primary' : 'ghost'}
         onClick={() => handleSectionChange('employees')}

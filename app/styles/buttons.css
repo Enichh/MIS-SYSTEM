@@ -94,14 +94,14 @@
 }
 
 .btn-danger:hover:not(:disabled) {
-  background-color: hsl(var(--destructive) / 0.9);
+  background-color: var(--color-primary-hover);
   transform: translateY(-1px);
   box-shadow: var(--shadow-lg);
 }
 
 .btn-danger:focus {
   outline: none;
-  box-shadow: 0 0 0 3px hsl(var(--destructive) / 0.3);
+  box-shadow: 0 0 0 3px hsl(var(--color-error) / 0.3);
 }
 
 .btn-danger:disabled {
@@ -176,8 +176,8 @@
   width: 56px;
   height: 56px;
   border-radius: 50%;
-  background: hsl(var(--primary));
-  color: hsl(var(--primary-foreground));
+  background: var(--color-primary);
+  color: var(--color-background);
   border: none;
   cursor: pointer;
   display: flex;
@@ -237,13 +237,13 @@
 
 /* Button Variants */
 .btn-primary {
-  background-color: hsl(var(--primary));
-  color: hsl(var(--primary-foreground));
+  background-color: var(--color-primary);
+  color: var(--color-background);
   box-shadow: var(--shadow-lg);
 }
 
 .btn-primary:hover:not(:disabled) {
-  background-color: hsl(var(--primary) / 0.9);
+  background-color: var(--color-primary-hover);
   box-shadow: var(--shadow-xl);
   transform: translateY(-2px);
 }
@@ -253,15 +253,15 @@
 }
 
 .btn-secondary {
-  background-color: hsl(var(--secondary));
-  color: hsl(var(--secondary-foreground));
-  border: 2px solid hsl(var(--border));
+  background-color: var(--color-background-secondary);
+  color: var(--color-text);
+  border: 2px solid var(--color-border);
 }
 
 .btn-secondary:hover:not(:disabled) {
-  border-color: hsl(var(--primary));
-  color: hsl(var(--primary));
-  background-color: hsl(var(--accent));
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+  background-color: var(--color-background-secondary);
   box-shadow: var(--shadow-md);
   transform: translateY(-2px);
 }
@@ -271,13 +271,13 @@
 }
 
 .btn-danger {
-  background-color: hsl(var(--destructive));
-  color: hsl(var(--destructive-foreground));
+  background-color: var(--color-error);
+  color: var(--color-background);
   box-shadow: var(--shadow-lg);
 }
 
 .btn-danger:hover:not(:disabled) {
-  background-color: hsl(var(--destructive) / 0.9);
+  background-color: var(--color-primary-hover);
   box-shadow: var(--shadow-xl);
   transform: translateY(-2px);
 }
@@ -288,25 +288,25 @@
 
 .btn-ghost {
   background-color: transparent;
-  color: hsl(var(--foreground));
+  color: var(--color-text);
 }
 
 .btn-ghost:hover:not(:disabled) {
-  background-color: hsl(var(--accent));
-  color: hsl(var(--accent-foreground));
+  background-color: var(--color-background-secondary);
+  color: var(--color-text);
   box-shadow: var(--shadow-sm);
 }
 
 .btn-outline {
-  background-color: hsl(var(--background));
-  color: hsl(var(--foreground));
-  border: 2px solid hsl(var(--input));
+  background-color: var(--color-background);
+  color: var(--color-text);
+  border: 2px solid var(--color-border);
 }
 
 .btn-outline:hover:not(:disabled) {
-  background-color: hsl(var(--accent));
-  color: hsl(var(--accent-foreground));
-  border-color: hsl(var(--primary));
+  background-color: var(--color-background-secondary);
+  color: var(--color-text);
+  border-color: var(--color-primary);
   box-shadow: var(--shadow-md);
   transform: translateY(-2px);
 }
@@ -337,7 +337,5 @@
 /* Focus states */
 .btn:focus-visible {
   outline: none;
-  box-shadow:
-    0 0 0 2px hsl(var(--ring)),
-    0 0 0 4px hsl(var(--background));
+  box-shadow: var(--focus-ring);
 }

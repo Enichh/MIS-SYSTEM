@@ -16,7 +16,7 @@ const variantMap = {
 
 const variantStyles = {
   danger: '',
-  warning: 'bg-orange-500 hover:bg-orange-600 text-white',
+  warning: 'btn-warning',
   info: '',
 };
 
@@ -53,7 +53,7 @@ export default function ActionConfirmation({
         <p id={describedById} className="text-gray-700">
           {message}
         </p>
-        <div className="flex justify-end gap-3 mt-6">
+        <div className="form-actions">
           <Button
             variant="outline"
             onClick={onCancel}

@@ -182,8 +182,8 @@ export default function TaskForm() {
 
         {notification && (
           <div
-            className={`mb-4 p-3 rounded-md ${
-              notification.type === 'success' ? 'bg-green-50 text-green-800' : 'bg-red-50 text-red-800'
+            className={`notification ${
+              notification.type === 'success' ? 'notification-success' : 'notification-error'
             }`}
             role="alert"
           >
@@ -261,7 +261,7 @@ export default function TaskForm() {
                     aria-invalid={!!errors[field.name]}
                   />
                   {employeeSearch && filteredEmployees.length > 0 && (
-                    <ul className="absolute z-10 w-full mt-1 bg-background border rounded-md shadow-lg max-h-60 overflow-auto">
+                    <ul className="dropdown-list">
                       {filteredEmployees.map((emp) => (
                         <li
                           key={emp.id}
@@ -270,16 +270,16 @@ export default function TaskForm() {
                             const event = { target: { name: field.name, value: emp.id } } as React.ChangeEvent<HTMLInputElement>;
                             handleInputChange(event);
                           }}
-                          className="px-3 py-2 hover-bg-accent cursor-pointer"
+                          className="dropdown-item-custom"
                         >
-                          <div className="font-semibold">{emp.name}</div>
-                          <div className="text-sm text-muted-foreground">{emp.email}</div>
+                          <div className="dropdown-item-name">{emp.name}</div>
+                          <div className="dropdown-item-email">{emp.email}</div>
                         </li>
                       ))}
                     </ul>
                   )}
                   {employeeSearch && filteredEmployees.length === 0 && (
-                    <p className="text-sm text-muted-foreground mt-1">No employees found</p>
+                    <p className="no-results mt-1">No employees found</p>
                   )}
                 </div>
               ) : (
@@ -303,7 +303,7 @@ export default function TaskForm() {
             </div>
           ))}
 
-          <div className="flex justify-end gap-2">
+          <div className="form-actions">
             <Button
               type="button"
               variant="secondary"

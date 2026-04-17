@@ -101,11 +101,11 @@ export default function ProjectList() {
 
   return (
     <>
-      <div className="grid gap-4">
+      <div className="grid-layout">
         {projects.map((project) => (
           <Card key={project.id}>
             <CardHeader>
-              <div className="flex justify-between items-start">
+              <div className="flex-between-start">
                 <div className="flex-1">
                   <CardTitle>{project.name}</CardTitle>
                   <CardDescription>
@@ -129,7 +129,7 @@ export default function ProjectList() {
                 </p>
               )}
             </CardContent>
-            <CardFooter className="justify-end gap-2">
+            <CardFooter className="flex-between-end">
               <Button
                 variant="secondary"
                 icon="edit"
