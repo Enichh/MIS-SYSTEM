@@ -2,8 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import type { Task, Project } from '@/types';
-import { getTasks } from '@/lib/services/taskService';
-import { getProjects } from '@/lib/services/projectService';
 import DeleteConfirmation from '@/components/confirmation/DeleteConfirmation/DeleteConfirmation';
 
 export default function TaskList() {
@@ -28,7 +26,17 @@ export default function TaskList() {
   const loadData = async () => {
     try {
       setLoading(true);
-      const [tasksData, projectsData] = await Promise.all([getTasks(), getProjects()]);
+      const [tasksResponse, projectsResponse] = await Promise.all([
+        fetch('/api/tasks'),
+        fetch('/api/projects'),
+      ]);
+      
+      if (!tasksResponse.ok || !projectsResponse.ok) {
+        throw new Error('Failed to fetch data');
+      }
+      
+      const tasksData = await tasksResponse.json();
+      const projectsData = await projectsResponse.json();
       setTasks(tasksData);
       setProjects(projectsData);
       setError(null);

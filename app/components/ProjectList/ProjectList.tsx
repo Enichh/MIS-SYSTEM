@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import type { Project } from '@/types';
-import { getProjects } from '@/lib/services/projectService';
 import DeleteConfirmation from '@/components/confirmation/DeleteConfirmation/DeleteConfirmation';
 
 export default function ProjectList() {
@@ -26,7 +25,11 @@ export default function ProjectList() {
   const loadProjects = async () => {
     try {
       setLoading(true);
-      const data = await getProjects();
+      const response = await fetch('/api/projects');
+      if (!response.ok) {
+        throw new Error('Failed to fetch projects');
+      }
+      const data = await response.json();
       setProjects(data);
       setError(null);
     } catch (err) {

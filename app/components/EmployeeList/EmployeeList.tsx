@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from 'react';
 import type { Employee } from '@/types';
-import { getEmployees } from '@/lib/services/employeeService';
 import DeleteConfirmation from '@/components/confirmation/DeleteConfirmation/DeleteConfirmation';
 
 export default function EmployeeList() {
@@ -26,7 +25,11 @@ export default function EmployeeList() {
   const loadEmployees = async () => {
     try {
       setLoading(true);
-      const data = await getEmployees();
+      const response = await fetch('/api/employees');
+      if (!response.ok) {
+        throw new Error('Failed to fetch employees');
+      }
+      const data = await response.json();
       setEmployees(data);
       setError(null);
     } catch (err) {
