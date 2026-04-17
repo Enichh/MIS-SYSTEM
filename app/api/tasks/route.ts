@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { getTasks } from '@/lib/services/taskService';
+import { getTasks, createTask } from '@/lib/services/taskService';
+import { handleApiError } from '@/lib/utils/api-handler';
+import { TASK_STATUS, TASK_PRIORITY } from '@/lib/constants';
 import type { Task, ApiResponse } from '@/types';
 
 // Zod schema for query parameter validation
@@ -9,6 +11,18 @@ const TaskQuerySchema = z.object({
   status: z.string().optional(),
   projectId: z.string().optional(),
   assignedTo: z.string().optional(),
+});
+
+// Zod schema for task creation
+const TaskCreateSchema = z.object({
+  title: z.string().min(1, 'Title is required'),
+  description: z.string().optional(),
+  status: z.enum(TASK_STATUS).default('pending'),
+  priority: z.enum(TASK_PRIORITY).default('medium'),
+  dependencies: z.array(z.string()).default([]),
+  projectId: z.string().min(1, 'Project ID is required'),
+  assignedTo: z.string().nullable().default(null),
+  dueDate: z.string().optional(),
 });
 
 export const dynamic = 'force-dynamic';
@@ -32,30 +46,23 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    // Handle validation errors
-    if (error instanceof z.ZodError) {
-      const errorResponse: ApiResponse = {
-        code: 'VALIDATION_ERROR',
-        message: error.errors[0].message,
-      };
-      return NextResponse.json(errorResponse, {
-        status: 400,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-    }
+    return handleApiError(error);
+  }
+}
 
-    // Handle other errors
-    const errorResponse: ApiResponse = {
-      code: 'INTERNAL_ERROR',
-      message: error instanceof Error ? error.message : 'An unknown error occurred',
-    };
-    return NextResponse.json(errorResponse, {
-      status: 500,
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const validatedData = TaskCreateSchema.parse(body);
+    const task = await createTask(validatedData as z.infer<typeof TaskCreateSchema>);
+
+    return NextResponse.json(task, {
+      status: 201,
       headers: {
         'Content-Type': 'application/json',
       },
     });
+  } catch (error) {
+    return handleApiError(error);
   }
 }

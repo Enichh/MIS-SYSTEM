@@ -4,6 +4,7 @@ import EmployeeList from './components/EmployeeList/EmployeeList'
 import ProjectList from './components/ProjectList/ProjectList'
 import TaskList from './components/TaskList/TaskList'
 import ChatModal from './components/ChatModal/ChatModal'
+import ModalForm from './components/ModalForm/ModalForm'
 
 export default function HomePage() {
   return (
@@ -66,6 +67,7 @@ export default function HomePage() {
       <div id="notification" className="notification hidden"></div>
 
       <ChatModal />
+      <ModalForm />
     </>
   )
 }

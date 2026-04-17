@@ -72,6 +72,7 @@ async function buildEnhancedContext(context?: KnowledgeQuery['context'], query?:
   // Use shared detectQueryIntent to fetch additional data based on query
   if (query) {
     const intent = detectQueryIntent(query);
+    console.log('DEBUG: Query intent detected:', intent, 'for query:', query);
     
     if (intent === 'employee' && !context?.employeeId) {
       const employees = await fetchFromDatabase('employees', {});
@@ -87,6 +88,7 @@ async function buildEnhancedContext(context?: KnowledgeQuery['context'], query?:
 
     if (intent === 'task' && !context?.taskId) {
       const tasks = await fetchFromDatabase('tasks', {});
+      console.log('DEBUG: Fetched tasks:', tasks);
       if (tasks.length > 0) {
         contextParts.push(`All Tasks (${tasks.length}):`);
         (tasks as any[]).forEach((task) => {
@@ -94,11 +96,14 @@ async function buildEnhancedContext(context?: KnowledgeQuery['context'], query?:
             `  - ${task.title || 'Unknown'} (ID: ${task.id || 'N/A'}, Status: ${task.status || 'Unknown'}, Assigned To: ${task.assignedTo || 'Unassigned'})`
           );
         });
+      } else {
+        console.log('DEBUG: No tasks found in database');
       }
     }
 
     if (intent === 'project' && !context?.projectId) {
       const projects = await fetchFromDatabase('projects', {});
+      console.log('DEBUG: Fetched projects:', projects);
       if (projects.length > 0) {
         contextParts.push(`All Projects (${projects.length}):`);
         (projects as any[]).forEach((proj) => {
@@ -106,6 +111,8 @@ async function buildEnhancedContext(context?: KnowledgeQuery['context'], query?:
             `  - ${proj.name || 'Unknown'} (ID: ${proj.id || 'N/A'}, Status: ${proj.status || 'Unknown'})`
           );
         });
+      } else {
+        console.log('DEBUG: No projects found in database');
       }
     }
   }

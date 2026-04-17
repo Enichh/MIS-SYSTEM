@@ -2,10 +2,10 @@ import { createClient } from '../supabase/server';
 
 const VALID_TABLES = ['employees', 'projects', 'tasks', 'employee_projects'] as const;
 
-export async function fetchFromDatabase(
+export async function fetchFromDatabase<T = unknown>(
   tableName: string,
   filters: Record<string, unknown> = {}
-): Promise<unknown[]> {
+): Promise<T[]> {
   if (!VALID_TABLES.includes(tableName as any)) {
     throw new Error(`Invalid table name: ${tableName}`);
   }
@@ -39,5 +39,35 @@ export async function fetchFromDatabase(
     throw new Error(`Failed to fetch from ${tableName}: ${error.message}`);
   }
 
-  return data || [];
+  return (data || []) as T[];
+}
+
+/**
+ * Inserts a record into the specified database table
+ * @param tableName - The name of the table to insert into (must be in VALID_TABLES)
+ * @param data - The record data to insert
+ * @returns The inserted record
+ * @throws Error if table name is invalid or insert fails
+ */
+export async function insertToDatabase<T = unknown>(
+  tableName: string,
+  data: Record<string, unknown>
+): Promise<T> {
+  if (!VALID_TABLES.includes(tableName as any)) {
+    throw new Error(`Invalid table name: ${tableName}`);
+  }
+
+  const supabase = await createClient();
+  const { data: insertedData, error } = await supabase
+    .from(tableName)
+    .insert(data)
+    .select()
+    .single();
+
+  if (error) {
+    console.error('Database insert error:', error);
+    throw new Error(`Failed to insert into ${tableName}: ${error.message}`);
+  }
+
+  return insertedData;
 }

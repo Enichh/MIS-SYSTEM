@@ -1,12 +1,22 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { getEmployees } from '@/lib/services/employeeService';
+import { getEmployees, createEmployee } from '@/lib/services/employeeService';
+import { handleApiError } from '@/lib/utils/api-handler';
 import type { Employee, ApiResponse } from '@/types';
 
 // Zod schema for query parameter validation
 const EmployeeQuerySchema = z.object({
   id: z.string().optional(),
   status: z.string().optional(),
+});
+
+// Zod schema for employee creation
+const EmployeeCreateSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  email: z.string().email('Invalid email format'),
+  role: z.string().min(1, 'Role is required'),
+  department: z.string().min(1, 'Department is required'),
+  skills: z.array(z.string()).default([]),
 });
 
 export const dynamic = 'force-dynamic';
@@ -30,30 +40,23 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    // Handle validation errors
-    if (error instanceof z.ZodError) {
-      const errorResponse: ApiResponse = {
-        code: 'VALIDATION_ERROR',
-        message: error.errors[0].message,
-      };
-      return NextResponse.json(errorResponse, {
-        status: 400,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-    }
+    return handleApiError(error);
+  }
+}
 
-    // Handle other errors
-    const errorResponse: ApiResponse = {
-      code: 'INTERNAL_ERROR',
-      message: error instanceof Error ? error.message : 'An unknown error occurred',
-    };
-    return NextResponse.json(errorResponse, {
-      status: 500,
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const validatedData = EmployeeCreateSchema.parse(body);
+    const employee = await createEmployee(validatedData);
+
+    return NextResponse.json(employee, {
+      status: 201,
       headers: {
         'Content-Type': 'application/json',
       },
     });
+  } catch (error) {
+    return handleApiError(error);
   }
 }

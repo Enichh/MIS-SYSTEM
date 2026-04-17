@@ -1,12 +1,25 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
-import { getProjects } from '@/lib/services/projectService';
+import { getProjects, createProject } from '@/lib/services/projectService';
+import { handleApiError } from '@/lib/utils/api-handler';
+import { PROJECT_STATUS, PROJECT_PRIORITY } from '@/lib/constants';
 import type { Project, ApiResponse } from '@/types';
 
 // Zod schema for query parameter validation
 const ProjectQuerySchema = z.object({
   id: z.string().optional(),
   status: z.string().optional(),
+});
+
+// Zod schema for project creation
+const ProjectCreateSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  description: z.string().optional(),
+  status: z.enum(PROJECT_STATUS).default('active'),
+  priority: z.enum(PROJECT_PRIORITY).default('medium'),
+  progress: z.number().int().min(0).max(100).default(0),
+  startDate: z.string().optional(),
+  endDate: z.string().optional(),
 });
 
 export const dynamic = 'force-dynamic';
@@ -30,30 +43,23 @@ export async function GET(request: NextRequest) {
       },
     });
   } catch (error) {
-    // Handle validation errors
-    if (error instanceof z.ZodError) {
-      const errorResponse: ApiResponse = {
-        code: 'VALIDATION_ERROR',
-        message: error.errors[0].message,
-      };
-      return NextResponse.json(errorResponse, {
-        status: 400,
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-    }
+    return handleApiError(error);
+  }
+}
 
-    // Handle other errors
-    const errorResponse: ApiResponse = {
-      code: 'INTERNAL_ERROR',
-      message: error instanceof Error ? error.message : 'An unknown error occurred',
-    };
-    return NextResponse.json(errorResponse, {
-      status: 500,
+export async function POST(request: NextRequest) {
+  try {
+    const body = await request.json();
+    const validatedData = ProjectCreateSchema.parse(body);
+    const project = await createProject(validatedData as z.infer<typeof ProjectCreateSchema>);
+
+    return NextResponse.json(project, {
+      status: 201,
       headers: {
         'Content-Type': 'application/json',
       },
     });
+  } catch (error) {
+    return handleApiError(error);
   }
 }

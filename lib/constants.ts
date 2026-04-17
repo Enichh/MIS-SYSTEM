@@ -7,3 +7,9 @@ export const KNOWLEDGE_ENDPOINTS = {
 export const CHAT_STORAGE_KEY = 'mis_chat_history';
 
 export const THEME_STORAGE_KEY = 'enosoft_theme_preference';
+
+export const PROJECT_STATUS = ['active', 'completed', 'on_hold'] as const;
+export const PROJECT_PRIORITY = ['high', 'medium', 'low'] as const;
+
+export const TASK_STATUS = ['completed', 'in_progress', 'pending'] as const;
+export const TASK_PRIORITY = ['high', 'medium', 'low'] as const;
