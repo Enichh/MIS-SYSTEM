@@ -1,24 +1,9 @@
 import type { Project } from '@/types'
-import { headers } from 'next/headers'
-
-async function fetchProjects(): Promise<Project[]> {
-  const headersList = await headers()
-  const host = headersList.get('host') || 'localhost:3000'
-  const protocol = headersList.get('x-forwarded-proto') || 'http'
-  const baseUrl = `${protocol}://${host}`
-
-  const response = await fetch(`${baseUrl}/api/projects`, {
-    cache: 'no-store',
-  })
-  if (!response.ok) {
-    throw new Error('Failed to fetch projects')
-  }
-  return response.json()
-}
+import { getProjects } from '@/lib/utils/api'
 
 export default async function ProjectList() {
   try {
-    const projects = await fetchProjects()
+    const projects = await getProjects()
 
     if (!projects || projects.length === 0) {
       return (

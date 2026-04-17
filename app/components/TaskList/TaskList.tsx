@@ -1,39 +1,9 @@
 import type { Task, Project } from '@/types'
-import { headers } from 'next/headers'
-
-async function fetchTasks(): Promise<Task[]> {
-  const headersList = await headers()
-  const host = headersList.get('host') || 'localhost:3000'
-  const protocol = headersList.get('x-forwarded-proto') || 'http'
-  const baseUrl = `${protocol}://${host}`
-
-  const response = await fetch(`${baseUrl}/api/tasks`, {
-    cache: 'no-store',
-  })
-  if (!response.ok) {
-    throw new Error('Failed to fetch tasks')
-  }
-  return response.json()
-}
-
-async function fetchProjects(): Promise<Project[]> {
-  const headersList = await headers()
-  const host = headersList.get('host') || 'localhost:3000'
-  const protocol = headersList.get('x-forwarded-proto') || 'http'
-  const baseUrl = `${protocol}://${host}`
-
-  const response = await fetch(`${baseUrl}/api/projects`, {
-    cache: 'no-store',
-  })
-  if (!response.ok) {
-    throw new Error('Failed to fetch projects')
-  }
-  return response.json()
-}
+import { getTasks, getProjects } from '@/lib/utils/api'
 
 export default async function TaskList() {
   try {
-    const [tasks, projects] = await Promise.all([fetchTasks(), fetchProjects()])
+    const [tasks, projects] = await Promise.all([getTasks(), getProjects()])
 
     const projectMap = new Map(projects.map((p) => [p.id, p.name]))
 
