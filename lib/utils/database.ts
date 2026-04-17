@@ -1,11 +1,16 @@
 import { createClient } from '../supabase/server';
 
-const supabase = createClient();
+const VALID_TABLES = ['employees', 'projects', 'tasks', 'employee_projects'] as const;
 
 export async function fetchFromDatabase(
   tableName: string,
   filters: Record<string, unknown> = {}
 ): Promise<unknown[]> {
+  if (!VALID_TABLES.includes(tableName as any)) {
+    throw new Error(`Invalid table name: ${tableName}`);
+  }
+
+  const supabase = createClient();
   let query = supabase.from(tableName).select('*');
 
   if (filters.id) {
