@@ -40,9 +40,6 @@ export default async function EmployeeList() {
               <p>
                 <strong>Department:</strong> {employee.department}
               </p>
-              <p>
-                <strong>Assigned Projects:</strong> {employee.projects?.length || 0}
-              </p>
             </div>
             <div className="data-card-actions">
               <button
