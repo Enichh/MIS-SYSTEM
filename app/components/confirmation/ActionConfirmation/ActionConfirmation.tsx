@@ -1,8 +1,8 @@
 'use client';
 
-import BaseModal from '@/components/modals/BaseModal/BaseModal';
+import BaseModal from '@/app/components/modals/BaseModal/BaseModal';
 import type { ConfirmationConfig } from '@/types';
-import { Button } from '@/components/ui/Button/Button';
+import { Button } from '@/app/components/ui/Button/Button';
 
 interface ActionConfirmationProps extends Omit<ConfirmationConfig, 'initialFocus'> {
   initialFocus?: string;

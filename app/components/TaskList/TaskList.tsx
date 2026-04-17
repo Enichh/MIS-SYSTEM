@@ -5,7 +5,7 @@ import type { Task, Project } from '@/types';
 import { Button } from '@/app/components/ui/Button/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/app/components/ui/Card/Card';
 import { Badge } from '@/app/components/ui/Badge/Badge';
-import DeleteConfirmation from '@/components/confirmation/DeleteConfirmation/DeleteConfirmation';
+import DeleteConfirmation from '@/app/components/confirmation/DeleteConfirmation/DeleteConfirmation';
 
 export default function TaskList() {
   const [tasks, setTasks] = useState<Task[]>([]);

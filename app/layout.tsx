@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next'
 import './globals.css'
+import { NavigationProvider } from '@/lib/context/NavigationContext'
 
 export const metadata: Metadata = {
   title: 'Enosoft Project Management System',
@@ -18,7 +19,9 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <NavigationProvider>{children}</NavigationProvider>
+      </body>
     </html>
   )
 }

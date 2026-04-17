@@ -2,183 +2,144 @@
 
 /**
  * Contract Validation Script
- * Validates schema.json structure and task file references
+ * Validates schema.json structure and consistency with task files
  */
 
-const fs = require("fs");
-const path = require("path");
+const fs = require('fs');
+const path = require('path');
 
-const schemaPath = path.join(__dirname, "../contracts/schema.json");
-const workstreamsPath = path.join(__dirname, "../workstreams");
+const schemaPath = path.join(__dirname, '../contracts/schema.json');
+const workstreamsPath = path.join(__dirname, '../workstreams');
 
 // Read schema.json
 let schema;
 try {
-  const schemaContent = fs.readFileSync(schemaPath, "utf8");
-  schema = JSON.parse(schemaContent);
-  console.log("✓ schema.json loaded successfully");
+  schema = JSON.parse(fs.readFileSync(schemaPath, 'utf8'));
+  console.log('✓ schema.json loaded successfully');
 } catch (error) {
-  console.error("✗ Failed to load schema.json:", error.message);
+  console.error('✗ Failed to load schema.json:', error.message);
   process.exit(1);
 }
 
 // Validate schema structure
-const requiredFields = [
-  "version",
-  "feature",
-  "freeze_phase",
-  "contracts",
-  "dependency_graph",
-];
-for (const field of requiredFields) {
-  if (!schema[field]) {
-    console.error(`✗ Missing required field in schema.json: ${field}`);
-    process.exit(1);
-  }
-}
-console.log("✓ schema.json structure validated");
+const requiredFields = ['version', 'feature', 'freeze_phase', 'contracts', 'dependency_graph'];
+const missingFields = requiredFields.filter(field => !schema[field]);
 
-// Validate task count limits (max 4 per workstream)
-const taskFiles = {
-  "shared-tasks.md": "shared",
-  "core-components-tasks.md": "core-components",
-  "feature-data-tasks.md": "feature-data",
-  "feature-interactive-tasks.md": "feature-interactive",
-};
-
-let totalErrors = 0;
-
-for (const [filename, workstreamKey] of Object.entries(taskFiles)) {
-  const taskFilePath = path.join(workstreamsPath, filename);
-
-  if (!fs.existsSync(taskFilePath)) {
-    console.error(`✗ Task file not found: ${filename}`);
-    totalErrors++;
-    continue;
-  }
-
-  const taskContent = fs.readFileSync(taskFilePath, "utf8");
-  const taskMatches = taskContent.match(/### Task \d+:/g);
-
-  if (!taskMatches) {
-    console.error(`✗ No tasks found in ${filename}`);
-    totalErrors++;
-    continue;
-  }
-
-  const taskCount = taskMatches.length;
-
-  if (taskCount > 4) {
-    console.error(`✗ Too many tasks in ${filename}: ${taskCount} (max 4)`);
-    totalErrors++;
-  } else {
-    console.log(`✓ ${filename}: ${taskCount} tasks (within limit)`);
-  }
-
-  // Validate contract references in task file
-  const contractRefMatches = taskContent.match(/Contract References:.*#/g);
-  if (contractRefMatches) {
-    console.log(
-      `✓ ${filename}: ${contractRefMatches.length} contract references found`,
-    );
-  }
-}
-
-// Validate imports_from_shared lists
-for (const [workstreamKey, workstreamData] of Object.entries(
-  schema.contracts,
-)) {
-  if (workstreamKey === "shared") continue;
-
-  const importsFromShared = workstreamData.imports_from_shared || [];
-  const sharedExports = schema.contracts.shared.exports.public;
-
-  // Check if all imports exist in shared exports
-  for (const importItem of importsFromShared) {
-    if (
-      !sharedExports.types?.includes(importItem) &&
-      !sharedExports.constants?.includes(importItem) &&
-      !sharedExports.functions?.includes(importItem)
-    ) {
-      console.warn(
-        `⚠ ${workstreamKey} imports '${importItem}' from shared but it's not in shared public exports`,
-      );
-    }
-  }
-  console.log(`✓ ${workstreamKey} imports_from_shared validated`);
-}
-
-// Validate imports_from_core-components for feature-data
-if (schema.contracts["feature-data"]?.["imports_from_core-components"]) {
-  const importsFromCore =
-    schema.contracts["feature-data"]["imports_from_core-components"];
-  const coreExports =
-    schema.contracts["core-components"]?.exports?.public || {};
-
-  for (const importItem of importsFromCore) {
-    const allCoreExports = [
-      ...(coreExports.components || []),
-      ...(coreExports.types || []),
-    ];
-    if (!allCoreExports.includes(importItem)) {
-      console.warn(
-        `⚠ feature-data imports '${importItem}' from core-components but it's not in core-components public exports`,
-      );
-    }
-  }
-  console.log("✓ feature-data imports_from_core-components validated");
-}
-
-// Validate imports_from_core-components for feature-interactive
-if (schema.contracts["feature-interactive"]?.["imports_from_core-components"]) {
-  const importsFromCore =
-    schema.contracts["feature-interactive"]["imports_from_core-components"];
-  const coreExports =
-    schema.contracts["core-components"]?.exports?.public || {};
-
-  for (const importItem of importsFromCore) {
-    const allCoreExports = [
-      ...(coreExports.components || []),
-      ...(coreExports.types || []),
-    ];
-    if (!allCoreExports.includes(importItem)) {
-      console.warn(
-        `⚠ feature-interactive imports '${importItem}' from core-components but it's not in core-components public exports`,
-      );
-    }
-  }
-  console.log("✓ feature-interactive imports_from_core-components validated");
-}
-
-// Check for naming collisions across workstreams
-const allExports = {};
-for (const [workstreamKey, workstreamData] of Object.entries(
-  schema.contracts,
-)) {
-  const exports = workstreamData.exports?.public || {};
-  const allItems = [
-    ...(exports.types || []),
-    ...(exports.constants || []),
-    ...(exports.functions || []),
-    ...(exports.components || []),
-  ];
-
-  for (const item of allItems) {
-    if (allExports[item]) {
-      console.error(
-        `✗ Naming collision: '${item}' exported by both ${allExports[item]} and ${workstreamKey}`,
-      );
-      totalErrors++;
-    } else {
-      allExports[item] = workstreamKey;
-    }
-  }
-}
-
-if (totalErrors === 0) {
-  console.log("\n✓ All contract validations passed");
-  process.exit(0);
-} else {
-  console.log(`\n✗ Contract validation failed with ${totalErrors} error(s)`);
+if (missingFields.length > 0) {
+  console.error('✗ Schema missing required fields:', missingFields);
   process.exit(1);
 }
+
+console.log('✓ Schema structure valid');
+
+// Validate workstream task files exist
+const workstreams = ['shared', 'components', 'integration'];
+const missingTaskFiles = [];
+
+workstreams.forEach(workstream => {
+  const taskFile = path.join(workstreamsPath, `${workstream}-tasks.md`);
+  if (!fs.existsSync(taskFile)) {
+    missingTaskFiles.push(`${workstream}-tasks.md`);
+  }
+});
+
+if (missingTaskFiles.length > 0) {
+  console.error('✗ Missing task files:', missingTaskFiles);
+  process.exit(1);
+}
+
+console.log('✓ All task files present');
+
+// Validate prompt files exist
+const promptsPath = path.join(__dirname, '../prompts');
+const missingPromptFiles = [];
+
+workstreams.forEach(workstream => {
+  const promptFile = path.join(promptsPath, `${workstream}-prompt.md`);
+  if (!fs.existsSync(promptFile)) {
+    missingPromptFiles.push(`${workstream}-prompt.md`);
+  }
+});
+
+if (missingPromptFiles.length > 0) {
+  console.error('✗ Missing prompt files:', missingPromptFiles);
+  process.exit(1);
+}
+
+console.log('✓ All prompt files present');
+
+// Validate task count limits (max 4 per workstream)
+workstreams.forEach(workstream => {
+  const taskFile = path.join(workstreamsPath, `${workstream}-tasks.md`);
+  const content = fs.readFileSync(taskFile, 'utf8');
+  const taskMatches = content.match(/### Task \d+:/g);
+  
+  if (taskMatches && taskMatches.length > 4) {
+    console.error(`✗ ${workstream}-tasks.md has ${taskMatches.length} tasks (max 4 allowed)`);
+    process.exit(1);
+  }
+});
+
+console.log('✓ Task count limits respected (max 4 per workstream)');
+
+// Validate naming collisions across workstreams
+const allExports = new Set();
+const namingCollisions = [];
+
+Object.keys(schema.contracts).forEach(workstream => {
+  const contract = schema.contracts[workstream];
+  if (contract.exports && contract.exports.public) {
+    Object.keys(contract.exports.public).forEach(category => {
+      contract.exports.public[category].forEach(item => {
+        if (allExports.has(item)) {
+          namingCollisions.push(item);
+        }
+        allExports.add(item);
+      });
+    });
+  }
+});
+
+if (namingCollisions.length > 0) {
+  console.error('✗ Naming collisions detected:', namingCollisions);
+  process.exit(1);
+}
+
+console.log('✓ No naming collisions across workstreams');
+
+// Validate contract consistency: tokens referenced in task files must be in schema.json
+console.log('\nValidating contract consistency...');
+
+workstreams.forEach(workstream => {
+  const taskFile = path.join(workstreamsPath, `${workstream}-tasks.md`);
+  const content = fs.readFileSync(taskFile, 'utf8');
+  
+  // Extract imports_from_shared references
+  const importsFromShared = schema.contracts[workstream]?.imports_from_shared || [];
+  
+  // Check if task file references any shared exports
+  if (importsFromShared.length > 0) {
+    const sharedExports = schema.contracts.shared?.exports?.public || {};
+    const allSharedExports = [];
+    
+    Object.keys(sharedExports).forEach(category => {
+      if (Array.isArray(sharedExports[category])) {
+        allSharedExports.push(...sharedExports[category]);
+      }
+    });
+    
+    const missingImports = importsFromShared.filter(imp => !allSharedExports.includes(imp));
+    
+    if (missingImports.length > 0) {
+      console.error(`✗ ${workstream} imports_from_shared references missing from shared exports:`, missingImports);
+      process.exit(1);
+    }
+  }
+});
+
+console.log('✓ Contract consistency validated');
+
+console.log('\n✅ All validation checks passed!');
+console.log(`Feature: ${schema.feature}`);
+console.log(`Version: ${schema.version}`);
+console.log(`Freeze Phase: ${schema.freeze_phase}`);

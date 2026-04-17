@@ -1,7 +1,7 @@
 'use client';
 
-import BaseModal from '@/components/modals/BaseModal/BaseModal';
-import { Button } from '@/components/ui/Button/Button';
+import BaseModal from '@/app/components/modals/BaseModal/BaseModal';
+import { Button } from '@/app/components/ui/Button/Button';
 
 interface DeleteConfirmationProps {
   isOpen: boolean;

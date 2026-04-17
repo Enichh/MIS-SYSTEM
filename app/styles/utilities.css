@@ -82,6 +82,42 @@
   }
 }
 
+/* Responsive Utility Classes for Navigation */
+.drawer-slide-in {
+  animation: slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.drawer-slide-out {
+  animation: slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1) reverse;
+}
+
+.backdrop-fade-in {
+  animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.backdrop-fade-out {
+  animation: fadeIn 0.3s cubic-bezier(0.4, 0, 0.2, 1) reverse;
+}
+
+/* Sidebar Visibility Utilities */
+.sidebar-visible-desktop {
+  display: block;
+}
+
+.sidebar-hidden-mobile {
+  display: none;
+}
+
+@media (max-width: 768px) {
+  .sidebar-visible-desktop {
+    display: none;
+  }
+
+  .sidebar-hidden-mobile {
+    display: block;
+  }
+}
+
 /* Icon Sizing */
 .icon-sm {
   width: 1rem;
@@ -229,6 +265,14 @@
 
 .z-50 {
   z-index: 50;
+}
+
+.z-999 {
+  z-index: 999;
+}
+
+.z-1000 {
+  z-index: 1000;
 }
 
 .bottom-6 {

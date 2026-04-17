@@ -1,158 +1,138 @@
 {
   "version": "1.0.0",
-  "feature": "UI Overhaul - shadcn/ui Integration",
+  "feature": "Hybrid Sidebar + Mobile Drawer Navigation",
   "freeze_phase": "hot",
   "contracts": {
     "shared": {
       "exports": {
         "public": {
-          "types": ["IconName", "IconProps", "ThemeColors", "SpacingScale"],
-          "constants": ["ICON_SIZES", "DEFAULT_ICON_SIZE"],
-          "functions": ["getIcon", "getThemeColor", "getSpacing"]
+          "types": ["NavigationContextType", "NavigationState"],
+          "constants": ["BREAKPOINT_MOBILE", "BREAKPOINT_TABLET", "SIDEBAR_WIDTH_DESKTOP", "DRAWER_WIDTH_MOBILE"],
+          "functions": ["useNavigationContext", "NavigationProvider"]
         },
-        "internal": ["mapIconName", "validateIconProps"]
+        "internal": ["getBreakpoint", "isMobile", "isDesktop"]
       },
       "schemas": {
-        "IconName": {
-          "type": "string",
-          "enum": ["menu", "house", "settings", "user", "trash", "edit", "plus", "x", "check", "bell", "search", "filter", "chevron-down", "chevron-up", "chevron-left", "chevron-right"]
-        },
-        "IconProps": {
+        "NavigationContextType": {
           "type": "object",
           "properties": {
-            "name": { "type": "string" },
-            "size": { "type": "number", "enum": [16, 20, 24, 32] },
-            "color": { "type": "string" },
-            "className": { "type": "string" }
+            "isDrawerOpen": { "type": "boolean" },
+            "isMobile": { "type": "boolean" },
+            "toggleDrawer": { "type": "function" },
+            "closeDrawer": { "type": "function" }
           },
-          "required": ["name"]
+          "required": ["isDrawerOpen", "isMobile", "toggleDrawer", "closeDrawer"]
         },
-        "ThemeColors": {
+        "NavigationState": {
           "type": "object",
           "properties": {
-            "primary": { "type": "string" },
-            "background": { "type": "string" },
-            "text": { "type": "string" },
-            "border": { "type": "string" },
-            "success": { "type": "string" },
-            "error": { "type": "string" },
-            "warning": { "type": "string" }
-          }
-        },
-        "SpacingScale": {
-          "type": "object",
-          "properties": {
-            "xs": { "type": "number", "const": 4 },
-            "sm": { "type": "number", "const": 8 },
-            "md": { "type": "number", "const": 16 },
-            "lg": { "type": "number", "const": 24 },
-            "xl": { "type": "number", "const": 32 },
-            "2xl": { "type": "number", "const": 48 }
-          }
+            "isDrawerOpen": { "type": "boolean" },
+            "isMobile": { "type": "boolean" }
+          },
+          "required": ["isDrawerOpen", "isMobile"]
         }
       }
     },
-    "core-components": {
-      "imports_from_shared": ["IconName", "IconProps", "ICON_SIZES", "DEFAULT_ICON_SIZE", "getIcon"],
+    "components": {
+      "imports_from_shared": ["NavigationContextType", "useNavigationContext", "NavigationProvider", "BREAKPOINT_MOBILE", "SIDEBAR_WIDTH_DESKTOP", "DRAWER_WIDTH_MOBILE"],
       "exports": {
         "public": {
-          "components": ["Button", "Input", "Textarea", "Select", "Card", "Badge", "Modal"],
-          "types": ["ButtonVariant", "ButtonSize", "InputProps"]
+          "components": ["Sidebar", "Drawer", "HamburgerButton"]
         },
-        "internal": ["buttonVariants", "inputVariants"]
-      },
-      "allowed_internal_helpers": true,
-      "file_naming": {
-        "pattern": "app/components/ui/{PascalName}/{PascalName}.tsx",
-        "example": "app/components/ui/Button/Button.tsx"
-      }
-    },
-    "feature-data": {
-      "imports_from_shared": ["IconName", "IconProps", "getIcon", "ICON_SIZES"],
-      "imports_from_core-components": ["Button", "Input", "Textarea", "Select", "Card", "Badge", "ButtonVariant"],
-      "exports": {
-        "public": {
-          "components": ["Navigation", "EmployeeList", "ProjectList", "TaskList", "EmployeeForm", "ProjectForm", "TaskForm"]
-        }
+        "internal": []
       },
       "allowed_internal_helpers": true,
       "file_naming": {
         "pattern": "app/components/{PascalName}/{PascalName}.tsx",
-        "example": "app/components/Navigation/Navigation.tsx"
+        "example": "app/components/Sidebar/Sidebar.tsx"
       }
     },
-    "feature-interactive": {
-      "imports_from_shared": ["IconName", "IconProps", "getIcon", "ICON_SIZES"],
-      "imports_from_core-components": ["Button", "Input", "Modal", "Badge", "ButtonVariant"],
+    "integration": {
+      "imports_from_shared": ["NavigationProvider", "useNavigationContext"],
+      "imports_from_components": ["Sidebar", "Drawer", "HamburgerButton"],
       "exports": {
-        "public": {
-          "components": ["ChatModal", "ThemeToggle", "Header", "BaseModal", "ActionConfirmation", "DeleteConfirmation"]
-        }
+        "public": []
       },
       "allowed_internal_helpers": true,
       "file_naming": {
-        "pattern": "app/components/{PascalName}/{PascalName}.tsx",
-        "example": "app/components/ChatModal/ChatModal.tsx"
+        "pattern": "app/{path}/{filename}.{ext}",
+        "example": "app/components/Header/Header.tsx"
       }
     }
   },
   "boundaries": {
-    "shared_to_core-components": {
-      "data_shape": "IconName, IconProps, ICON_SIZES",
-      "icon_system": "Lucide icons with centralized management",
-      "theme_integration": "OKLCH color palette preservation"
+    "shared_to_components": {
+      "data_shape": "NavigationContextType, NavigationState",
+      "state_management": "React Context API for navigation state",
+      "responsive_logic": "Media query detection for mobile/desktop"
     },
-    "shared_to_feature-data": {
-      "data_shape": "IconName, IconProps, getIcon, ICON_SIZES",
-      "icon_system": "Lucide icons with centralized management"
+    "shared_to_integration": {
+      "data_shape": "NavigationProvider, useNavigationContext",
+      "context_usage": "Wrap application with NavigationProvider",
+      "hook_usage": "Consume navigation state in components"
     },
-    "shared_to_feature-interactive": {
-      "data_shape": "IconName, IconProps, getIcon, ICON_SIZES",
-      "icon_system": "Lucide icons with centralized management"
-    },
-    "core-components_to_feature-data": {
-      "component_usage": "shadcn/ui components (Button, Input, Textarea, Select, Card, Badge)",
-      "styling_approach": "CSS classes (no inline styles)",
-      "state_management": "React state (no DOM manipulation)"
-    },
-    "core-components_to_feature-interactive": {
-      "component_usage": "shadcn/ui components (Button, Input, Modal, Badge)",
-      "styling_approach": "CSS classes (no inline styles)",
-      "state_management": "React state (no DOM manipulation)"
+    "components_to_integration": {
+      "component_usage": "Sidebar (desktop), Drawer (mobile), HamburgerButton (trigger)",
+      "styling_approach": "CSS classes from app/styles/ (no inline styles)",
+      "responsive_behavior": "CSS media queries for layout switching"
     }
   },
   "dependency_graph": {
     "shared": {
       "depends_on": [],
-      "blocks": ["core-components", "feature-data", "feature-interactive"]
+      "blocks": ["components", "integration"]
     },
-    "core-components": {
+    "components": {
       "depends_on": ["shared"],
-      "blocks": ["feature-data", "feature-interactive"]
+      "blocks": ["integration"]
     },
-    "feature-data": {
-      "depends_on": ["shared", "core-components"],
-      "blocks": []
-    },
-    "feature-interactive": {
-      "depends_on": ["shared", "core-components"],
+    "integration": {
+      "depends_on": ["shared", "components"],
       "blocks": []
     }
   },
   "best_practices": {
-    "shadcn_ui": {
-      "installation": "npx shadcn@latest init",
-      "components": "Use copy-paste model, customize to use existing OKLCH variables",
-      "icons": "Lucide icons as default icon library"
+    "css_responsive": {
+      "breakpoints": "Mobile: < 768px, Desktop: >= 768px",
+      "sidebar_width": "240-280px on desktop using CSS max() function",
+      "drawer_width": "280px on mobile with slide-in animation",
+      "transitions": "CSS transitions for smooth drawer open/close (300ms ease)",
+      "media_queries": "Use @media (max-width: 768px) for mobile breakpoint"
     },
     "react_patterns": {
-      "navigation": "Use React state (useState) instead of DOM manipulation (classList, getElementById)",
-      "styling": "Use CSS classes instead of inline styles",
-      "accessibility": "Maintain ARIA labels, focus management, keyboard navigation"
+      "state_management": "Use React Context API for navigation state (useState, useEffect)",
+      "responsive_detection": "Use window.matchMedia or useEffect with resize listener",
+      "accessibility": "ARIA labels, focus management, keyboard navigation for drawer",
+      "no_dom_manipulation": "Use React state instead of classList, getElementById"
     },
-    "nextjs_15": {
-      "app_router": "Use 'use client' directive for client components",
-      "hooks": "Use next/navigation hooks (useRouter, usePathname) for navigation"
+    "layout_architecture": {
+      "desktop_layout": "CSS Grid with persistent sidebar on left, main content on right",
+      "mobile_layout": "Overlay drawer triggered by hamburger, backdrop for click-to-close",
+      "css_grid": "Use grid-template-areas for responsive layout switching",
+      "container_queries": "Consider @container for component-level responsiveness"
     }
+  },
+  "codebase_impact": {
+    "files_to_modify": [
+      "app/styles/navigation.css - Add sidebar/drawer styles, responsive breakpoints",
+      "app/styles/utilities.css - Add responsive utility classes if needed",
+      "app/components/Navigation/Navigation.tsx - DEPRECATED: Replace with Sidebar/Drawer",
+      "app/components/Header/Header.tsx - Add HamburgerButton for mobile",
+      "app/layout.tsx - Wrap with NavigationProvider",
+      "app/page.tsx - Update layout structure for sidebar/drawer integration"
+    ],
+    "files_to_create": [
+      "app/components/Sidebar/Sidebar.tsx - New desktop sidebar component",
+      "app/components/Drawer/Drawer.tsx - New mobile drawer component",
+      "app/components/HamburgerButton/HamburgerButton.tsx - New hamburger trigger",
+      "lib/context/NavigationContext.tsx - New navigation context provider"
+    ],
+    "css_best_practices": [
+      "Use CSS Grid with grid-template-areas for layout",
+      "Use media queries at 768px breakpoint for mobile/desktop switch",
+      "Use CSS transitions for smooth drawer animations",
+      "Use CSS max() function for flexible sidebar widths",
+      "No Tailwind or framework CSS - use custom CSS classes only"
+    ]
   }
 }

@@ -2,9 +2,9 @@
 
 import { useEffect, useState } from 'react'
 import { THEME_STORAGE_KEY } from '@/lib/constants'
-import { SunIcon } from '@/components/ui/icons/custom/SunIcon'
-import { MoonIcon } from '@/components/ui/icons/custom/MoonIcon'
-import { Button } from '@/components/ui/Button/Button'
+import { SunIcon } from '@/app/components/ui/icons/custom/SunIcon'
+import { MoonIcon } from '@/app/components/ui/icons/custom/MoonIcon'
+import { Button } from '@/app/components/ui/Button/Button'
 
 export default function ThemeToggle() {
   const [theme, setTheme] = useState<'light' | 'dark'>('light')
