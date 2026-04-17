@@ -64,10 +64,17 @@ export default async function EmployeeList() {
       </div>
     )
   } catch (error) {
+    console.error('Employee loading error:', error)
     return (
       <div className="empty-state">
         <h3>Error Loading Employees</h3>
         <p>Failed to load employees. Please refresh the page.</p>
+        <details style={{ marginTop: '1rem', textAlign: 'left', fontSize: '0.875rem' }}>
+          <summary style={{ cursor: 'pointer', color: '#dc2626' }}>Error Details</summary>
+          <pre style={{ marginTop: '0.5rem', padding: '0.5rem', background: '#fef2f2', borderRadius: '4px', overflow: 'auto' }}>
+            {error instanceof Error ? error.message : String(error)}
+          </pre>
+        </details>
       </div>
     )
   }
