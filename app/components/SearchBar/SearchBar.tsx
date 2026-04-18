@@ -32,7 +32,7 @@ export function SearchBar({
   // Stable debounced search handler that doesn't get recreated
   const debouncedSearchRef = useRef(
     debounceSearch((query: string) => {
-      if (query.length >= MIN_SEARCH_LENGTH || query.length === 0) {
+      if (query.length >= MIN_SEARCH_LENGTH) {
         onSearchRef.current({ query, entityType: entityTypeRef.current });
       }
     }, SEARCH_DEBOUNCE_MS)
