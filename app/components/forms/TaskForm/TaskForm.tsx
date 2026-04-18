@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
 import BaseModal from '@/app/components/modals/BaseModal/BaseModal';
 import { useModal } from '@/lib/hooks/useModal';
 import { useForm } from '@/lib/hooks/useForm';
@@ -9,7 +9,7 @@ import { Button } from '@/app/components/ui/Button/Button';
 import { Input } from '@/app/components/ui/Input/Input';
 import { Textarea } from '@/app/components/ui/Textarea/Textarea';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/app/components/ui/Select/Select';
-import type { FormFieldConfig, Project, Employee } from '@/types';
+import type { FormFieldConfig, Project, Employee, Task } from '@/types';
 
 const taskFields: FormFieldConfig[] = [
   { name: 'title', label: 'Title', type: 'text', required: true, maxLength: 100 },
@@ -31,11 +31,17 @@ interface FormData {
   dueDate: string;
 }
 
-export default function TaskForm() {
-  const { isOpen, open, close } = useModal();
+export interface TaskFormRef {
+  open: (task?: Task) => void;
+  close: () => void;
+}
+
+const TaskForm = forwardRef<TaskFormRef, {}>((_, ref) => {
+  const { isOpen, open: openModal, close } = useModal();
   const [projects, setProjects] = useState<Project[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [employeeSearch, setEmployeeSearch] = useState('');
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -105,8 +111,12 @@ export default function TaskForm() {
         dependencies: [],
       };
 
-      const response = await fetch('/api/tasks', {
-        method: 'POST',
+      const isEditing = editingTask !== null;
+      const url = isEditing ? `/api/tasks/${editingTask.id}` : '/api/tasks';
+      const method = isEditing ? 'PATCH' : 'POST';
+
+      const response = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
@@ -114,7 +124,7 @@ export default function TaskForm() {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.message || 'Failed to create task');
+        throw new Error(result.message || `Failed to ${isEditing ? 'update' : 'create'} task`);
       }
     },
     onSuccess: () => {
@@ -130,11 +140,45 @@ export default function TaskForm() {
     emp.email.toLowerCase().includes(employeeSearch.toLowerCase())
   );
 
-  const handleOpen = () => {
-    resetForm();
-    setEmployeeSearch('');
-    open();
+  const open = (task?: Task) => {
+    if (task) {
+      setEditingTask(task);
+      // Pre-populate form with task data
+      const initialData = {
+        title: task.title,
+        description: task.description || '',
+        status: task.status,
+        priority: task.priority,
+        projectId: task.projectId,
+        assignedTo: task.assignedTo || '',
+        dueDate: task.dueDate || '',
+      };
+      // Need to reset form with this data
+      Object.keys(initialData).forEach(key => {
+        const event = { target: { name: key, value: initialData[key as keyof typeof initialData] } } as React.ChangeEvent<HTMLInputElement>;
+        handleInputChange(event);
+      });
+      // Set employee search if assigned
+      if (task.assignedTo) {
+        const employee = employees.find(e => e.id === task.assignedTo);
+        if (employee) {
+          setEmployeeSearch(employee.name);
+        }
+      } else {
+        setEmployeeSearch('');
+      }
+    } else {
+      setEditingTask(null);
+      resetForm();
+      setEmployeeSearch('');
+    }
+    openModal();
   };
+
+  useImperativeHandle(ref, () => ({
+    open,
+    close,
+  }));
 
   useEffect(() => {
     if (formData.assignedTo) {
@@ -165,14 +209,10 @@ export default function TaskForm() {
 
   return (
     <>
-      <Button onClick={handleOpen} icon="plus" aria-label="Add new task">
-        Add Task
-      </Button>
-
       <BaseModal
         isOpen={isOpen}
         onClose={close}
-        title="Add Task"
+        title={editingTask ? 'Edit Task' : 'Add Task'}
         size="md"
         ariaDescribedBy="task-form-description"
       >
@@ -324,4 +364,8 @@ export default function TaskForm() {
       </BaseModal>
     </>
   );
-}
+});
+
+TaskForm.displayName = 'TaskForm';
+
+export default TaskForm;

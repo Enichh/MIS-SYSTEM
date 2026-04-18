@@ -1,5 +1,6 @@
 'use client';
 
+import { useImperativeHandle, forwardRef, useState } from 'react';
 import BaseModal from '@/app/components/modals/BaseModal/BaseModal';
 import { useModal } from '@/lib/hooks/useModal';
 import { useForm } from '@/lib/hooks/useForm';
@@ -8,7 +9,7 @@ import { Button } from '@/app/components/ui/Button/Button';
 import { Input } from '@/app/components/ui/Input/Input';
 import { Textarea } from '@/app/components/ui/Textarea/Textarea';
 import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/app/components/ui/Select/Select';
-import type { FormFieldConfig } from '@/types';
+import type { FormFieldConfig, Project } from '@/types';
 
 const projectFields: FormFieldConfig[] = [
   { name: 'name', label: 'Name', type: 'text', required: true, maxLength: 100 },
@@ -30,8 +31,14 @@ interface FormData {
   endDate: string;
 }
 
-export default function ProjectForm() {
-  const { isOpen, open, close } = useModal();
+export interface ProjectFormRef {
+  open: (project?: Project) => void;
+  close: () => void;
+}
+
+const ProjectForm = forwardRef<ProjectFormRef, {}>((_, ref) => {
+  const { isOpen, open: openModal, close } = useModal();
+  const [editingProject, setEditingProject] = useState<Project | null>(null);
 
   const {
     formData,
@@ -60,8 +67,12 @@ export default function ProjectForm() {
         endDate: data.endDate || undefined,
       };
 
-      const response = await fetch('/api/projects', {
-        method: 'POST',
+      const isEditing = editingProject !== null;
+      const url = isEditing ? `/api/projects/${editingProject.id}` : '/api/projects';
+      const method = isEditing ? 'PATCH' : 'POST';
+
+      const response = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
@@ -69,7 +80,7 @@ export default function ProjectForm() {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.message || 'Failed to create project');
+        throw new Error(result.message || `Failed to ${isEditing ? 'update' : 'create'} project`);
       }
     },
     onSuccess: () => {
@@ -80,21 +91,41 @@ export default function ProjectForm() {
     },
   });
 
-  const handleOpen = () => {
-    resetForm();
-    open();
+  const open = (project?: Project) => {
+    if (project) {
+      setEditingProject(project);
+      // Pre-populate form with project data
+      const eventData = {
+        name: project.name,
+        description: project.description || '',
+        status: project.status,
+        priority: project.priority,
+        progress: String(project.progress),
+        startDate: project.startDate || '',
+        endDate: project.endDate || '',
+      };
+      Object.keys(eventData).forEach(key => {
+        const event = { target: { name: key, value: eventData[key as keyof typeof eventData] } } as React.ChangeEvent<HTMLInputElement>;
+        handleInputChange(event);
+      });
+    } else {
+      setEditingProject(null);
+      resetForm();
+    }
+    openModal();
   };
+
+  useImperativeHandle(ref, () => ({
+    open,
+    close,
+  }));
 
   return (
     <>
-      <Button onClick={handleOpen} icon="plus" aria-label="Add new project">
-        Add Project
-      </Button>
-
       <BaseModal
         isOpen={isOpen}
         onClose={close}
-        title="Add Project"
+        title={editingProject ? 'Edit Project' : 'Add Project'}
         size="md"
         ariaDescribedBy="project-form-description"
       >
@@ -196,4 +227,8 @@ export default function ProjectForm() {
       </BaseModal>
     </>
   );
-}
+});
+
+ProjectForm.displayName = 'ProjectForm';
+
+export default ProjectForm;

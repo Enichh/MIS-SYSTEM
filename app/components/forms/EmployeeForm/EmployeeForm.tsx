@@ -1,12 +1,13 @@
 'use client';
 
+import { useImperativeHandle, forwardRef, useState } from 'react';
 import BaseModal from '@/app/components/modals/BaseModal/BaseModal';
 import { useModal } from '@/lib/hooks/useModal';
 import { useForm } from '@/lib/hooks/useForm';
 import { Button } from '@/app/components/ui/Button/Button';
 import { Input } from '@/app/components/ui/Input/Input';
 import { Textarea } from '@/app/components/ui/Textarea/Textarea';
-import type { FormFieldConfig } from '@/types';
+import type { FormFieldConfig, Employee } from '@/types';
 
 const employeeFields: FormFieldConfig[] = [
   { name: 'name', label: 'Name', type: 'text', required: true, maxLength: 100 },
@@ -24,8 +25,14 @@ interface FormData {
   skills: string;
 }
 
-export default function EmployeeForm() {
-  const { isOpen, open, close } = useModal();
+export interface EmployeeFormRef {
+  open: (employee?: Employee) => void;
+  close: () => void;
+}
+
+const EmployeeForm = forwardRef<EmployeeFormRef, {}>((_, ref) => {
+  const { isOpen, open: openModal, close } = useModal();
+  const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
 
   const {
     formData,
@@ -50,8 +57,12 @@ export default function EmployeeForm() {
         skills: data.skills ? data.skills.split(',').map((s) => s.trim()).filter((s) => s) : [],
       };
 
-      const response = await fetch('/api/employees', {
-        method: 'POST',
+      const isEditing = editingEmployee !== null;
+      const url = isEditing ? `/api/employees/${editingEmployee.id}` : '/api/employees';
+      const method = isEditing ? 'PATCH' : 'POST';
+
+      const response = await fetch(url, {
+        method,
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
@@ -59,7 +70,7 @@ export default function EmployeeForm() {
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.message || 'Failed to create employee');
+        throw new Error(result.message || `Failed to ${isEditing ? 'update' : 'create'} employee`);
       }
     },
     onSuccess: () => {
@@ -70,21 +81,39 @@ export default function EmployeeForm() {
     },
   });
 
-  const handleOpen = () => {
-    resetForm();
-    open();
+  const open = (employee?: Employee) => {
+    if (employee) {
+      setEditingEmployee(employee);
+      // Pre-populate form with employee data
+      const eventData = {
+        name: employee.name,
+        email: employee.email,
+        role: employee.role,
+        department: employee.department,
+        skills: employee.skills ? employee.skills.join(', ') : '',
+      };
+      Object.keys(eventData).forEach(key => {
+        const event = { target: { name: key, value: eventData[key as keyof typeof eventData] } } as React.ChangeEvent<HTMLInputElement>;
+        handleInputChange(event);
+      });
+    } else {
+      setEditingEmployee(null);
+      resetForm();
+    }
+    openModal();
   };
+
+  useImperativeHandle(ref, () => ({
+    open,
+    close,
+  }));
 
   return (
     <>
-      <Button onClick={handleOpen} icon="plus" aria-label="Add new employee">
-        Add Employee
-      </Button>
-
       <BaseModal
         isOpen={isOpen}
         onClose={close}
-        title="Add Employee"
+        title={editingEmployee ? 'Edit Employee' : 'Add Employee'}
         size="md"
         ariaDescribedBy="employee-form-description"
       >
@@ -164,4 +193,8 @@ export default function EmployeeForm() {
       </BaseModal>
     </>
   );
-}
+});
+
+EmployeeForm.displayName = 'EmployeeForm';
+
+export default EmployeeForm;

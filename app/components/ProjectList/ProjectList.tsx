@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import type { Project, SearchQuery } from '@/types';
 import { Button } from '@/app/components/ui/Button/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/app/components/ui/Card/Card';
 import { Badge } from '@/app/components/ui/Badge/Badge';
 import DeleteConfirmation from '@/app/components/confirmation/DeleteConfirmation/DeleteConfirmation';
 import { SearchBar } from '@/app/components/SearchBar/SearchBar';
+import ProjectForm, { type ProjectFormRef } from '@/app/components/forms/ProjectForm/ProjectForm';
 
 interface ProjectListProps {
   isActive?: boolean;
@@ -26,6 +27,7 @@ export default function ProjectList({ isActive = true }: ProjectListProps) {
     projectId: null,
     projectName: '',
   });
+  const projectFormRef = useRef<ProjectFormRef>(null);
 
   const loadProjects = useCallback(async () => {
     try {
@@ -149,9 +151,7 @@ export default function ProjectList({ isActive = true }: ProjectListProps) {
               <Button
                 variant="secondary"
                 icon="edit"
-                data-action="edit"
-                data-entity="project"
-                data-id={project.id}
+                onClick={() => projectFormRef.current?.open(project)}
               >
                 Edit
               </Button>
@@ -175,6 +175,7 @@ export default function ProjectList({ isActive = true }: ProjectListProps) {
         entityType="Project"
         variant="danger"
       />
+      <ProjectForm ref={projectFormRef} />
     </>
   );
 }

@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import type { Task, Project, SearchQuery } from '@/types';
 import { Button } from '@/app/components/ui/Button/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/app/components/ui/Card/Card';
 import { Badge } from '@/app/components/ui/Badge/Badge';
 import DeleteConfirmation from '@/app/components/confirmation/DeleteConfirmation/DeleteConfirmation';
 import { SearchBar } from '@/app/components/SearchBar/SearchBar';
+import TaskForm, { type TaskFormRef } from '@/app/components/forms/TaskForm/TaskForm';
 
 interface TaskListProps {
   isActive?: boolean;
@@ -27,6 +28,7 @@ export default function TaskList({ isActive = true }: TaskListProps) {
     taskId: null,
     taskTitle: '',
   });
+  const taskFormRef = useRef<TaskFormRef>(null);
 
   const loadData = useCallback(async () => {
     try {
@@ -164,9 +166,7 @@ export default function TaskList({ isActive = true }: TaskListProps) {
               <Button
                 variant="secondary"
                 icon="edit"
-                data-action="edit"
-                data-entity="task"
-                data-id={task.id}
+                onClick={() => taskFormRef.current?.open(task)}
               >
                 Edit
               </Button>
@@ -190,6 +190,7 @@ export default function TaskList({ isActive = true }: TaskListProps) {
         entityType="Task"
         variant="danger"
       />
+      <TaskForm ref={taskFormRef} />
     </>
   );
 }

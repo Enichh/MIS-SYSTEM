@@ -1,4 +1,4 @@
-import { fetchFromDatabase, insertToDatabase, deleteFromDatabase } from '@/lib/utils/database'
+import { fetchFromDatabase, insertToDatabase, deleteFromDatabase, updateToDatabase } from '@/lib/utils/database'
 import type { Project } from '@/types'
 
 export async function getProjects(filters?: Record<string, unknown>): Promise<Project[]> {
@@ -15,6 +15,16 @@ export async function createProject(data: Omit<Project, 'id' | 'created_at' | 'u
   const result = await insertToDatabase<Project>('projects', data);
   console.log(`[PROJECT_CREATE] Project created successfully: ID=${result.id}, Name=${result.name}`);
   return result;
+}
+
+/**
+ * Updates a project record by ID
+ * @param id - The ID of the project to update
+ * @param data - The project data to update
+ * @returns The updated project record
+ */
+export async function updateProject(id: string, data: Partial<Omit<Project, 'id' | 'created_at' | 'updated_at'>>): Promise<Project> {
+  return updateToDatabase<Project>('projects', id, data)
 }
 
 /**

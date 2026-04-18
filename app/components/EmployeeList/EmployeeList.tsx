@@ -1,12 +1,13 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import type { Employee, SearchQuery } from '@/types';
 import { Button } from '@/app/components/ui/Button/Button';
 import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/app/components/ui/Card/Card';
 import { Badge } from '@/app/components/ui/Badge/Badge';
 import DeleteConfirmation from '@/app/components/confirmation/DeleteConfirmation/DeleteConfirmation';
 import { SearchBar } from '@/app/components/SearchBar/SearchBar';
+import EmployeeForm, { type EmployeeFormRef } from '@/app/components/forms/EmployeeForm/EmployeeForm';
 
 interface EmployeeListProps {
   isActive?: boolean;
@@ -26,6 +27,7 @@ export default function EmployeeList({ isActive = true }: EmployeeListProps) {
     employeeId: null,
     employeeName: '',
   });
+  const employeeFormRef = useRef<EmployeeFormRef>(null);
 
   const loadEmployees = useCallback(async () => {
     try {
@@ -154,9 +156,7 @@ export default function EmployeeList({ isActive = true }: EmployeeListProps) {
                 <Button
                   variant="secondary"
                   icon="edit"
-                  data-action="edit"
-                  data-entity="employee"
-                  data-id={employee.id}
+                  onClick={() => employeeFormRef.current?.open(employee)}
                 >
                   Edit
                 </Button>
@@ -180,6 +180,7 @@ export default function EmployeeList({ isActive = true }: EmployeeListProps) {
         entityType="Employee"
         variant="danger"
       />
+      <EmployeeForm ref={employeeFormRef} />
     </>
   );
 }

@@ -1,4 +1,4 @@
-import { fetchFromDatabase, insertToDatabase, deleteFromDatabase } from '@/lib/utils/database'
+import { fetchFromDatabase, insertToDatabase, deleteFromDatabase, updateToDatabase } from '@/lib/utils/database'
 import type { Task } from '@/types'
 
 export async function getTasks(filters?: Record<string, unknown>): Promise<Task[]> {
@@ -15,6 +15,16 @@ export async function createTask(data: Omit<Task, 'id' | 'created_at' | 'updated
   const result = await insertToDatabase<Task>('tasks', data);
   console.log(`[TASK_CREATE] Task created successfully: ID=${result.id}, Title=${result.title}`);
   return result;
+}
+
+/**
+ * Updates a task record by ID
+ * @param id - The ID of the task to update
+ * @param data - The task data to update
+ * @returns The updated task record
+ */
+export async function updateTask(id: string, data: Partial<Omit<Task, 'id' | 'created_at' | 'updated_at'>>): Promise<Task> {
+  return updateToDatabase<Task>('tasks', id, data)
 }
 
 /**
