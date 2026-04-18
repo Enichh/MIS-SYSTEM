@@ -66,48 +66,80 @@ async function handleQuickAction(intent: string, userMessage: string): Promise<s
   try {
     let payload: Record<string, unknown> = {};
     let endpoint = '/api/quick-action';
+    const missingFields: string[] = [];
 
     // Simple extraction patterns - in production, use NLP for better parsing
     if (intent === 'create_employee') {
-      // Extract name, role, department, skills from message
+      // Schema requirements: name (NOT NULL), email (NOT NULL, UNIQUE, regex), role (NOT NULL), department (NOT NULL), skills (optional)
       const nameMatch = userMessage.match(/(?:named?|called?)\s+["']?([^"'\.]+)["']?/i) ||
                        userMessage.match(/(?:create|add)\s+(?:an\s+)?employee\s+(?:named?|called?)?\s*["']?([^"'\.]+)["']?/i);
+      const emailMatch = userMessage.match(/(?:email)\s+["']?([^"'\s]+)["']?/i);
       const roleMatch = userMessage.match(/(?:as|role)\s+(\w+)/i);
       const deptMatch = userMessage.match(/(?:in|department)\s+(\w+)/i);
       const skillsMatch = userMessage.match(/(?:skills?|with)\s+([^.]+)/i);
 
       if (nameMatch) payload.name = nameMatch[1].trim();
+      if (emailMatch) payload.email = emailMatch[1].trim();
       if (roleMatch) payload.role = roleMatch[1].trim();
       if (deptMatch) payload.department = deptMatch[1].trim();
       if (skillsMatch) {
         payload.skills = skillsMatch[1].split(',').map(s => s.trim()).filter(s => s);
       }
-      // Set defaults if not extracted
-      if (!payload.email) payload.email = `${payload.name || 'user'}@example.com`;
-      if (!payload.role) payload.role = 'Employee';
-      if (!payload.department) payload.department = 'General';
+
+      // Validate required fields
+      if (!payload.name) missingFields.push('name');
+      if (!payload.email) missingFields.push('email');
+      if (!payload.role) missingFields.push('role');
+      if (!payload.department) missingFields.push('department');
+
+      if (missingFields.length > 0) {
+        return `To create an employee, I need the following information: ${missingFields.join(', ')}. Please provide these details.`;
+      }
     }
 
     if (intent === 'create_project') {
+      // Schema requirements: name (NOT NULL), description (optional), status (default 'active'), priority (default 'medium')
       const nameMatch = userMessage.match(/(?:called?|named?)\s+["']?([^"'\.]+)["']?/i) ||
                        userMessage.match(/(?:create|add)\s+(?:a\s+)?project\s+(?:called?|named?)?\s*["']?([^"'\.]+)["']?/i);
       const descMatch = userMessage.match(/(?:descri(?:be|ption)|about)\s+([^.]+)/i);
 
       if (nameMatch) payload.name = nameMatch[1].trim();
       if (descMatch) payload.description = descMatch[1].trim();
-      if (!payload.status) payload.status = 'active';
-      if (!payload.priority) payload.priority = 'medium';
+
+      // Validate required fields
+      if (!payload.name) missingFields.push('name');
+
+      if (missingFields.length > 0) {
+        return `To create a project, I need the following information: ${missingFields.join(', ')}. Please provide these details.`;
+      }
     }
 
     if (intent === 'create_task') {
+      // Schema requirements: title (NOT NULL), projectId (NOT NULL, foreign key), description (optional)
       const titleMatch = userMessage.match(/(?:called?|named?)\s+["']?([^"'\.]+)["']?/i) ||
                         userMessage.match(/(?:create|add)\s+(?:a\s+)?task\s+(?:called?|named?)?\s*["']?([^"'\.]+)["']?/i);
       const descMatch = userMessage.match(/(?:descri(?:be|ption)|about)\s+([^.]+)/i);
+      const projectMatch = userMessage.match(/(?:for|in|project)\s+["']?([^"'\.]+)["']?/i);
 
       if (titleMatch) payload.title = titleMatch[1].trim();
       if (descMatch) payload.description = descMatch[1].trim();
-      if (!payload.status) payload.status = 'pending';
-      if (!payload.priority) payload.priority = 'medium';
+
+      // Try to find project by name
+      if (projectMatch) {
+        const projects = await fetchFromDatabase('projects', {});
+        const project = (projects as any[]).find(p => p.name.toLowerCase().includes(projectMatch[1].toLowerCase()));
+        if (project) {
+          payload.projectId = project.id;
+        }
+      }
+
+      // Validate required fields
+      if (!payload.title) missingFields.push('title');
+      if (!payload.projectId) missingFields.push('project (specify which project this task belongs to)');
+
+      if (missingFields.length > 0) {
+        return `To create a task, I need the following information: ${missingFields.join(', ')}. Please provide these details.`;
+      }
     }
 
     if (intent === 'assign_employee') {
@@ -125,8 +157,10 @@ async function handleQuickAction(intent: string, userMessage: string): Promise<s
           payload.employeeId = employee.id;
           payload.taskId = task.id;
         } else {
-          return 'Could not find matching employee or task.';
+          return 'Could not find matching employee or task. Please check the names and try again.';
         }
+      } else {
+        return 'To assign an employee to a task, please specify both the employee name and task title.';
       }
     }
 
