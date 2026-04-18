@@ -5,7 +5,10 @@ import { z } from 'zod';
 import { STREAMING_CONFIG } from '@/lib/utils/ai-config';
 import { handleApiError } from '@/lib/utils/api-handler';
 import { detectQueryIntent, buildKnowledgeContext } from '@/lib/utils/knowledge';
-import { fetchFromDatabase } from '@/lib/utils/database';
+import { fetchFromDatabase, updateToDatabase } from '@/lib/utils/database';
+import { createEmployee } from '@/lib/services/employeeService';
+import { createProject } from '@/lib/services/projectService';
+import { createTask } from '@/lib/services/taskService';
 import type { ApiResponse, KnowledgeQuery } from '@/types';
 
 export const dynamic = 'force-dynamic';
@@ -73,19 +76,12 @@ const tools = {
       skills: z.array(z.string()).optional().describe('Employee skills (optional)'),
     }),
     execute: async ({ name, email, role, department, skills }) => {
-      const response = await fetch('/api/quick-action', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'create_employee',
-          payload: { name, email, role, department, skills: skills || [] },
-        }),
-      });
-      const result = await response.json();
-      if (response.ok && result.success) {
+      try {
+        await createEmployee({ name, email, role, department, skills: skills || [] });
         return `Employee "${name}" created successfully.`;
+      } catch (error) {
+        return `Failed to create employee: ${error instanceof Error ? error.message : 'Unknown error'}`;
       }
-      return `Failed to create employee: ${result.message || 'Unknown error'}`;
     },
   }),
 
@@ -96,19 +92,18 @@ const tools = {
       description: z.string().optional().describe('Project description (optional)'),
     }),
     execute: async ({ name, description }) => {
-      const response = await fetch('/api/quick-action', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'create_project',
-          payload: { name, description },
-        }),
-      });
-      const result = await response.json();
-      if (response.ok && result.success) {
+      try {
+        await createProject({ 
+          name, 
+          description: description || '',
+          status: 'active',
+          priority: 'medium',
+          progress: 0,
+        });
         return `Project "${name}" created successfully.`;
+      } catch (error) {
+        return `Failed to create project: ${error instanceof Error ? error.message : 'Unknown error'}`;
       }
-      return `Failed to create project: ${result.message || 'Unknown error'}`;
     },
   }),
 
@@ -120,19 +115,20 @@ const tools = {
       projectId: z.string().describe('Project ID (required - use getProjectId tool to find it)'),
     }),
     execute: async ({ title, description, projectId }) => {
-      const response = await fetch('/api/quick-action', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'create_task',
-          payload: { title, description, projectId },
-        }),
-      });
-      const result = await response.json();
-      if (response.ok && result.success) {
+      try {
+        await createTask({ 
+          title, 
+          description: description || '',
+          projectId,
+          status: 'pending',
+          priority: 'medium',
+          dependencies: [],
+          assignedTo: null,
+        });
         return `Task "${title}" created successfully.`;
+      } catch (error) {
+        return `Failed to create task: ${error instanceof Error ? error.message : 'Unknown error'}`;
       }
-      return `Failed to create task: ${result.message || 'Unknown error'}`;
     },
   }),
 
@@ -143,19 +139,24 @@ const tools = {
       taskId: z.string().describe('Task ID (required - use getTaskId tool to find it)'),
     }),
     execute: async ({ employeeId, taskId }) => {
-      const response = await fetch('/api/quick-action', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          type: 'assign_employee',
-          payload: { employeeId, taskId },
-        }),
-      });
-      const result = await response.json();
-      if (response.ok && result.success) {
+      try {
+        // Verify employee exists
+        const employees = await fetchFromDatabase('employees', { id: employeeId });
+        if (!employees || employees.length === 0) {
+          return 'Employee not found. Please use getEmployeeId tool to find the correct ID.';
+        }
+
+        // Verify task exists
+        const tasks = await fetchFromDatabase('tasks', { id: taskId });
+        if (!tasks || tasks.length === 0) {
+          return 'Task not found. Please use getTaskId tool to find the correct ID.';
+        }
+
+        await updateToDatabase('tasks', taskId, { assignedTo: employeeId });
         return 'Employee assigned to task successfully.';
+      } catch (error) {
+        return `Failed to assign employee: ${error instanceof Error ? error.message : 'Unknown error'}`;
       }
-      return `Failed to assign employee: ${result.message || 'Unknown error'}`;
     },
   }),
 
