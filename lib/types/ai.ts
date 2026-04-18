@@ -5,7 +5,7 @@
 /**
  * Enum of available quick action types
  */
-export type QuickActionType = 'create_task' | 'assign_employee';
+export type QuickActionType = 'create_employee' | 'create_project' | 'create_task' | 'assign_employee';
 
 /**
  * Configuration for a quick action

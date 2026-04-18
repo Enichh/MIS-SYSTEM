@@ -5,6 +5,7 @@ import { STREAMING_CONFIG } from '@/lib/utils/ai-config';
 import { handleApiError } from '@/lib/utils/api-handler';
 import { detectQueryIntent, buildKnowledgeContext } from '@/lib/utils/knowledge';
 import { fetchFromDatabase } from '@/lib/utils/database';
+import { parseQuickActionIntent } from '@/lib/utils/quick-actions';
 import type { ApiResponse, KnowledgeQuery } from '@/types';
 
 export const dynamic = 'force-dynamic';
@@ -59,6 +60,93 @@ async function buildEnhancedContext(query?: string): Promise<string> {
 }
 
 // TODO: Add authentication check before production deployment
+
+// Internal helper: Extract entity data from user message and execute quick action
+async function handleQuickAction(intent: string, userMessage: string): Promise<string | null> {
+  try {
+    let payload: Record<string, unknown> = {};
+    let endpoint = '/api/quick-action';
+
+    // Simple extraction patterns - in production, use NLP for better parsing
+    if (intent === 'create_employee') {
+      // Extract name, role, department, skills from message
+      const nameMatch = userMessage.match(/(?:named?|called?)\s+["']?([^"'\.]+)["']?/i) ||
+                       userMessage.match(/(?:create|add)\s+(?:an\s+)?employee\s+(?:named?|called?)?\s*["']?([^"'\.]+)["']?/i);
+      const roleMatch = userMessage.match(/(?:as|role)\s+(\w+)/i);
+      const deptMatch = userMessage.match(/(?:in|department)\s+(\w+)/i);
+      const skillsMatch = userMessage.match(/(?:skills?|with)\s+([^.]+)/i);
+
+      if (nameMatch) payload.name = nameMatch[1].trim();
+      if (roleMatch) payload.role = roleMatch[1].trim();
+      if (deptMatch) payload.department = deptMatch[1].trim();
+      if (skillsMatch) {
+        payload.skills = skillsMatch[1].split(',').map(s => s.trim()).filter(s => s);
+      }
+      // Set defaults if not extracted
+      if (!payload.email) payload.email = `${payload.name || 'user'}@example.com`;
+      if (!payload.role) payload.role = 'Employee';
+      if (!payload.department) payload.department = 'General';
+    }
+
+    if (intent === 'create_project') {
+      const nameMatch = userMessage.match(/(?:called?|named?)\s+["']?([^"'\.]+)["']?/i) ||
+                       userMessage.match(/(?:create|add)\s+(?:a\s+)?project\s+(?:called?|named?)?\s*["']?([^"'\.]+)["']?/i);
+      const descMatch = userMessage.match(/(?:descri(?:be|ption)|about)\s+([^.]+)/i);
+
+      if (nameMatch) payload.name = nameMatch[1].trim();
+      if (descMatch) payload.description = descMatch[1].trim();
+      if (!payload.status) payload.status = 'active';
+      if (!payload.priority) payload.priority = 'medium';
+    }
+
+    if (intent === 'create_task') {
+      const titleMatch = userMessage.match(/(?:called?|named?)\s+["']?([^"'\.]+)["']?/i) ||
+                        userMessage.match(/(?:create|add)\s+(?:a\s+)?task\s+(?:called?|named?)?\s*["']?([^"'\.]+)["']?/i);
+      const descMatch = userMessage.match(/(?:descri(?:be|ption)|about)\s+([^.]+)/i);
+
+      if (titleMatch) payload.title = titleMatch[1].trim();
+      if (descMatch) payload.description = descMatch[1].trim();
+      if (!payload.status) payload.status = 'pending';
+      if (!payload.priority) payload.priority = 'medium';
+    }
+
+    if (intent === 'assign_employee') {
+      // This requires existing IDs, so we need to fetch and match by name
+      const empNameMatch = userMessage.match(/(?:employee|person)\s+(\w+)/i);
+      const taskTitleMatch = userMessage.match(/(?:task)\s+(?:called?|named?)?\s*["']?([^"'\.]+)["']?/i);
+
+      if (empNameMatch && taskTitleMatch) {
+        const employees = await fetchFromDatabase('employees', {});
+        const employee = (employees as any[]).find(e => e.name.toLowerCase().includes(empNameMatch[1].toLowerCase()));
+        const tasks = await fetchFromDatabase('tasks', {});
+        const task = (tasks as any[]).find(t => t.title.toLowerCase().includes(taskTitleMatch[1].toLowerCase()));
+
+        if (employee && task) {
+          payload.employeeId = employee.id;
+          payload.taskId = task.id;
+        } else {
+          return 'Could not find matching employee or task.';
+        }
+      }
+    }
+
+    const response = await fetch(endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ type: intent, payload }),
+    });
+
+    const data = await response.json();
+    if (response.ok && data.success) {
+      return `Successfully executed ${intent}.`;
+    }
+    return `Failed to execute ${intent}: ${data.message || 'Unknown error'}`;
+  } catch (error) {
+    console.error('Quick action error:', error);
+    return `Error executing quick action: ${error instanceof Error ? error.message : 'Unknown error'}`;
+  }
+}
+
 export async function POST(request: NextRequest) {
   const LONGCAT_API_KEY = process.env.LONGCAT_API_KEY;
 
@@ -98,6 +186,27 @@ export async function POST(request: NextRequest) {
       .filter((msg: any) => msg.role === 'user')
       .slice(-1)[0];
     const userQuery = lastUserMessage?.content;
+
+    // Check for quick action intent
+    const quickActionIntent = parseQuickActionIntent(userQuery || '');
+    if (quickActionIntent) {
+      const actionResult = await handleQuickAction(quickActionIntent, userQuery || '');
+      if (actionResult) {
+        // Return the action result as a streaming response
+        const result = await streamText({
+          model: longcat('LongCat-Flash-Chat'),
+          messages: [
+            { role: 'system', content: 'You are a helpful assistant for a project management system.' },
+            { role: 'user', content: userQuery || '' },
+            { role: 'assistant', content: actionResult },
+          ],
+          temperature: STREAMING_CONFIG.temperature,
+          maxTokens: STREAMING_CONFIG.maxTokens,
+          topP: STREAMING_CONFIG.topP,
+        });
+        return result.toDataStreamResponse();
+      }
+    }
 
     // Build enhanced context from database
     const contextString = await buildEnhancedContext(userQuery);

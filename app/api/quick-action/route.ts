@@ -2,10 +2,12 @@ import { NextRequest, NextResponse } from 'next/server';
 import { validateQuickActionPayload } from '@/lib/utils/quick-actions';
 import { QUICK_ACTION_TYPES } from '@/lib/utils/ai-config';
 import { createTask } from '@/lib/services/taskService';
-import { updateToDatabase, fetchFromDatabase } from '@/lib/utils/database';
+import { createEmployee } from '@/lib/services/employeeService';
+import { createProject } from '@/lib/services/projectService';
+import { updateToDatabase, fetchFromDatabase, insertToDatabase } from '@/lib/utils/database';
 import { handleApiError } from '@/lib/utils/api-handler';
 import type { ApiResponse } from '@/types';
-import type { Task } from '@/types';
+import type { Task, Employee, Project } from '@/types';
 
 export const dynamic = 'force-dynamic';
 
@@ -42,6 +44,14 @@ export async function POST(request: NextRequest) {
     let result;
 
     switch (type) {
+      case 'create_employee':
+        result = await createEmployee(payload as Omit<Employee, 'id' | 'created_at' | 'updated_at'>);
+        break;
+
+      case 'create_project':
+        result = await createProject(payload as Omit<Project, 'id' | 'created_at' | 'updated_at'>);
+        break;
+
       case 'create_task':
         result = await createTask(payload as Omit<Task, 'id' | 'created_at' | 'updated_at'>);
         break;

@@ -9,7 +9,7 @@ import { QuickActionType, QuickActionConfig } from '../types/ai';
  * Zod schema for quick action payload validation
  */
 const QuickActionPayloadSchema = z.object({
-  type: z.enum(['create_task', 'assign_employee']),
+  type: z.enum(['create_employee', 'create_project', 'create_task', 'assign_employee']),
   label: z.string().min(1),
   payload: z.record(z.unknown()),
 });
@@ -46,8 +46,10 @@ export function validateQuickActionPayload(data: unknown): { success: boolean; e
  * Note: Simple pattern matching cannot distinguish between positive and negative intent
  * (e.g., "create a task" vs "don't create a task"). For production use, consider NLP-based intent detection.
  */
-const CREATE_TASK_PATTERN = /\bcreate\s+task\b/i;
-const ASSIGN_EMPLOYEE_PATTERN = /\bassign\s+employee\b/i;
+const CREATE_EMPLOYEE_PATTERN = /\bcreate\s+(an\s+)?employee\b/i;
+const CREATE_PROJECT_PATTERN = /\bcreate\s+(a\s+)?project\b/i;
+const CREATE_TASK_PATTERN = /\bcreate\s+(a\s+)?task\b/i;
+const ASSIGN_EMPLOYEE_PATTERN = /\bassign\s+(an\s+)?employee\b/i;
 
 /**
  * Internal helper: Parse intent from user message
@@ -58,6 +60,12 @@ export function parseQuickActionIntent(message: string): QuickActionType | null 
     return null;
   }
   const lowerMessage = message.toLowerCase();
+  if (CREATE_EMPLOYEE_PATTERN.test(lowerMessage)) {
+    return 'create_employee';
+  }
+  if (CREATE_PROJECT_PATTERN.test(lowerMessage)) {
+    return 'create_project';
+  }
   if (CREATE_TASK_PATTERN.test(lowerMessage)) {
     return 'create_task';
   }

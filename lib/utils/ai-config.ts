@@ -21,7 +21,7 @@ export const STREAMING_CONFIG = {
 /**
  * Available quick action types
  */
-export const QUICK_ACTION_TYPES: readonly QuickActionType[] = ['create_task', 'assign_employee'] as const;
+export const QUICK_ACTION_TYPES: readonly QuickActionType[] = ['create_employee', 'create_project', 'create_task', 'assign_employee'] as const;
 
 /**
  * Internal helper: Build streaming context from conversation history

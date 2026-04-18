@@ -10,7 +10,6 @@ import { DrawerChat } from './components/DrawerChat/DrawerChat'
 import EmployeeForm from './components/forms/EmployeeForm/EmployeeForm'
 import ProjectForm from './components/forms/ProjectForm/ProjectForm'
 import TaskForm from './components/forms/TaskForm/TaskForm'
-import QuickActionsBar from './components/QuickActionsBar/QuickActionsBar'
 import { useNavigationContext, type Section } from '@/lib/context/NavigationContext'
 
 export default function HomePage() {
@@ -49,7 +48,6 @@ export default function HomePage() {
           </section>
 
           <section id="ai-section" className={`section ${activeSection === 'ai' ? 'section-active' : ''}`}>
-            <QuickActionsBar />
             <DrawerChat />
           </section>
         </main>
