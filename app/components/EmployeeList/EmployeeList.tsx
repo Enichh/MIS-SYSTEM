@@ -13,6 +13,7 @@ export default function EmployeeList() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState<string>('');
+  console.log("Searching", searchQuery);
   const [deleteConfirmation, setDeleteConfirmation] = useState<{
     isOpen: boolean;
     employeeId: string | null;
