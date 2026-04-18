@@ -1,11 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { streamText, generateText } from 'ai';
+import { streamText, tool } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
+import { z } from 'zod';
 import { STREAMING_CONFIG } from '@/lib/utils/ai-config';
 import { handleApiError } from '@/lib/utils/api-handler';
 import { detectQueryIntent, buildKnowledgeContext } from '@/lib/utils/knowledge';
 import { fetchFromDatabase } from '@/lib/utils/database';
-import { parseQuickActionIntent } from '@/lib/utils/quick-actions';
 import type { ApiResponse, KnowledgeQuery } from '@/types';
 
 export const dynamic = 'force-dynamic';
@@ -61,42 +61,167 @@ async function buildEnhancedContext(query?: string): Promise<string> {
 
 // TODO: Add authentication check before production deployment
 
-// Internal helper: Parse JSON from AI response and execute action
-async function handleQuickAction(aiResponse: string): Promise<string | null> {
-  try {
-    // Try to extract JSON from AI response
-    const jsonMatch = aiResponse.match(/```json\s*([\s\S]*?)\s*```/) || aiResponse.match(/\{[\s\S]*\}/);
-    if (!jsonMatch) {
-      return null; // Not an action, return normal AI response
-    }
+// Define tools for entity creation and assignment
+const tools = {
+  createEmployee: tool({
+    description: 'Create a new employee in the system',
+    parameters: z.object({
+      name: z.string().describe('Employee name (required)'),
+      email: z.string().email().describe('Employee email (required)'),
+      role: z.string().describe('Employee role (required)'),
+      department: z.string().describe('Employee department (required)'),
+      skills: z.array(z.string()).optional().describe('Employee skills (optional)'),
+    }),
+    execute: async ({ name, email, role, department, skills }) => {
+      const response = await fetch('/api/quick-action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'create_employee',
+          payload: { name, email, role, department, skills: skills || [] },
+        }),
+      });
+      const result = await response.json();
+      if (response.ok && result.success) {
+        return `Employee "${name}" created successfully.`;
+      }
+      return `Failed to create employee: ${result.message || 'Unknown error'}`;
+    },
+  }),
 
-    const jsonStr = jsonMatch[1] || jsonMatch[0];
-    const actionData = JSON.parse(jsonStr);
+  createProject: tool({
+    description: 'Create a new project in the system',
+    parameters: z.object({
+      name: z.string().describe('Project name (required)'),
+      description: z.string().optional().describe('Project description (optional)'),
+    }),
+    execute: async ({ name, description }) => {
+      const response = await fetch('/api/quick-action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'create_project',
+          payload: { name, description },
+        }),
+      });
+      const result = await response.json();
+      if (response.ok && result.success) {
+        return `Project "${name}" created successfully.`;
+      }
+      return `Failed to create project: ${result.message || 'Unknown error'}`;
+    },
+  }),
 
-    if (!actionData.action || !actionData.data) {
-      console.error('Invalid action format:', actionData);
-      return null;
-    }
+  createTask: tool({
+    description: 'Create a new task in the system',
+    parameters: z.object({
+      title: z.string().describe('Task title (required)'),
+      description: z.string().optional().describe('Task description (optional)'),
+      projectId: z.string().describe('Project ID (required - use getProjectId tool to find it)'),
+    }),
+    execute: async ({ title, description, projectId }) => {
+      const response = await fetch('/api/quick-action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'create_task',
+          payload: { title, description, projectId },
+        }),
+      });
+      const result = await response.json();
+      if (response.ok && result.success) {
+        return `Task "${title}" created successfully.`;
+      }
+      return `Failed to create task: ${result.message || 'Unknown error'}`;
+    },
+  }),
 
-    const { action, data } = actionData;
-    const endpoint = '/api/quick-action';
+  assignEmployee: tool({
+    description: 'Assign an employee to a task',
+    parameters: z.object({
+      employeeId: z.string().describe('Employee ID (required - use getEmployeeId tool to find it)'),
+      taskId: z.string().describe('Task ID (required - use getTaskId tool to find it)'),
+    }),
+    execute: async ({ employeeId, taskId }) => {
+      const response = await fetch('/api/quick-action', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          type: 'assign_employee',
+          payload: { employeeId, taskId },
+        }),
+      });
+      const result = await response.json();
+      if (response.ok && result.success) {
+        return 'Employee assigned to task successfully.';
+      }
+      return `Failed to assign employee: ${result.message || 'Unknown error'}`;
+    },
+  }),
 
-    const response = await fetch(endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: action, payload: data }),
-    });
+  getEmployeeId: tool({
+    description: 'Find an employee ID by name',
+    parameters: z.object({
+      name: z.string().describe('Employee name to search for'),
+    }),
+    execute: async ({ name }) => {
+      const employees = await fetchFromDatabase('employees', {});
+      const matches = (employees as any[]).filter((e) =>
+        e.name.toLowerCase().includes(name.toLowerCase())
+      );
+      if (matches.length === 0) {
+        return `No employee found matching "${name}".`;
+      }
+      if (matches.length > 1) {
+        const list = matches.map((e) => `${e.name} (ID: ${e.id}, Role: ${e.role})`).join(', ');
+        return `Multiple employees found: ${list}. Please be more specific.`;
+      }
+      return matches[0].id;
+    },
+  }),
 
-    const result = await response.json();
-    if (response.ok && result.success) {
-      return `${action.replace('_', ' ')} created successfully.`;
-    }
-    return `Failed to ${action.replace('_', ' ')}: ${result.message || 'Unknown error'}`;
-  } catch (error) {
-    console.error('Quick action error:', error);
-    return null; // If JSON parsing fails, return normal AI response
-  }
-}
+  getProjectId: tool({
+    description: 'Find a project ID by name',
+    parameters: z.object({
+      name: z.string().describe('Project name to search for'),
+    }),
+    execute: async ({ name }) => {
+      const projects = await fetchFromDatabase('projects', {});
+      const matches = (projects as any[]).filter((p) =>
+        p.name.toLowerCase().includes(name.toLowerCase())
+      );
+      if (matches.length === 0) {
+        return `No project found matching "${name}".`;
+      }
+      if (matches.length > 1) {
+        const list = matches.map((p) => `${p.name} (ID: ${p.id})`).join(', ');
+        return `Multiple projects found: ${list}. Please be more specific.`;
+      }
+      return matches[0].id;
+    },
+  }),
+
+  getTaskId: tool({
+    description: 'Find a task ID by title',
+    parameters: z.object({
+      title: z.string().describe('Task title to search for'),
+    }),
+    execute: async ({ title }) => {
+      const tasks = await fetchFromDatabase('tasks', {});
+      const matches = (tasks as any[]).filter((t) =>
+        t.title.toLowerCase().includes(title.toLowerCase())
+      );
+      if (matches.length === 0) {
+        return `No task found matching "${title}".`;
+      }
+      if (matches.length > 1) {
+        const list = matches.map((t) => `${t.title} (ID: ${t.id})`).join(', ');
+        return `Multiple tasks found: ${list}. Please be more specific.`;
+      }
+      return matches[0].id;
+    },
+  }),
+};
 
 export async function POST(request: NextRequest) {
   const LONGCAT_API_KEY = process.env.LONGCAT_API_KEY;
@@ -138,37 +263,13 @@ export async function POST(request: NextRequest) {
       .slice(-1)[0];
     const userQuery = lastUserMessage?.content;
 
-    // Check for quick action intent
-    const quickActionIntent = parseQuickActionIntent(userQuery || '');
-
     // Build enhanced context from database
     const contextString = await buildEnhancedContext(userQuery);
 
-    // Inject context into system message with JSON output instructions for actions
-    const systemPrompt = quickActionIntent
-      ? `You are a helpful assistant for a project management system.
+    // Inject context into system message with tool descriptions
+    const systemPrompt = `You are a helpful assistant for a project management system. When providing information about employees, projects, or tasks, only include names, roles, departments, skills, and other relevant details. Never include database IDs in your responses.
 
-When the user asks to create an entity (employee, project, task) or assign an employee to a task, output your response as a JSON object in this format:
-\`\`\`json
-{
-  "action": "create_employee" | "create_project" | "create_task" | "assign_employee",
-  "data": {
-    // Entity fields based on schema
-    // For employees: name, email, role, department, skills (optional)
-    // For projects: name, description (optional)
-    // For tasks: title, description (optional), projectId (required, get from context or ask user)
-    // For assign_employee: employeeId, taskId (get from context or ask user)
-  }
-}
-\`\`\`
-
-Schema requirements:
-- Employees: name (required), email (required, valid email format), role (required), department (required), skills (optional array)
-- Projects: name (required), description (optional)
-- Tasks: title (required), projectId (required), description (optional)
-
-If the user doesn't provide all required fields, ask them for the missing information in your response (do not output JSON).` + (contextString ? '\n\n' + contextString : '')
-      : `You are a helpful assistant for a project management system. When providing information about employees, projects, or tasks, only include names, roles, departments, skills, and other relevant details. Never include database IDs in your responses.` + (contextString ? '\n\n' + contextString : '');
+You have access to tools to create employees, projects, tasks, and assign employees to tasks. When the user asks to perform these actions, use the appropriate tools. For tasks, you need to use the getProjectId tool first to find the project ID. For assigning employees, use getEmployeeId and getTaskId tools to find the IDs.` + (contextString ? '\n\n' + contextString : '');
 
     const messagesWithContext = [
       {
@@ -178,38 +279,13 @@ If the user doesn't provide all required fields, ask them for the missing inform
       ...body.messages,
     ];
 
-    // Use non-streaming for actions, streaming for normal queries
-    if (quickActionIntent) {
-      const result = await generateText({
-        model: longcat('LongCat-Flash-Chat'),
-        messages: messagesWithContext,
-        temperature: STREAMING_CONFIG.temperature,
-        maxTokens: STREAMING_CONFIG.maxTokens,
-        topP: STREAMING_CONFIG.topP,
-      });
-
-      const actionResult = await handleQuickAction(result.text);
-
-      if (actionResult) {
-        return NextResponse.json({ message: actionResult }, {
-          status: 200,
-          headers: { 'Content-Type': 'application/json' },
-        });
-      }
-
-      // If no JSON found, return the AI response as-is
-      return NextResponse.json({ message: result.text }, {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    }
-
     const result = await streamText({
       model: longcat('LongCat-Flash-Chat'),
       messages: messagesWithContext,
       temperature: STREAMING_CONFIG.temperature,
       maxTokens: STREAMING_CONFIG.maxTokens,
       topP: STREAMING_CONFIG.topP,
+      tools,
     });
 
     return result.toDataStreamResponse();
