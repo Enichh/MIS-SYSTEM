@@ -343,3 +343,87 @@ nav {
     font-size: 1.5rem;
   }
 }
+
+/* Header Admin Info */
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-md);
+}
+
+.header-admin-info {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-xs) var(--spacing-sm);
+  background-color: var(--color-background-tertiary);
+  border-radius: 8px;
+  border: 1px solid var(--color-border);
+}
+
+.header-admin-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--color-primary);
+}
+
+.header-admin-name {
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-medium);
+  color: var(--color-text);
+  max-width: 150px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.header-logout-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  padding: var(--spacing-xs);
+  background: transparent;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  color: var(--color-text-muted);
+  transition: all var(--transition-fast);
+  margin-left: var(--spacing-xs);
+}
+
+.header-logout-btn:hover {
+  background-color: hsl(25 60% 55% / 0.1);
+  color: var(--color-error);
+}
+
+.header-logout-btn:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 2px var(--color-error);
+}
+
+.header-logout-icon {
+  width: 18px;
+  height: 18px;
+}
+
+@media (max-width: 768px) {
+  .header-admin-name {
+    display: none;
+  }
+  
+  .header-admin-info {
+    padding: var(--spacing-xs);
+  }
+}
+
+/* Dark Mode */
+[data-theme="dark"] .header-admin-info {
+  background-color: var(--color-background-secondary);
+  border-color: var(--color-border);
+}
+
+[data-theme="dark"] .header-logout-btn:hover {
+  background-color: hsl(25 60% 55% / 0.2);
+}

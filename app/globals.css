@@ -25,3 +25,6 @@
 
 /* 4. Layout - Navigation and page layout */
 @import "./styles/navigation.css";
+
+/* 5. Auth - Login and authentication */
+@import "./styles/login.css";
