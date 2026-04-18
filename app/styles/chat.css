@@ -227,6 +227,12 @@
   color: var(--color-text-muted);
 }
 
+/* User message timestamp - lighter color for visibility on primary background */
+.chat-message-user .chat-message-timestamp {
+  color: var(--color-background);
+  opacity: 0.9;
+}
+
 /* Chat Message List */
 .chat-message-list {
   display: flex;

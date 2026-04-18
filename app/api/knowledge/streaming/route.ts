@@ -68,7 +68,7 @@ async function buildEnhancedContext(query?: string): Promise<string> {
 // Define tools for entity creation and assignment
 const tools = {
   createEmployee: tool({
-    description: 'Create a new employee in the system',
+    description: 'Create a new employee in the system. Returns the employee ID for use in subsequent tool calls.',
     parameters: z.object({
       name: z.string().describe('Employee name (required)'),
       email: z.string().email().describe('Employee email (required)'),
@@ -78,8 +78,15 @@ const tools = {
     }),
     execute: async ({ name, email, role, department, skills }) => {
       try {
-        await createEmployee({ name, email, role, department, skills: skills || [] });
-        return `Employee "${name}" created successfully.`;
+        const result = await createEmployee({ name, email, role, department, skills: skills || [] });
+        return {
+          message: `Employee "${result.name}" created successfully in the ${result.department} department.`,
+          id: result.id,
+          name: result.name,
+          email: result.email,
+          role: result.role,
+          department: result.department,
+        };
       } catch (error) {
         return `Failed to create employee: ${error instanceof Error ? error.message : 'Unknown error'}`;
       }
@@ -87,21 +94,26 @@ const tools = {
   }),
 
   createProject: tool({
-    description: 'Create a new project in the system',
+    description: 'Create a new project in the system. Returns the project ID for use in subsequent tool calls.',
     parameters: z.object({
       name: z.string().describe('Project name (required)'),
       description: z.string().optional().describe('Project description (optional)'),
     }),
     execute: async ({ name, description }) => {
       try {
-        await createProject({ 
+        const result = await createProject({ 
           name, 
           description: description || '',
           status: 'active',
           priority: 'medium',
           progress: 0,
         });
-        return `Project "${name}" created successfully.`;
+        return {
+          message: `Project "${result.name}" created successfully.`,
+          id: result.id,
+          name: result.name,
+          description: result.description,
+        };
       } catch (error) {
         return `Failed to create project: ${error instanceof Error ? error.message : 'Unknown error'}`;
       }
@@ -109,7 +121,7 @@ const tools = {
   }),
 
   createTask: tool({
-    description: 'Create a new task in the system',
+    description: 'Create a new task in the system. Returns the task ID for use in subsequent tool calls.',
     parameters: z.object({
       title: z.string().describe('Task title (required)'),
       description: z.string().optional().describe('Task description (optional)'),
@@ -117,7 +129,7 @@ const tools = {
     }),
     execute: async ({ title, description, projectId }) => {
       try {
-        await createTask({ 
+        const result = await createTask({ 
           title, 
           description: description || '',
           projectId,
@@ -126,7 +138,12 @@ const tools = {
           dependencies: [],
           assignedTo: null,
         });
-        return `Task "${title}" created successfully.`;
+        return {
+          message: `Task "${result.title}" created successfully.`,
+          id: result.id,
+          title: result.title,
+          projectId: result.projectId,
+        };
       } catch (error) {
         return `Failed to create task: ${error instanceof Error ? error.message : 'Unknown error'}`;
       }
@@ -300,7 +317,12 @@ export async function POST(request: NextRequest) {
     // Inject context into system message with tool descriptions
     const systemPrompt = `You are a helpful assistant for a project management system. When providing information about employees, projects, or tasks, only include names, roles, departments, skills, and other relevant details. Never include database IDs in your responses.
 
-You have access to tools to create employees, projects, tasks, assign employees to tasks, and assign employees to projects. When the user asks to perform these actions, use the appropriate tools. For tasks, you need to use the getProjectId tool first to find the project ID. For assigning employees to tasks, use getEmployeeId and getTaskId tools to find the IDs. For assigning employees to projects, use getEmployeeId and getProjectId tools to find the IDs.` + (contextString ? '\n\n' + contextString : '');
+You have access to tools to create employees, projects, tasks, assign employees to tasks, and assign employees to projects. When the user asks to perform these actions, use the appropriate tools.
+
+IMPORTANT GUIDELINES:
+1. When creating entities (employees, projects, tasks), the tools will return both the ID and human-friendly details. Use the ID for subsequent tool calls, but use the names/titles when confirming to the user.
+2. For assigning employees to tasks or projects, you can use the ID directly from a preceding creation step instead of calling getEmployeeId/getTaskId again.
+3. Always provide a clear, human-friendly confirmation message using entity names, never showing UUIDs to the user.` + (contextString ? '\n\n' + contextString : '');
 
     const messagesWithContext = [
       {
@@ -317,6 +339,7 @@ You have access to tools to create employees, projects, tasks, assign employees 
       maxTokens: STREAMING_CONFIG.maxTokens,
       topP: STREAMING_CONFIG.topP,
       tools,
+      maxSteps: 5,
     });
 
     return result.toDataStreamResponse();

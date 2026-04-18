@@ -135,6 +135,15 @@ export default function EmployeeList() {
               </CardHeader>
               <CardContent>
                 <p className="employee-department">{employee.department}</p>
+                {employee.skills && employee.skills.length > 0 && (
+                  <div className="employee-skills">
+                    {employee.skills.map((skill) => (
+                      <Badge key={skill} variant="secondary" className="skill-badge">
+                        {skill}
+                      </Badge>
+                    ))}
+                  </div>
+                )}
               </CardContent>
               <CardFooter className="employee-card-actions">
                 <Button
