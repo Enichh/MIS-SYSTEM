@@ -44,11 +44,13 @@ async function buildEnhancedContext(context?: KnowledgeQuery['context'], query?:
     const employees = await fetchFromDatabase('employees', { id: context.employeeId });
     if (employees.length > 0) {
       const employee = employees[0] as any;
+      const skills = Array.isArray(employee.skills) ? employee.skills.join(', ') : 'None';
       contextParts.push(
         `Employee: ${employee.name || 'Unknown'} (ID: ${employee.id || 'N/A'})`,
         `  Email: ${employee.email || 'No email'}`,
         `  Role: ${employee.role || 'Unknown'}`,
         `  Department: ${employee.department || 'Unknown'}`,
+        `  Skills: ${skills}`,
         `  Assigned Projects: ${employee.projects?.join(', ') || 'None'}`
       );
     }
@@ -79,8 +81,9 @@ async function buildEnhancedContext(context?: KnowledgeQuery['context'], query?:
       if (employees.length > 0) {
         contextParts.push(`All Employees (${employees.length}):`);
         (employees as any[]).forEach((emp) => {
+          const skills = Array.isArray(emp.skills) ? emp.skills.join(', ') : 'None';
           contextParts.push(
-            `  - ${emp.name || 'Unknown'} (ID: ${emp.id || 'N/A'}, Role: ${emp.role || 'Unknown'}, Department: ${emp.department || 'Unknown'})`
+            `  - ${emp.name || 'Unknown'} (ID: ${emp.id || 'N/A'}, Role: ${emp.role || 'Unknown'}, Department: ${emp.department || 'Unknown'}, Skills: ${skills})`
           );
         });
       }
@@ -158,7 +161,7 @@ export async function POST(request: NextRequest) {
         messages: [
           {
             role: 'system',
-            content: 'You are a helpful assistant for a project management system.' + (contextString ? '\n\n' + contextString : ''),
+            content: 'You are a helpful assistant for a project management system. When providing information about employees, projects, or tasks, only include names, roles, departments, skills, and other relevant details. Never include database IDs in your responses.' + (contextString ? '\n\n' + contextString : ''),
           },
           { role: 'user', content: validatedData.query },
         ],

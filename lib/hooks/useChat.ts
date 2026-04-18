@@ -120,6 +120,7 @@ export function useChat() {
 
     setError(null);
     handleSubmit(e);
+    setInput('');
   }, [input, isStreaming, handleSubmit]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
