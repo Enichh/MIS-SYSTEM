@@ -149,16 +149,35 @@ async function handleQuickAction(intent: string, userMessage: string): Promise<s
 
       if (empNameMatch && taskTitleMatch) {
         const employees = await fetchFromDatabase('employees', {});
-        const employee = (employees as any[]).find(e => e.name.toLowerCase().includes(empNameMatch[1].toLowerCase()));
-        const tasks = await fetchFromDatabase('tasks', {});
-        const task = (tasks as any[]).find(t => t.title.toLowerCase().includes(taskTitleMatch[1].toLowerCase()));
+        const matchingEmployees = (employees as any[]).filter(e => e.name.toLowerCase().includes(empNameMatch[1].toLowerCase()));
 
-        if (employee && task) {
-          payload.employeeId = employee.id;
-          payload.taskId = task.id;
-        } else {
-          return 'Could not find matching employee or task. Please check the names and try again.';
+        if (matchingEmployees.length === 0) {
+          return `Could not find any employee matching "${empNameMatch[1]}". Please check the name and try again.`;
         }
+
+        if (matchingEmployees.length > 1) {
+          const employeeList = matchingEmployees
+            .map(e => `- ${e.name} (Role: ${e.role}, Department: ${e.department}, Email: ${e.email})`)
+            .join('\n');
+          return `Found multiple employees matching "${empNameMatch[1]}". Please specify which one:\n${employeeList}`;
+        }
+
+        const tasks = await fetchFromDatabase('tasks', {});
+        const matchingTasks = (tasks as any[]).filter(t => t.title.toLowerCase().includes(taskTitleMatch[1].toLowerCase()));
+
+        if (matchingTasks.length === 0) {
+          return `Could not find any task matching "${taskTitleMatch[1]}". Please check the task title and try again.`;
+        }
+
+        if (matchingTasks.length > 1) {
+          const taskList = matchingTasks
+            .map(t => `- ${t.title} (Status: ${t.status}, Priority: ${t.priority})`)
+            .join('\n');
+          return `Found multiple tasks matching "${taskTitleMatch[1]}". Please specify which one:\n${taskList}`;
+        }
+
+        payload.employeeId = matchingEmployees[0].id;
+        payload.taskId = matchingTasks[0].id;
       } else {
         return 'To assign an employee to a task, please specify both the employee name and task title.';
       }
