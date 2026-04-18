@@ -44,7 +44,8 @@ export default function EmployeeList() {
 
   useEffect(() => {
     loadEmployees();
-  }, [loadEmployees]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchQuery]);
 
   const handleSearch = useCallback((query: SearchQuery) => {
     setSearchQuery(query.query);
