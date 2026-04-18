@@ -8,7 +8,11 @@ import { Badge } from '@/app/components/ui/Badge/Badge';
 import DeleteConfirmation from '@/app/components/confirmation/DeleteConfirmation/DeleteConfirmation';
 import { SearchBar } from '@/app/components/SearchBar/SearchBar';
 
-export default function TaskList() {
+interface TaskListProps {
+  isActive?: boolean;
+}
+
+export default function TaskList({ isActive = true }: TaskListProps) {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
@@ -50,8 +54,10 @@ export default function TaskList() {
   }, [searchQuery]);
 
   useEffect(() => {
-    loadData();
-  }, [loadData]);
+    if (isActive) {
+      loadData();
+    }
+  }, [isActive, loadData]);
 
   const handleSearch = useCallback((query: SearchQuery) => {
     setSearchQuery(query.query);

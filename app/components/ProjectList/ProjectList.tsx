@@ -8,7 +8,11 @@ import { Badge } from '@/app/components/ui/Badge/Badge';
 import DeleteConfirmation from '@/app/components/confirmation/DeleteConfirmation/DeleteConfirmation';
 import { SearchBar } from '@/app/components/SearchBar/SearchBar';
 
-export default function ProjectList() {
+interface ProjectListProps {
+  isActive?: boolean;
+}
+
+export default function ProjectList({ isActive = true }: ProjectListProps) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -42,8 +46,10 @@ export default function ProjectList() {
   }, [searchQuery]);
 
   useEffect(() => {
-    loadProjects();
-  }, [loadProjects]);
+    if (isActive) {
+      loadProjects();
+    }
+  }, [isActive, loadProjects]);
 
   const handleSearch = useCallback((query: SearchQuery) => {
     setSearchQuery(query.query);

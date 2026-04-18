@@ -28,7 +28,7 @@ export default function HomePage() {
               <h2>Employees</h2>
               <EmployeeForm />
             </div>
-            <EmployeeList />
+            <EmployeeList isActive={activeSection === 'employees'} />
           </section>
 
           <section id="projects-section" className={`section ${activeSection === 'projects' ? 'section-active' : ''}`}>
@@ -36,7 +36,7 @@ export default function HomePage() {
               <h2>Projects</h2>
               <ProjectForm />
             </div>
-            <ProjectList />
+            <ProjectList isActive={activeSection === 'projects'} />
           </section>
 
           <section id="tasks-section" className={`section ${activeSection === 'tasks' ? 'section-active' : ''}`}>
@@ -44,7 +44,7 @@ export default function HomePage() {
               <h2>Tasks</h2>
               <TaskForm />
             </div>
-            <TaskList />
+            <TaskList isActive={activeSection === 'tasks'} />
           </section>
 
           <section id="ai-section" className={`section ${activeSection === 'ai' ? 'section-active' : ''}`}>

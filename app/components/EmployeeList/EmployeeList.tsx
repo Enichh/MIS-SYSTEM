@@ -8,7 +8,11 @@ import { Badge } from '@/app/components/ui/Badge/Badge';
 import DeleteConfirmation from '@/app/components/confirmation/DeleteConfirmation/DeleteConfirmation';
 import { SearchBar } from '@/app/components/SearchBar/SearchBar';
 
-export default function EmployeeList() {
+interface EmployeeListProps {
+  isActive?: boolean;
+}
+
+export default function EmployeeList({ isActive = true }: EmployeeListProps) {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -42,9 +46,10 @@ export default function EmployeeList() {
   }, [searchQuery]);
 
   useEffect(() => {
-    loadEmployees();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchQuery]);
+    if (isActive) {
+      loadEmployees();
+    }
+  }, [isActive, loadEmployees]);
 
   const handleSearch = useCallback((query: SearchQuery) => {
     setSearchQuery(query.query);
