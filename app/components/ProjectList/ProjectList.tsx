@@ -97,15 +97,6 @@ export default function ProjectList() {
     );
   }
 
-  if (!projects || projects.length === 0) {
-    return (
-      <div className="empty-state">
-        <h3>No Projects Found</h3>
-        <p>Click &quot;Add Project&quot; to create your first project.</p>
-      </div>
-    );
-  }
-
   return (
     <>
       <SearchBar
@@ -114,7 +105,13 @@ export default function ProjectList() {
         placeholder="Search projects by name..."
         ariaLabel="Search projects"
       />
-      <div className="grid-layout">
+      {!projects || projects.length === 0 ? (
+        <div className="empty-state">
+          <h3>No Projects Found</h3>
+          <p>Click &quot;Add Project&quot; to create your first project.</p>
+        </div>
+      ) : (
+        <div className="grid-layout">
         {projects.map((project) => (
           <Card key={project.id}>
             <CardHeader>
@@ -161,8 +158,9 @@ export default function ProjectList() {
               </Button>
             </CardFooter>
           </Card>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
       <DeleteConfirmation
         isOpen={deleteConfirmation.isOpen}
         onConfirm={handleConfirmDelete}

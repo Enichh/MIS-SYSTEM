@@ -107,15 +107,6 @@ export default function TaskList() {
     );
   }
 
-  if (!tasks || tasks.length === 0) {
-    return (
-      <div className="empty-state">
-        <h3>No Tasks Found</h3>
-        <p>Click &quot;Add Task&quot; to create your first task.</p>
-      </div>
-    );
-  }
-
   return (
     <>
       <SearchBar
@@ -124,7 +115,13 @@ export default function TaskList() {
         placeholder="Search tasks by title..."
         ariaLabel="Search tasks"
       />
-      <div className="grid-layout">
+      {!tasks || tasks.length === 0 ? (
+        <div className="empty-state">
+          <h3>No Tasks Found</h3>
+          <p>Click &quot;Add Task&quot; to create your first task.</p>
+        </div>
+      ) : (
+        <div className="grid-layout">
         {tasks.map((task) => (
           <Card key={task.id}>
             <CardHeader>
@@ -176,8 +173,9 @@ export default function TaskList() {
               </Button>
             </CardFooter>
           </Card>
-        ))}
-      </div>
+          ))}
+        </div>
+      )}
       <DeleteConfirmation
         isOpen={deleteConfirmation.isOpen}
         onConfirm={handleConfirmDelete}
