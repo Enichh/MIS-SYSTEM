@@ -11,7 +11,10 @@ export async function getEmployees(filters?: Record<string, unknown>): Promise<E
  * @returns The created employee record
  */
 export async function createEmployee(data: Omit<Employee, 'id' | 'created_at' | 'updated_at'>): Promise<Employee> {
-  return insertToDatabase<Employee>('employees', data)
+  console.log(`[EMPLOYEE_CREATE] Creating employee: ${data.name} (${data.email}) - Role: ${data.role}, Department: ${data.department}`);
+  const result = await insertToDatabase<Employee>('employees', data);
+  console.log(`[EMPLOYEE_CREATE] Employee created successfully: ID=${result.id}, Name=${result.name}`);
+  return result;
 }
 
 /**

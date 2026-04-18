@@ -9,6 +9,7 @@ import { fetchFromDatabase, updateToDatabase } from '@/lib/utils/database';
 import { createEmployee } from '@/lib/services/employeeService';
 import { createProject } from '@/lib/services/projectService';
 import { createTask } from '@/lib/services/taskService';
+import { assignEmployeeToProject } from '@/lib/services/employeeProjectService';
 import type { ApiResponse, KnowledgeQuery } from '@/types';
 
 export const dynamic = 'force-dynamic';
@@ -140,22 +141,51 @@ const tools = {
     }),
     execute: async ({ employeeId, taskId }) => {
       try {
+        console.log(`[TASK_ASSIGN] Assigning employee ${employeeId} to task ${taskId}`);
         // Verify employee exists
         const employees = await fetchFromDatabase('employees', { id: employeeId });
         if (!employees || employees.length === 0) {
+          console.log(`[TASK_ASSIGN] Failed: Employee ${employeeId} not found`);
           return 'Employee not found. Please use getEmployeeId tool to find the correct ID.';
         }
+
+        const employeeName = (employees[0] as any).name;
+        console.log(`[TASK_ASSIGN] Employee found: ${employeeName} (ID: ${employeeId})`);
 
         // Verify task exists
         const tasks = await fetchFromDatabase('tasks', { id: taskId });
         if (!tasks || tasks.length === 0) {
+          console.log(`[TASK_ASSIGN] Failed: Task ${taskId} not found`);
           return 'Task not found. Please use getTaskId tool to find the correct ID.';
         }
 
+        const taskTitle = (tasks[0] as any).title;
+        console.log(`[TASK_ASSIGN] Task found: ${taskTitle} (ID: ${taskId})`);
+
         await updateToDatabase('tasks', taskId, { assignedTo: employeeId });
+        console.log(`[TASK_ASSIGN] Successfully assigned employee ${employeeName} to task ${taskTitle}`);
         return 'Employee assigned to task successfully.';
       } catch (error) {
+        console.log(`[TASK_ASSIGN] Failed to assign employee ${employeeId} to task ${taskId}: ${error instanceof Error ? error.message : 'Unknown error'}`);
         return `Failed to assign employee: ${error instanceof Error ? error.message : 'Unknown error'}`;
+      }
+    },
+  }),
+
+  assignProject: tool({
+    description: 'Assign an employee to a project',
+    parameters: z.object({
+      employeeId: z.string().describe('Employee ID (required - use getEmployeeId tool to find it)'),
+      projectId: z.string().describe('Project ID (required - use getProjectId tool to find it)'),
+    }),
+    execute: async ({ employeeId, projectId }) => {
+      try {
+        console.log(`[PROJECT_ASSIGN_AI] Assigning employee ${employeeId} to project ${projectId}`);
+        await assignEmployeeToProject(employeeId, projectId);
+        return 'Employee assigned to project successfully.';
+      } catch (error) {
+        console.log(`[PROJECT_ASSIGN_AI] Failed to assign employee ${employeeId} to project ${projectId}: ${error instanceof Error ? error.message : 'Unknown error'}`);
+        return `Failed to assign employee to project: ${error instanceof Error ? error.message : 'Unknown error'}`;
       }
     },
   }),
@@ -270,7 +300,7 @@ export async function POST(request: NextRequest) {
     // Inject context into system message with tool descriptions
     const systemPrompt = `You are a helpful assistant for a project management system. When providing information about employees, projects, or tasks, only include names, roles, departments, skills, and other relevant details. Never include database IDs in your responses.
 
-You have access to tools to create employees, projects, tasks, and assign employees to tasks. When the user asks to perform these actions, use the appropriate tools. For tasks, you need to use the getProjectId tool first to find the project ID. For assigning employees, use getEmployeeId and getTaskId tools to find the IDs.` + (contextString ? '\n\n' + contextString : '');
+You have access to tools to create employees, projects, tasks, assign employees to tasks, and assign employees to projects. When the user asks to perform these actions, use the appropriate tools. For tasks, you need to use the getProjectId tool first to find the project ID. For assigning employees to tasks, use getEmployeeId and getTaskId tools to find the IDs. For assigning employees to projects, use getEmployeeId and getProjectId tools to find the IDs.` + (contextString ? '\n\n' + contextString : '');
 
     const messagesWithContext = [
       {

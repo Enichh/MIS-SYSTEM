@@ -11,7 +11,10 @@ export async function getProjects(filters?: Record<string, unknown>): Promise<Pr
  * @returns The created project record
  */
 export async function createProject(data: Omit<Project, 'id' | 'created_at' | 'updated_at'>): Promise<Project> {
-  return insertToDatabase<Project>('projects', data)
+  console.log(`[PROJECT_CREATE] Creating project: ${data.name} - Status: ${data.status}, Priority: ${data.priority}`);
+  const result = await insertToDatabase<Project>('projects', data);
+  console.log(`[PROJECT_CREATE] Project created successfully: ID=${result.id}, Name=${result.name}`);
+  return result;
 }
 
 /**
