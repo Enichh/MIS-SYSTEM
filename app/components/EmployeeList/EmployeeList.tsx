@@ -104,15 +104,6 @@ export default function EmployeeList() {
     );
   }
 
-  if (!employees || employees.length === 0) {
-    return (
-      <div className="empty-state">
-        <h3>No Employees Found</h3>
-        <p>Click &quot;Add Employee&quot; to create your first employee.</p>
-      </div>
-    );
-  }
-
   return (
     <>
       <SearchBar
@@ -121,45 +112,52 @@ export default function EmployeeList() {
         placeholder="Search employees by name..."
         ariaLabel="Search employees"
       />
-      <div className="grid-layout">
-        {employees.map((employee) => (
-          <Card key={employee.id} className="employee-card">
-            <CardHeader>
-              <div className="employee-header">
-                <div className="employee-avatar">
-                  {employee.name.charAt(0).toUpperCase()}
+      {!employees || employees.length === 0 ? (
+        <div className="empty-state">
+          <h3>No Employees Found</h3>
+          <p>Click &quot;Add Employee&quot; to create your first employee.</p>
+        </div>
+      ) : (
+        <div className="grid-layout">
+          {employees.map((employee) => (
+            <Card key={employee.id} className="employee-card">
+              <CardHeader>
+                <div className="employee-header">
+                  <div className="employee-avatar">
+                    {employee.name.charAt(0).toUpperCase()}
+                  </div>
+                  <div className="employee-info">
+                    <CardTitle className="employee-name">{employee.name}</CardTitle>
+                    <CardDescription className="employee-email">{employee.email}</CardDescription>
+                  </div>
+                  <Badge className="employee-role-badge">{employee.role}</Badge>
                 </div>
-                <div className="employee-info">
-                  <CardTitle className="employee-name">{employee.name}</CardTitle>
-                  <CardDescription className="employee-email">{employee.email}</CardDescription>
-                </div>
-                <Badge className="employee-role-badge">{employee.role}</Badge>
-              </div>
-            </CardHeader>
-            <CardContent>
-              <p className="employee-department">{employee.department}</p>
-            </CardContent>
-            <CardFooter className="employee-card-actions">
-              <Button
-                variant="secondary"
-                icon="edit"
-                data-action="edit"
-                data-entity="employee"
-                data-id={employee.id}
-              >
-                Edit
-              </Button>
-              <Button
-                variant="danger"
-                icon="trash"
-                onClick={() => handleDeleteClick(employee)}
-              >
-                Delete
-              </Button>
-            </CardFooter>
-          </Card>
-        ))}
-      </div>
+              </CardHeader>
+              <CardContent>
+                <p className="employee-department">{employee.department}</p>
+              </CardContent>
+              <CardFooter className="employee-card-actions">
+                <Button
+                  variant="secondary"
+                  icon="edit"
+                  data-action="edit"
+                  data-entity="employee"
+                  data-id={employee.id}
+                >
+                  Edit
+                </Button>
+                <Button
+                  variant="danger"
+                  icon="trash"
+                  onClick={() => handleDeleteClick(employee)}
+                >
+                  Delete
+                </Button>
+              </CardFooter>
+            </Card>
+          ))}
+        </div>
+      )}
       <DeleteConfirmation
         isOpen={deleteConfirmation.isOpen}
         onConfirm={handleConfirmDelete}
