@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { streamText } from 'ai';
+import { streamText, generateText } from 'ai';
 import { createOpenAI } from '@ai-sdk/openai';
 import { STREAMING_CONFIG } from '@/lib/utils/ai-config';
 import { handleApiError } from '@/lib/utils/api-handler';
@@ -61,142 +61,40 @@ async function buildEnhancedContext(query?: string): Promise<string> {
 
 // TODO: Add authentication check before production deployment
 
-// Internal helper: Extract entity data from user message and execute quick action
-async function handleQuickAction(intent: string, userMessage: string): Promise<string | null> {
+// Internal helper: Parse JSON from AI response and execute action
+async function handleQuickAction(aiResponse: string): Promise<string | null> {
   try {
-    let payload: Record<string, unknown> = {};
-    let endpoint = '/api/quick-action';
-    const missingFields: string[] = [];
-
-    // Simple extraction patterns - in production, use NLP for better parsing
-    if (intent === 'create_employee') {
-      // Schema requirements: name (NOT NULL), email (NOT NULL, UNIQUE, regex), role (NOT NULL), department (NOT NULL), skills (optional)
-      const nameMatch = userMessage.match(/(?:named?|called?)\s+["']?([^"'\.]+)["']?/i) ||
-                       userMessage.match(/(?:create|add)\s+(?:an\s+)?employee\s+(?:named?|called?)?\s*["']?([^"'\.]+)["']?/i);
-      const emailMatch = userMessage.match(/(?:email)\s+["']?([^"'\s]+)["']?/i);
-      const roleMatch = userMessage.match(/(?:as|role)\s+(\w+)/i);
-      const deptMatch = userMessage.match(/(?:in|department)\s+(\w+)/i);
-      const skillsMatch = userMessage.match(/(?:skills?|with)\s+([^.]+)/i);
-
-      if (nameMatch) payload.name = nameMatch[1].trim();
-      if (emailMatch) payload.email = emailMatch[1].trim();
-      if (roleMatch) payload.role = roleMatch[1].trim();
-      if (deptMatch) payload.department = deptMatch[1].trim();
-      if (skillsMatch) {
-        payload.skills = skillsMatch[1].split(',').map(s => s.trim()).filter(s => s);
-      }
-
-      // Validate required fields
-      if (!payload.name) missingFields.push('name');
-      if (!payload.email) missingFields.push('email');
-      if (!payload.role) missingFields.push('role');
-      if (!payload.department) missingFields.push('department');
-
-      if (missingFields.length > 0) {
-        return `To create an employee, I need the following information: ${missingFields.join(', ')}. Please provide these details.`;
-      }
+    // Try to extract JSON from AI response
+    const jsonMatch = aiResponse.match(/```json\s*([\s\S]*?)\s*```/) || aiResponse.match(/\{[\s\S]*\}/);
+    if (!jsonMatch) {
+      return null; // Not an action, return normal AI response
     }
 
-    if (intent === 'create_project') {
-      // Schema requirements: name (NOT NULL), description (optional), status (default 'active'), priority (default 'medium')
-      const nameMatch = userMessage.match(/(?:called?|named?)\s+["']?([^"'\.]+)["']?/i) ||
-                       userMessage.match(/(?:create|add)\s+(?:a\s+)?project\s+(?:called?|named?)?\s*["']?([^"'\.]+)["']?/i);
-      const descMatch = userMessage.match(/(?:descri(?:be|ption)|about)\s+([^.]+)/i);
+    const jsonStr = jsonMatch[1] || jsonMatch[0];
+    const actionData = JSON.parse(jsonStr);
 
-      if (nameMatch) payload.name = nameMatch[1].trim();
-      if (descMatch) payload.description = descMatch[1].trim();
-
-      // Validate required fields
-      if (!payload.name) missingFields.push('name');
-
-      if (missingFields.length > 0) {
-        return `To create a project, I need the following information: ${missingFields.join(', ')}. Please provide these details.`;
-      }
+    if (!actionData.action || !actionData.data) {
+      console.error('Invalid action format:', actionData);
+      return null;
     }
 
-    if (intent === 'create_task') {
-      // Schema requirements: title (NOT NULL), projectId (NOT NULL, foreign key), description (optional)
-      const titleMatch = userMessage.match(/(?:called?|named?)\s+["']?([^"'\.]+)["']?/i) ||
-                        userMessage.match(/(?:create|add)\s+(?:a\s+)?task\s+(?:called?|named?)?\s*["']?([^"'\.]+)["']?/i);
-      const descMatch = userMessage.match(/(?:descri(?:be|ption)|about)\s+([^.]+)/i);
-      const projectMatch = userMessage.match(/(?:for|in|project)\s+["']?([^"'\.]+)["']?/i);
-
-      if (titleMatch) payload.title = titleMatch[1].trim();
-      if (descMatch) payload.description = descMatch[1].trim();
-
-      // Try to find project by name
-      if (projectMatch) {
-        const projects = await fetchFromDatabase('projects', {});
-        const project = (projects as any[]).find(p => p.name.toLowerCase().includes(projectMatch[1].toLowerCase()));
-        if (project) {
-          payload.projectId = project.id;
-        }
-      }
-
-      // Validate required fields
-      if (!payload.title) missingFields.push('title');
-      if (!payload.projectId) missingFields.push('project (specify which project this task belongs to)');
-
-      if (missingFields.length > 0) {
-        return `To create a task, I need the following information: ${missingFields.join(', ')}. Please provide these details.`;
-      }
-    }
-
-    if (intent === 'assign_employee') {
-      // This requires existing IDs, so we need to fetch and match by name
-      const empNameMatch = userMessage.match(/(?:employee|person)\s+(\w+)/i);
-      const taskTitleMatch = userMessage.match(/(?:task)\s+(?:called?|named?)?\s*["']?([^"'\.]+)["']?/i);
-
-      if (empNameMatch && taskTitleMatch) {
-        const employees = await fetchFromDatabase('employees', {});
-        const matchingEmployees = (employees as any[]).filter(e => e.name.toLowerCase().includes(empNameMatch[1].toLowerCase()));
-
-        if (matchingEmployees.length === 0) {
-          return `Could not find any employee matching "${empNameMatch[1]}". Please check the name and try again.`;
-        }
-
-        if (matchingEmployees.length > 1) {
-          const employeeList = matchingEmployees
-            .map(e => `- ${e.name} (Role: ${e.role}, Department: ${e.department}, Email: ${e.email})`)
-            .join('\n');
-          return `Found multiple employees matching "${empNameMatch[1]}". Please specify which one:\n${employeeList}`;
-        }
-
-        const tasks = await fetchFromDatabase('tasks', {});
-        const matchingTasks = (tasks as any[]).filter(t => t.title.toLowerCase().includes(taskTitleMatch[1].toLowerCase()));
-
-        if (matchingTasks.length === 0) {
-          return `Could not find any task matching "${taskTitleMatch[1]}". Please check the task title and try again.`;
-        }
-
-        if (matchingTasks.length > 1) {
-          const taskList = matchingTasks
-            .map(t => `- ${t.title} (Status: ${t.status}, Priority: ${t.priority})`)
-            .join('\n');
-          return `Found multiple tasks matching "${taskTitleMatch[1]}". Please specify which one:\n${taskList}`;
-        }
-
-        payload.employeeId = matchingEmployees[0].id;
-        payload.taskId = matchingTasks[0].id;
-      } else {
-        return 'To assign an employee to a task, please specify both the employee name and task title.';
-      }
-    }
+    const { action, data } = actionData;
+    const endpoint = '/api/quick-action';
 
     const response = await fetch(endpoint, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: intent, payload }),
+      body: JSON.stringify({ type: action, payload: data }),
     });
 
-    const data = await response.json();
-    if (response.ok && data.success) {
-      return `Successfully executed ${intent}.`;
+    const result = await response.json();
+    if (response.ok && result.success) {
+      return `${action.replace('_', ' ')} created successfully.`;
     }
-    return `Failed to execute ${intent}: ${data.message || 'Unknown error'}`;
+    return `Failed to ${action.replace('_', ' ')}: ${result.message || 'Unknown error'}`;
   } catch (error) {
     console.error('Quick action error:', error);
-    return `Error executing quick action: ${error instanceof Error ? error.message : 'Unknown error'}`;
+    return null; // If JSON parsing fails, return normal AI response
   }
 }
 
@@ -242,36 +140,69 @@ export async function POST(request: NextRequest) {
 
     // Check for quick action intent
     const quickActionIntent = parseQuickActionIntent(userQuery || '');
-    if (quickActionIntent) {
-      const actionResult = await handleQuickAction(quickActionIntent, userQuery || '');
-      if (actionResult) {
-        // Return the action result as a streaming response
-        const result = await streamText({
-          model: longcat('LongCat-Flash-Chat'),
-          messages: [
-            { role: 'system', content: 'You are a helpful assistant for a project management system.' },
-            { role: 'user', content: userQuery || '' },
-            { role: 'assistant', content: actionResult },
-          ],
-          temperature: STREAMING_CONFIG.temperature,
-          maxTokens: STREAMING_CONFIG.maxTokens,
-          topP: STREAMING_CONFIG.topP,
-        });
-        return result.toDataStreamResponse();
-      }
-    }
 
     // Build enhanced context from database
     const contextString = await buildEnhancedContext(userQuery);
 
-    // Inject context into system message
+    // Inject context into system message with JSON output instructions for actions
+    const systemPrompt = quickActionIntent
+      ? `You are a helpful assistant for a project management system.
+
+When the user asks to create an entity (employee, project, task) or assign an employee to a task, output your response as a JSON object in this format:
+\`\`\`json
+{
+  "action": "create_employee" | "create_project" | "create_task" | "assign_employee",
+  "data": {
+    // Entity fields based on schema
+    // For employees: name, email, role, department, skills (optional)
+    // For projects: name, description (optional)
+    // For tasks: title, description (optional), projectId (required, get from context or ask user)
+    // For assign_employee: employeeId, taskId (get from context or ask user)
+  }
+}
+\`\`\`
+
+Schema requirements:
+- Employees: name (required), email (required, valid email format), role (required), department (required), skills (optional array)
+- Projects: name (required), description (optional)
+- Tasks: title (required), projectId (required), description (optional)
+
+If the user doesn't provide all required fields, ask them for the missing information in your response (do not output JSON).` + (contextString ? '\n\n' + contextString : '')
+      : `You are a helpful assistant for a project management system. When providing information about employees, projects, or tasks, only include names, roles, departments, skills, and other relevant details. Never include database IDs in your responses.` + (contextString ? '\n\n' + contextString : '');
+
     const messagesWithContext = [
       {
         role: 'system',
-        content: 'You are a helpful assistant for a project management system. When providing information about employees, projects, or tasks, only include names, roles, departments, skills, and other relevant details. Never include database IDs in your responses.' + (contextString ? '\n\n' + contextString : ''),
+        content: systemPrompt,
       },
       ...body.messages,
     ];
+
+    // Use non-streaming for actions, streaming for normal queries
+    if (quickActionIntent) {
+      const result = await generateText({
+        model: longcat('LongCat-Flash-Chat'),
+        messages: messagesWithContext,
+        temperature: STREAMING_CONFIG.temperature,
+        maxTokens: STREAMING_CONFIG.maxTokens,
+        topP: STREAMING_CONFIG.topP,
+      });
+
+      const actionResult = await handleQuickAction(result.text);
+
+      if (actionResult) {
+        return NextResponse.json({ message: actionResult }, {
+          status: 200,
+          headers: { 'Content-Type': 'application/json' },
+        });
+      }
+
+      // If no JSON found, return the AI response as-is
+      return NextResponse.json({ message: result.text }, {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
 
     const result = await streamText({
       model: longcat('LongCat-Flash-Chat'),
