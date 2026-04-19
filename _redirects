@@ -1,2 +1,2 @@
-# Next.js App Router handles its own routing
-# No custom redirects needed
+# Next.js App Router with Netlify Next.js plugin
+# Routing is handled automatically by the plugin
