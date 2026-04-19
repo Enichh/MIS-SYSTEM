@@ -1,26 +1,26 @@
-'use client'
+"use client";
 
-import ThemeToggle from '../ThemeToggle/ThemeToggle'
-import { HamburgerButton } from '../HamburgerButton/HamburgerButton'
-import { useAuth } from '@/lib/hooks/useAuth'
-import { LogOut, User } from 'lucide-react'
+import ThemeToggle from "../ThemeToggle/ThemeToggle";
+import { HamburgerButton } from "../HamburgerButton/HamburgerButton";
+import { useAuth } from "@/lib/hooks/useAuth";
+import { LogOut, User } from "lucide-react";
 
 export default function Header() {
-  const { admin, logout } = useAuth()
+  const { admin, logout } = useAuth();
 
   const handleLogout = async () => {
-    const result = await logout()
+    const result = await logout();
     if (result.success) {
-      window.location.href = '/login'
+      window.location.href = "/login";
     }
-  }
+  };
 
   return (
     <header className="header">
       <div className="header-content">
         <HamburgerButton />
         <div className="header-title">
-          <h1>Enosoft Project Management System</h1>
+          <h1>Enosoft</h1>
         </div>
         <div className="header-actions">
           {admin && (
@@ -29,8 +29,8 @@ export default function Header() {
               <span className="header-admin-name">{admin.full_name}</span>
             </div>
           )}
-          <button 
-            className="header-logout-btn" 
+          <button
+            className="header-logout-btn"
             onClick={handleLogout}
             title="Sign out"
             aria-label="Sign out"
@@ -41,5 +41,5 @@ export default function Header() {
         </div>
       </div>
     </header>
-  )
+  );
 }
