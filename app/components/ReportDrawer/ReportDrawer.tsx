@@ -57,21 +57,37 @@ export function ReportDrawer() {
     MAX_MESSAGE_LENGTH,
     generateQuickReport,
     reload,
+    includeFullDetails,
+    setIncludeFullDetails,
   } = useReportChat();
 
   return (
     <div className="report-drawer">
       <div className="chat-modal-header report-drawer-header">
         <h3>AI Reports Assistant</h3>
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={handleClearHistory}
-          aria-label="Clear report history"
-          className="chat-modal-delete"
-        >
-          <TrashIcon size={16} />
-        </Button>
+        <div className="report-drawer-header-actions">
+          <div className="report-detail-toggle">
+            <label className="report-toggle-label">
+              <input
+                type="checkbox"
+                checked={includeFullDetails}
+                onChange={(e) => setIncludeFullDetails(e.target.checked)}
+                className="report-toggle-checkbox"
+                disabled={isLoading}
+              />
+              <span className="report-toggle-text">Full Details</span>
+            </label>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={handleClearHistory}
+            aria-label="Clear report history"
+            className="chat-modal-delete"
+          >
+            <TrashIcon size={16} />
+          </Button>
+        </div>
       </div>
 
       <div className="chat-message-list-container">

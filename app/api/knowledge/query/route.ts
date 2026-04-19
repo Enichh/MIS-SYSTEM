@@ -8,9 +8,9 @@ import type { KnowledgeQuery, KnowledgeResponse, ApiResponse } from '@/types';
 const KnowledgeQuerySchema: z.ZodType<KnowledgeQuery> = z.object({
   query: z.string().min(1, 'Query is required'),
   context: z.object({
-    employeeId: z.string().optional(),
-    projectId: z.string().optional(),
-    taskId: z.string().optional(),
+    employee_id: z.string().optional(),
+    project_id: z.string().optional(),
+    task_id: z.string().optional(),
   }).optional(),
 });
 
@@ -27,8 +27,8 @@ async function buildEnhancedContext(context?: KnowledgeQuery['context'], query?:
   }
 
   // Fetch detailed data based on context
-  if (context?.projectId) {
-    const projects = await fetchFromDatabase('projects', { id: context.projectId });
+  if (context?.project_id) {
+    const projects = await fetchFromDatabase('projects', { id: context.project_id });
     if (projects.length > 0) {
       const project = projects[0] as any;
       contextParts.push(
@@ -40,8 +40,8 @@ async function buildEnhancedContext(context?: KnowledgeQuery['context'], query?:
     }
   }
 
-  if (context?.employeeId) {
-    const employees = await fetchFromDatabase('employees', { id: context.employeeId });
+  if (context?.employee_id) {
+    const employees = await fetchFromDatabase('employees', { id: context.employee_id });
     if (employees.length > 0) {
       const employee = employees[0] as any;
       const skills = Array.isArray(employee.skills) ? employee.skills.join(', ') : 'None';
@@ -56,8 +56,8 @@ async function buildEnhancedContext(context?: KnowledgeQuery['context'], query?:
     }
   }
 
-  if (context?.taskId) {
-    const tasks = await fetchFromDatabase('tasks', { id: context.taskId });
+  if (context?.task_id) {
+    const tasks = await fetchFromDatabase('tasks', { id: context.task_id });
     if (tasks.length > 0) {
       const task = tasks[0] as any;
       contextParts.push(
@@ -76,7 +76,7 @@ async function buildEnhancedContext(context?: KnowledgeQuery['context'], query?:
     const intent = detectQueryIntent(query);
     console.log('DEBUG: Query intent detected:', intent, 'for query:', query);
     
-    if (intent === 'employee' && !context?.employeeId) {
+    if (intent === 'employee' && !context?.employee_id) {
       const employees = await fetchFromDatabase('employees', {});
       if (employees.length > 0) {
         contextParts.push(`All Employees (${employees.length}):`);
@@ -89,7 +89,7 @@ async function buildEnhancedContext(context?: KnowledgeQuery['context'], query?:
       }
     }
 
-    if (intent === 'task' && !context?.taskId) {
+    if (intent === 'task' && !context?.task_id) {
       const tasks = await fetchFromDatabase('tasks', {});
       console.log('DEBUG: Fetched tasks:', tasks);
       if (tasks.length > 0) {
@@ -104,7 +104,7 @@ async function buildEnhancedContext(context?: KnowledgeQuery['context'], query?:
       }
     }
 
-    if (intent === 'project' && !context?.projectId) {
+    if (intent === 'project' && !context?.project_id) {
       const projects = await fetchFromDatabase('projects', {});
       console.log('DEBUG: Fetched projects:', projects);
       if (projects.length > 0) {

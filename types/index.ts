@@ -47,9 +47,9 @@ export interface ApiResponse {
 export interface KnowledgeQuery {
   query: string;
   context?: {
-    employeeId?: string;
-    projectId?: string;
-    taskId?: string;
+    employee_id?: string;
+    project_id?: string;
+    task_id?: string;
   };
 }
 
@@ -131,8 +131,8 @@ export interface SearchQuery {
 export interface SearchFilters {
   name?: string;
   status?: string;
-  projectId?: string;
-  assignedTo?: string;
+  projectid?: string;
+  assignedto?: string;
 }
 
 export interface SearchResult<T> {

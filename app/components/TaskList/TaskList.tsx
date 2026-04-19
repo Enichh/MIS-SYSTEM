@@ -80,8 +80,8 @@ export default function TaskList({ isActive = true }: TaskListProps) {
       const [tasksResponse, projectsResponse, employeesResponse] =
         await Promise.all([
           fetch(tasksUrl),
-          fetch("/api/projects"),
-          fetch("/api/employees"),
+          fetch("/api/projects?limit=100"),
+          fetch("/api/employees?limit=100"),
         ]);
 
       if (!tasksResponse.ok || !projectsResponse.ok || !employeesResponse.ok) {

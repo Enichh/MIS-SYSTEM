@@ -9,32 +9,72 @@ interface ReportError {
 }
 
 async function generateEmployeeSummary(config: ReportConfig): Promise<ReportData> {
-  const employees = await fetchFromDatabase('employees', config.filters);
-  const projects = await fetchFromDatabase('projects', config.filters);
-  
+  const isFullDetails = config.includeFullDetails ?? false;
+  const pagination = config.pagination ?? { page: 1, limit: 50 };
+
+  // For summary mode, fetch all data for metrics but limit detail sections
+  // For full details mode, use pagination
+  const employees = await fetchFromDatabase('employees', {
+    ...config.filters,
+    ...pagination
+  }, { skipPagination: !isFullDetails });
+
+  const projects = await fetchFromDatabase('projects', config.filters, { skipPagination: true });
+
   const totalEmployees = employees.length;
   const activeProjects = projects.filter((p: any) => p.status === 'active').length;
   const totalProjects = projects.length;
-  
+
   const sections: ReportData['sections'] = [
     {
       title: 'Employee Overview',
       content: `Total employees: ${totalEmployees}. Active projects: ${activeProjects} of ${totalProjects}.`,
       order: 1
-    },
-    {
-      title: 'Department Breakdown',
-      content: employees.map((e: any) => `${e.name} - ${e.department}`).join('\n'),
-      order: 2
     }
   ];
-  
+
+  // Only include detailed employee list in full details mode
+  if (isFullDetails) {
+    const departmentBreakdown = employees.map((e: any) => ({
+      name: e.name,
+      department: e.department,
+      role: e.role,
+      email: e.email
+    }));
+
+    sections.push({
+      title: 'Department Breakdown',
+      content: JSON.stringify(departmentBreakdown), // Store as structured data for PDF table rendering
+      order: 2
+    });
+
+    sections.push({
+      title: 'Pagination Info',
+      content: `Showing ${employees.length} employees (Page ${pagination.page})`,
+      order: 3
+    });
+  } else {
+    // Summary mode: just show department counts
+    const deptCounts = employees.reduce((acc: Record<string, number>, e: any) => {
+      acc[e.department] = (acc[e.department] || 0) + 1;
+      return acc;
+    }, {});
+
+    sections.push({
+      title: 'Department Breakdown',
+      content: Object.entries(deptCounts)
+        .map(([dept, count]) => `${dept}: ${count} employees`)
+        .join('\n'),
+      order: 2
+    });
+  }
+
   const metrics: ReportData['metrics'] = [
     { label: 'Total Employees', value: totalEmployees, unit: 'people' },
     { label: 'Active Projects', value: activeProjects, unit: 'projects' },
     { label: 'Total Projects', value: totalProjects, unit: 'projects' }
   ];
-  
+
   const charts: ReportData['charts'] = config.includeCharts ? [
     {
       type: 'bar',
@@ -45,7 +85,7 @@ async function generateEmployeeSummary(config: ReportConfig): Promise<ReportData
       }
     }
   ] : [];
-  
+
   return {
     title: 'Employee Summary Report',
     type: 'employee_summary',
@@ -53,7 +93,12 @@ async function generateEmployeeSummary(config: ReportConfig): Promise<ReportData
     sections,
     metrics: config.includeMetrics ? metrics : [],
     charts,
-    metadata: { employeeCount: totalEmployees, projectCount: totalProjects }
+    metadata: {
+      employeeCount: totalEmployees,
+      projectCount: totalProjects,
+      isFullDetails,
+      pagination: isFullDetails ? pagination : undefined
+    }
   };
 }
 
@@ -161,43 +206,79 @@ async function generateTaskOverview(config: ReportConfig): Promise<ReportData> {
 }
 
 async function generateWorkloadAnalysis(config: ReportConfig): Promise<ReportData> {
-  const employees = await fetchFromDatabase('employees', config.filters);
-  const tasks = await fetchFromDatabase('tasks', config.filters);
-  const employeeProjects = await fetchFromDatabase('employee_projects', config.filters);
-  
+  const isFullDetails = config.includeFullDetails ?? false;
+  const pagination = config.pagination ?? { page: 1, limit: 50 };
+
+  const employees = await fetchFromDatabase('employees', {
+    ...config.filters,
+    ...pagination
+  }, { skipPagination: !isFullDetails });
+
+  const tasks = await fetchFromDatabase('tasks', config.filters, { skipPagination: true });
+  const employeeProjects = await fetchFromDatabase('employee_projects', config.filters, { skipPagination: true });
+
   const workloadByEmployee = employees.map((e: any) => {
     const assignedTasks = tasks.filter((t: any) => t.assignedto === e.id);
     const projectCount = employeeProjects.filter((ep: any) => ep.employee_id === e.id).length;
     return {
       name: e.name,
+      department: e.department,
+      role: e.role,
       taskCount: assignedTasks.length,
       projectCount
     };
   });
-  
+
   const avgTasksPerEmployee = tasks.length / employees.length;
   const maxWorkload = Math.max(...workloadByEmployee.map((w: any) => w.taskCount));
   const minWorkload = Math.min(...workloadByEmployee.map((w: any) => w.taskCount));
-  
+
   const sections: ReportData['sections'] = [
     {
       title: 'Workload Distribution',
       content: `Average tasks per employee: ${avgTasksPerEmployee.toFixed(1)}. Max: ${maxWorkload}, Min: ${minWorkload}.`,
       order: 1
-    },
-    {
-      title: 'Employee Workload Details',
-      content: workloadByEmployee.map((w: any) => `${w.name}: ${w.taskCount} tasks, ${w.projectCount} projects`).join('\n'),
-      order: 2
     }
   ];
-  
+
+  // Only include detailed employee workload list in full details mode
+  if (isFullDetails) {
+    sections.push({
+      title: 'Employee Workload Details',
+      content: JSON.stringify(workloadByEmployee), // Store as structured data for PDF table rendering
+      order: 2
+    });
+
+    sections.push({
+      title: 'Pagination Info',
+      content: `Showing ${workloadByEmployee.length} employees (Page ${pagination.page})`,
+      order: 3
+    });
+  } else {
+    // Summary mode: show top 5 and bottom 5 workloads
+    const sortedByWorkload = [...workloadByEmployee].sort((a, b) => b.taskCount - a.taskCount);
+    const topWorkload = sortedByWorkload.slice(0, 5);
+    const bottomWorkload = sortedByWorkload.slice(-5);
+
+    sections.push({
+      title: 'Top 5 Workloads',
+      content: topWorkload.map((w: any) => `${w.name}: ${w.taskCount} tasks`).join('\n'),
+      order: 2
+    });
+
+    sections.push({
+      title: 'Bottom 5 Workloads',
+      content: bottomWorkload.map((w: any) => `${w.name}: ${w.taskCount} tasks`).join('\n'),
+      order: 3
+    });
+  }
+
   const metrics: ReportData['metrics'] = [
     { label: 'Avg Tasks/Employee', value: avgTasksPerEmployee.toFixed(1), unit: 'tasks' },
     { label: 'Max Workload', value: maxWorkload, unit: 'tasks' },
     { label: 'Min Workload', value: minWorkload, unit: 'tasks' }
   ];
-  
+
   const charts: ReportData['charts'] = config.includeCharts ? [
     {
       type: 'bar',
@@ -208,7 +289,7 @@ async function generateWorkloadAnalysis(config: ReportConfig): Promise<ReportDat
       }
     }
   ] : [];
-  
+
   return {
     title: 'Workload Analysis Report',
     type: 'workload_analysis',
@@ -216,7 +297,12 @@ async function generateWorkloadAnalysis(config: ReportConfig): Promise<ReportDat
     sections,
     metrics: config.includeMetrics ? metrics : [],
     charts,
-    metadata: { employeeCount: employees.length, avgWorkload: avgTasksPerEmployee }
+    metadata: {
+      employeeCount: employees.length,
+      avgWorkload: avgTasksPerEmployee,
+      isFullDetails,
+      pagination: isFullDetails ? pagination : undefined
+    }
   };
 }
 

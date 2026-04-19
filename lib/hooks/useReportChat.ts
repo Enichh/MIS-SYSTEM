@@ -29,6 +29,8 @@ export interface UseReportChatReturn {
   MAX_MESSAGE_LENGTH: number;
   generateQuickReport: (reportType: ReportType) => void;
   reload: () => void;
+  includeFullDetails: boolean;
+  setIncludeFullDetails: (value: boolean) => void;
 }
 
 const MAX_MESSAGE_LENGTH = 5000;
@@ -45,6 +47,7 @@ export function useReportChat(): UseReportChatReturn {
   const [currentReport, setCurrentReport] = useState<ReportData | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [isReportLoading, setIsReportLoading] = useState(false);
+  const [includeFullDetails, setIncludeFullDetails] = useState(false);
 
   const {
     messages: chatMessages,
@@ -133,6 +136,8 @@ export function useReportChat(): UseReportChatReturn {
       type: reportType,
       includeCharts: true,
       includeMetrics: true,
+      includeFullDetails,
+      pagination: includeFullDetails ? { page: 1, limit: 50 } : undefined,
     };
 
     const messageMap: Record<ReportType, string> = {
@@ -188,7 +193,7 @@ export function useReportChat(): UseReportChatReturn {
     } finally {
       setIsReportLoading(false);
     }
-  }, [setMessages]);
+  }, [setMessages, includeFullDetails]);
 
   const reload = useCallback(() => {
     if (messages.length > 0) {
@@ -216,5 +221,7 @@ export function useReportChat(): UseReportChatReturn {
     MAX_MESSAGE_LENGTH,
     generateQuickReport,
     reload,
+    includeFullDetails,
+    setIncludeFullDetails,
   };
 }

@@ -1,6 +1,12 @@
 "use client";
 
-import { useState, useEffect, useImperativeHandle, forwardRef } from "react";
+import {
+  useState,
+  useEffect,
+  useImperativeHandle,
+  forwardRef,
+  useRef,
+} from "react";
 import BaseModal from "@/app/components/modals/BaseModal/BaseModal";
 import { useModal } from "@/lib/hooks/useModal";
 import { useForm } from "@/lib/hooks/useForm";
@@ -49,7 +55,7 @@ const taskFields: FormFieldConfig[] = [
   {
     name: "projectId",
     label: "Assign to Project",
-    type: "select",
+    type: "searchable",
     required: true,
     options: [],
   },
@@ -83,28 +89,48 @@ const TaskForm = forwardRef<TaskFormRef, {}>((_, ref) => {
   const [projects, setProjects] = useState<Project[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [employeeSearch, setEmployeeSearch] = useState("");
+  const [projectSearch, setProjectSearch] = useState("");
+  const [showEmployeeDropdown, setShowEmployeeDropdown] = useState(false);
+  const [showProjectDropdown, setShowProjectDropdown] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [isRecommending, setIsRecommending] = useState(false);
+  const [recommendationReason, setRecommendationReason] = useState<string>("");
+  const employeeDropdownRef = useRef<HTMLDivElement>(null);
+  const projectDropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [projectsRes, employeesRes] = await Promise.all([
-          fetch("/api/projects"),
-          fetch("/api/employees"),
+          fetch("/api/projects?limit=100"),
+          fetch("/api/employees?limit=100"),
         ]);
 
         if (projectsRes.ok) {
           const projectsData = await projectsRes.json();
+          console.log("[TASKFORM] Projects API response:", projectsData);
           setProjects(projectsData.data || []);
+        } else {
+          console.error(
+            "[TASKFORM] Projects API error:",
+            projectsRes.status,
+            projectsRes.statusText,
+          );
         }
 
         if (employeesRes.ok) {
           const employeesData = await employeesRes.json();
+          console.log("[TASKFORM] Employees API response:", employeesData);
           setEmployees(employeesData.data || []);
+        } else {
+          console.error(
+            "[TASKFORM] Employees API error:",
+            employeesRes.status,
+            employeesRes.statusText,
+          );
         }
       } catch (error) {
-        console.error("Failed to fetch data:", error);
+        console.error("[TASKFORM] Failed to fetch data:", error);
       }
     };
 
@@ -142,7 +168,10 @@ const TaskForm = forwardRef<TaskFormRef, {}>((_, ref) => {
     },
     onSubmit: async (data) => {
       const payload = {
-        ...data,
+        title: data.title,
+        description: data.description,
+        status: data.status,
+        priority: data.priority,
         projectid: data.projectId,
         assignedto: data.assignedTo || null,
         duedate: data.dueDate || undefined,
@@ -181,6 +210,12 @@ const TaskForm = forwardRef<TaskFormRef, {}>((_, ref) => {
       emp.email.toLowerCase().includes(employeeSearch.toLowerCase()),
   );
 
+  const filteredProjects = projects.filter(
+    (proj) =>
+      proj.name.toLowerCase().includes(projectSearch.toLowerCase()) ||
+      proj.description?.toLowerCase().includes(projectSearch.toLowerCase()),
+  );
+
   const open = (task?: Task) => {
     if (task) {
       setEditingTask(task);
@@ -213,10 +248,20 @@ const TaskForm = forwardRef<TaskFormRef, {}>((_, ref) => {
       } else {
         setEmployeeSearch("");
       }
+      // Set project search if assigned
+      if (task.projectid) {
+        const project = projects.find((p) => p.id === task.projectid);
+        if (project) {
+          setProjectSearch(project.name);
+        }
+      } else {
+        setProjectSearch("");
+      }
     } else {
       setEditingTask(null);
       resetForm();
       setEmployeeSearch("");
+      setProjectSearch("");
     }
     openModal();
   };
@@ -234,8 +279,49 @@ const TaskForm = forwardRef<TaskFormRef, {}>((_, ref) => {
       }
     } else {
       setEmployeeSearch("");
+      setRecommendationReason("");
     }
   }, [formData.assignedTo, employees]);
+
+  useEffect(() => {
+    if (formData.projectId) {
+      const project = projects.find((p) => p.id === formData.projectId);
+      if (project) {
+        setProjectSearch(project.name);
+      }
+    } else {
+      setProjectSearch("");
+    }
+  }, [formData.projectId, projects]);
+
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        employeeDropdownRef.current &&
+        !employeeDropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowEmployeeDropdown(false);
+      }
+      if (
+        projectDropdownRef.current &&
+        !projectDropdownRef.current.contains(event.target as Node)
+      ) {
+        setShowProjectDropdown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    if (recommendationReason) {
+      const timer = setTimeout(() => {
+        setRecommendationReason("");
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [recommendationReason]);
 
   const getProjectName = (projectId: string) => {
     const project = projects.find((p) => p.id === projectId);
@@ -261,6 +347,7 @@ const TaskForm = forwardRef<TaskFormRef, {}>((_, ref) => {
         if (data.recommendations && data.recommendations.length > 0) {
           const topRecommendation = data.recommendations[0];
           setEmployeeSearch(topRecommendation.name);
+          setRecommendationReason(topRecommendation.reason || "");
           const event = {
             target: { name: "assignedTo", value: topRecommendation.id },
           } as React.ChangeEvent<HTMLInputElement>;
@@ -360,60 +447,153 @@ const TaskForm = forwardRef<TaskFormRef, {}>((_, ref) => {
                   </SelectContent>
                 </Select>
               ) : field.type === "searchable" ? (
-                <div className="relative">
+                <div
+                  className="relative"
+                  ref={
+                    field.name === "projectId"
+                      ? projectDropdownRef
+                      : employeeDropdownRef
+                  }
+                >
                   <div className="flex gap-2">
                     <Input
                       type="text"
                       id={field.name}
                       name={field.name}
-                      value={employeeSearch}
+                      value={
+                        field.name === "projectId"
+                          ? projectSearch
+                          : employeeSearch
+                      }
                       onChange={(e) => {
-                        setEmployeeSearch(e.target.value);
+                        if (field.name === "projectId") {
+                          setProjectSearch(e.target.value);
+                          setShowProjectDropdown(true);
+                        } else {
+                          setEmployeeSearch(e.target.value);
+                          setShowEmployeeDropdown(true);
+                        }
                       }}
-                      placeholder="Search employee by name or email..."
+                      onFocus={() => {
+                        if (field.name === "projectId") {
+                          setShowProjectDropdown(true);
+                        } else {
+                          setShowEmployeeDropdown(true);
+                        }
+                      }}
+                      placeholder={
+                        field.name === "projectId"
+                          ? "Search project by name or description..."
+                          : "Search employee by name or email..."
+                      }
                       state={errors[field.name] ? "error" : "default"}
                       aria-describedby={
                         errors[field.name] ? `${field.name}-error` : undefined
                       }
                       aria-invalid={!!errors[field.name]}
                     />
-                    <button
-                      type="button"
-                      onClick={recommendEmployees}
-                      disabled={isRecommending || !formData.title}
-                      className="recommend-button"
-                      title="AI Recommend Employee"
-                      aria-label="Get AI employee recommendation"
-                    >
-                      {isRecommending ? (
-                        <span className="recommend-spinner">⏳</span>
-                      ) : (
-                        <span className="recommend-star">⭐</span>
-                      )}
-                    </button>
+                    {field.name === "assignedTo" && (
+                      <button
+                        type="button"
+                        onClick={recommendEmployees}
+                        disabled={isRecommending || !formData.title}
+                        className="recommend-button"
+                        title="AI Recommend Employee"
+                        aria-label="Get AI employee recommendation"
+                      >
+                        {isRecommending ? (
+                          <span className="recommend-spinner">⏳</span>
+                        ) : (
+                          <span className="recommend-star">⭐</span>
+                        )}
+                      </button>
+                    )}
                   </div>
-                  {employeeSearch && filteredEmployees.length > 0 && (
-                    <ul className="dropdown-list">
-                      {filteredEmployees.map((emp) => (
-                        <li
-                          key={emp.id}
-                          onClick={() => {
-                            setEmployeeSearch(emp.name);
-                            const event = {
-                              target: { name: field.name, value: emp.id },
-                            } as React.ChangeEvent<HTMLInputElement>;
-                            handleInputChange(event);
-                          }}
-                          className="dropdown-item-custom"
-                        >
-                          <div className="dropdown-item-name">{emp.name}</div>
-                          <div className="dropdown-item-email">{emp.email}</div>
-                        </li>
-                      ))}
-                    </ul>
+                  {field.name === "projectId" ? (
+                    <>
+                      {showProjectDropdown &&
+                        projectSearch &&
+                        filteredProjects.length > 0 && (
+                          <ul className="dropdown-list">
+                            {filteredProjects.map((proj) => (
+                              <li
+                                key={proj.id}
+                                onClick={() => {
+                                  setProjectSearch(proj.name);
+                                  setShowProjectDropdown(false);
+                                  const event = {
+                                    target: {
+                                      name: field.name,
+                                      value: proj.id,
+                                    },
+                                  } as React.ChangeEvent<HTMLInputElement>;
+                                  handleInputChange(event);
+                                }}
+                                className="dropdown-item-custom"
+                              >
+                                <div className="dropdown-item-name">
+                                  {proj.name}
+                                </div>
+                                {proj.description && (
+                                  <div className="dropdown-item-email">
+                                    {proj.description}
+                                  </div>
+                                )}
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      {showProjectDropdown &&
+                        projectSearch &&
+                        filteredProjects.length === 0 && (
+                          <p className="no-results mt-1">No projects found</p>
+                        )}
+                    </>
+                  ) : (
+                    <>
+                      {showEmployeeDropdown &&
+                        employeeSearch &&
+                        filteredEmployees.length > 0 && (
+                          <ul className="dropdown-list">
+                            {filteredEmployees.map((emp) => (
+                              <li
+                                key={emp.id}
+                                onClick={() => {
+                                  setEmployeeSearch(emp.name);
+                                  setShowEmployeeDropdown(false);
+                                  const event = {
+                                    target: { name: field.name, value: emp.id },
+                                  } as React.ChangeEvent<HTMLInputElement>;
+                                  handleInputChange(event);
+                                }}
+                                className="dropdown-item-custom"
+                              >
+                                <div className="dropdown-item-name">
+                                  {emp.name}
+                                </div>
+                                <div className="dropdown-item-email">
+                                  {emp.email}
+                                </div>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      {showEmployeeDropdown &&
+                        employeeSearch &&
+                        filteredEmployees.length === 0 && (
+                          <p className="no-results mt-1">No employees found</p>
+                        )}
+                    </>
                   )}
-                  {employeeSearch && filteredEmployees.length === 0 && (
-                    <p className="no-results mt-1">No employees found</p>
+                  {field.name === "assignedTo" && recommendationReason && (
+                    <div className="recommendation-reason">
+                      <div className="recommendation-reason-header">
+                        Why this employee?
+                      </div>
+                      <div className="recommendation-reason-text">
+                        {recommendationReason}
+                      </div>
+                    </div>
                   )}
                 </div>
               ) : (

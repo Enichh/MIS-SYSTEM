@@ -33,11 +33,11 @@ export async function fetchFromDatabase<T = unknown>(
   if (filters.priority) {
     query = query.eq('priority', filters.priority as string);
   }
-  if (filters.projectId || filters.projectid) {
-    query = query.eq('projectid', (filters.projectId || filters.projectid) as string);
+  if (filters.projectid) {
+    query = query.eq('projectid', filters.projectid as string);
   }
-  if (filters.assignedTo || filters.assignedto) {
-    query = query.eq('assignedto', (filters.assignedTo || filters.assignedto) as string);
+  if (filters.assignedto) {
+    query = query.eq('assignedto', filters.assignedto as string);
   }
   if (filters.name) {
     const nameColumn = tableName === 'tasks' ? 'title' : 'name';
@@ -69,11 +69,11 @@ export async function fetchFromDatabase<T = unknown>(
   if (filters.endDateTo) {
     query = query.lte('enddate', filters.endDateTo as string);
   }
-  if (filters.dueDateFrom) {
-    query = query.gte('duedate', filters.dueDateFrom as string);
+  if (filters.duedateFrom) {
+    query = query.gte('duedate', filters.duedateFrom as string);
   }
-  if (filters.dueDateTo) {
-    query = query.lte('duedate', filters.dueDateTo as string);
+  if (filters.duedateTo) {
+    query = query.lte('duedate', filters.duedateTo as string);
   }
   if (filters.dateRangeStart && filters.dateRangeEnd) {
     // For calendar: fetch items that overlap with the date range
@@ -131,11 +131,11 @@ export async function fetchFromDatabasePaginated<T = unknown>(
   if (filters.priority) {
     query = query.eq('priority', filters.priority as string);
   }
-  if (filters.projectId || filters.projectid) {
-    query = query.eq('projectid', (filters.projectId || filters.projectid) as string);
+  if (filters.projectid) {
+    query = query.eq('projectid', filters.projectid as string);
   }
-  if (filters.assignedTo || filters.assignedto) {
-    query = query.eq('assignedto', (filters.assignedTo || filters.assignedto) as string);
+  if (filters.assignedto) {
+    query = query.eq('assignedto', filters.assignedto as string);
   }
   if (filters.name) {
     const nameColumn = tableName === 'tasks' ? 'title' : 'name';
@@ -167,11 +167,11 @@ export async function fetchFromDatabasePaginated<T = unknown>(
   if (filters.endDateTo) {
     query = query.lte('enddate', filters.endDateTo as string);
   }
-  if (filters.dueDateFrom) {
-    query = query.gte('duedate', filters.dueDateFrom as string);
+  if (filters.duedateFrom) {
+    query = query.gte('duedate', filters.duedateFrom as string);
   }
-  if (filters.dueDateTo) {
-    query = query.lte('duedate', filters.dueDateTo as string);
+  if (filters.duedateTo) {
+    query = query.lte('duedate', filters.duedateTo as string);
   }
   if (filters.dateRangeStart && filters.dateRangeEnd) {
     if (tableName === 'projects') {

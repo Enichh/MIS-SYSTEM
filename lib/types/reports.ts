@@ -35,6 +35,11 @@ export interface ReportData {
   metadata?: Record<string, unknown>;
 }
 
+export interface ReportPagination {
+  page?: number;
+  limit?: number;
+}
+
 export interface ReportConfig {
   type: ReportType;
   dateRange?: {
@@ -44,6 +49,8 @@ export interface ReportConfig {
   filters?: Record<string, unknown>;
   includeCharts?: boolean;
   includeMetrics?: boolean;
+  pagination?: ReportPagination;
+  includeFullDetails?: boolean; // false = summary only (metrics + aggregates), true = full data with tables
 }
 
 export interface PDFExportOptions {

@@ -57,10 +57,10 @@ export async function POST(request: NextRequest) {
         break;
       
       case 'assign_employee':
-        if (!payload.employeeId || !payload.taskId) {
+        if (!payload.employee_id || !payload.task_id) {
           const errorResponse: ApiResponse = {
             code: 'MISSING_FIELDS',
-            message: 'assign_employee action requires employeeId and taskId',
+            message: 'assign_employee action requires employee_id and task_id',
           };
           return NextResponse.json(errorResponse, {
             status: 400,
@@ -68,7 +68,7 @@ export async function POST(request: NextRequest) {
           });
         }
 
-        const employees = await fetchFromDatabase('employees', { id: payload.employeeId });
+        const employees = await fetchFromDatabase('employees', { id: payload.employee_id });
         if (!employees || employees.length === 0) {
           const errorResponse: ApiResponse = {
             code: 'EMPLOYEE_NOT_FOUND',
@@ -80,7 +80,7 @@ export async function POST(request: NextRequest) {
           });
         }
 
-        const tasks = await fetchFromDatabase('tasks', { id: payload.taskId });
+        const tasks = await fetchFromDatabase('tasks', { id: payload.task_id });
         if (!tasks || tasks.length === 0) {
           const errorResponse: ApiResponse = {
             code: 'TASK_NOT_FOUND',
@@ -92,8 +92,8 @@ export async function POST(request: NextRequest) {
           });
         }
 
-        result = await updateToDatabase('tasks', payload.taskId as string, {
-          assignedto: payload.employeeId,
+        result = await updateToDatabase('tasks', payload.task_id as string, {
+          assignedto: payload.employee_id,
         });
         break;
       

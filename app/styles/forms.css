@@ -760,3 +760,48 @@
   border-color: #d49800;
   box-shadow: 0 4px 12px rgba(255, 183, 0, 0.4);
 }
+
+/* Recommendation Reason Styling */
+.recommendation-reason {
+  margin-top: var(--spacing-sm);
+  padding: var(--spacing-md);
+  background-color: hsl(142 60% 55% / 0.08);
+  border-left: 4px solid hsl(142 60% 45%);
+  border-radius: 8px;
+  animation: fadeIn 0.3s ease;
+}
+
+.recommendation-reason-header {
+  font-size: var(--text-sm);
+  font-weight: var(--font-weight-semibold);
+  color: hsl(142 60% 35%);
+  margin-bottom: var(--spacing-xs);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.recommendation-reason-header::before {
+  content: "💡";
+  font-size: 1rem;
+}
+
+.recommendation-reason-text {
+  font-size: var(--text-sm);
+  color: var(--color-text);
+  line-height: 1.5;
+}
+
+/* Dark mode for recommendation reason */
+[data-theme="dark"] .recommendation-reason {
+  background-color: hsl(142 60% 40% / 0.12);
+  border-left-color: hsl(142 60% 55%);
+}
+
+[data-theme="dark"] .recommendation-reason-header {
+  color: hsl(142 60% 65%);
+}
+
+[data-theme="dark"] .recommendation-reason-text {
+  color: var(--color-text-secondary);
+}

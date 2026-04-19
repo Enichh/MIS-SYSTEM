@@ -33,7 +33,6 @@ const styles = StyleSheet.create({
   },
   section: {
     marginBottom: 25,
-    pageBreakInside: "avoid",
   },
   sectionTitle: {
     fontSize: 16,
@@ -47,7 +46,6 @@ const styles = StyleSheet.create({
     fontSize: 11,
     marginBottom: 8,
     color: "#444",
-    whiteSpace: "pre-wrap",
   },
   metricsContainer: {
     marginBottom: 30,
@@ -89,13 +87,93 @@ const styles = StyleSheet.create({
   trendStable: {
     color: "#666",
   },
+  table: {
+    width: "100%",
+    marginBottom: 10,
+  },
+  tableRow: {
+    flexDirection: "row",
+    borderBottom: "1 solid #000",
+  },
+  tableColHeader: {
+    flex: 1,
+    borderStyle: "solid",
+    borderWidth: 1,
+    borderColor: "#000",
+    backgroundColor: "#f0f0f0",
+    padding: 5,
+  },
+  tableCol: {
+    flex: 1,
+    borderStyle: "solid",
+    borderWidth: 1,
+    borderColor: "#000",
+    padding: 5,
+  },
+  tableCellHeader: {
+    margin: 5,
+    fontSize: 10,
+    fontWeight: "bold",
+    color: "#000",
+  },
+  tableCell: {
+    margin: 5,
+    fontSize: 9,
+    color: "#333",
+  },
+  paginationInfo: {
+    marginTop: 10,
+    fontSize: 9,
+    color: "#666",
+    fontStyle: "italic",
+  },
 });
 
 interface ReportDocumentProps {
   data: ReportData;
 }
 
+function renderTableFromJSON(content: string) {
+  try {
+    const data = JSON.parse(content);
+    if (!Array.isArray(data) || data.length === 0) {
+      return null;
+    }
+
+    const headers = Object.keys(data[0]);
+    const rows = data.map((item: any) => Object.values(item));
+
+    return (
+      <View style={styles.table}>
+        <View style={styles.tableRow}>
+          {headers.map((header, index) => (
+            <View key={index} style={styles.tableColHeader}>
+              <Text style={styles.tableCellHeader}>{header}</Text>
+            </View>
+          ))}
+        </View>
+        {rows.map((row, rowIndex) => (
+          <View key={rowIndex} style={styles.tableRow}>
+            {row.map((cell: any, cellIndex) => (
+              <View key={cellIndex} style={styles.tableCol}>
+                <Text style={styles.tableCell}>{String(cell)}</Text>
+              </View>
+            ))}
+          </View>
+        ))}
+      </View>
+    );
+  } catch {
+    return null;
+  }
+}
+
 function ReportDocument({ data }: ReportDocumentProps) {
+  const isFullDetails = data.metadata?.isFullDetails as boolean | undefined;
+  const pagination = data.metadata?.pagination as
+    | { page?: number; limit?: number }
+    | undefined;
+
   return (
     <Document>
       <Page size="A4" style={styles.page}>
@@ -107,6 +185,9 @@ function ReportDocument({ data }: ReportDocumentProps) {
           <Text style={styles.meta}>
             Generated: {new Date(data.generatedAt).toLocaleString()}
           </Text>
+          {pagination && (
+            <Text style={styles.meta}>Page {pagination.page} of report</Text>
+          )}
         </View>
 
         {data.metrics.length > 0 && (
@@ -146,12 +227,31 @@ function ReportDocument({ data }: ReportDocumentProps) {
           </>
         )}
 
-        {data.sections.map((section, index) => (
-          <View key={index} style={styles.section}>
-            <Text style={styles.sectionTitle}>{section.title}</Text>
-            <Text style={styles.sectionContent}>{section.content}</Text>
-          </View>
-        ))}
+        {data.sections.map((section, index) => {
+          const tableData = renderTableFromJSON(section.content);
+
+          return (
+            <View key={index} style={styles.section}>
+              <Text style={styles.sectionTitle}>{section.title}</Text>
+              {tableData ? (
+                <>
+                  {tableData}
+                  {isFullDetails && pagination && (
+                    <Text style={styles.paginationInfo}>
+                      Showing{" "}
+                      {section.title.includes("Department")
+                        ? "employees"
+                        : "records"}{" "}
+                      on this page
+                    </Text>
+                  )}
+                </>
+              ) : (
+                <Text style={styles.sectionContent}>{section.content}</Text>
+              )}
+            </View>
+          );
+        })}
       </Page>
     </Document>
   );

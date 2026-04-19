@@ -79,14 +79,14 @@ export function buildTaskText(task: Task): string {
 /**
  * Update employee embedding
  */
-export async function updateEmployeeEmbedding(employeeId: string): Promise<void> {
+export async function updateEmployeeEmbedding(employee_id: string): Promise<void> {
   const supabase = await createClient();
   
   // Fetch employee data
   const { data: employee, error: fetchError } = await supabase
     .from('employees')
     .select('*')
-    .eq('id', employeeId)
+    .eq('id', employee_id)
     .single();
 
   if (fetchError || !employee) {
@@ -101,7 +101,7 @@ export async function updateEmployeeEmbedding(employeeId: string): Promise<void>
   const { error: updateError } = await supabase
     .from('employees')
     .update({ embedding })
-    .eq('id', employeeId);
+    .eq('id', employee_id);
 
   if (updateError) {
     throw new Error(`Failed to update employee embedding: ${updateError.message}`);
@@ -111,13 +111,13 @@ export async function updateEmployeeEmbedding(employeeId: string): Promise<void>
 /**
  * Update project embedding
  */
-export async function updateProjectEmbedding(projectId: string): Promise<void> {
+export async function updateProjectEmbedding(project_id: string): Promise<void> {
   const supabase = await createClient();
   
   const { data: project, error: fetchError } = await supabase
     .from('projects')
     .select('*')
-    .eq('id', projectId)
+    .eq('id', project_id)
     .single();
 
   if (fetchError || !project) {
@@ -130,7 +130,7 @@ export async function updateProjectEmbedding(projectId: string): Promise<void> {
   const { error: updateError } = await supabase
     .from('projects')
     .update({ embedding })
-    .eq('id', projectId);
+    .eq('id', project_id);
 
   if (updateError) {
     throw new Error(`Failed to update project embedding: ${updateError.message}`);
@@ -140,13 +140,13 @@ export async function updateProjectEmbedding(projectId: string): Promise<void> {
 /**
  * Update task embedding
  */
-export async function updateTaskEmbedding(taskId: string): Promise<void> {
+export async function updateTaskEmbedding(task_id: string): Promise<void> {
   const supabase = await createClient();
   
   const { data: task, error: fetchError } = await supabase
     .from('tasks')
     .select('*')
-    .eq('id', taskId)
+    .eq('id', task_id)
     .single();
 
   if (fetchError || !task) {
@@ -159,7 +159,7 @@ export async function updateTaskEmbedding(taskId: string): Promise<void> {
   const { error: updateError } = await supabase
     .from('tasks')
     .update({ embedding })
-    .eq('id', taskId);
+    .eq('id', task_id);
 
   if (updateError) {
     throw new Error(`Failed to update task embedding: ${updateError.message}`);

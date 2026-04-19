@@ -92,7 +92,10 @@ const ProjectForm = forwardRef<ProjectFormRef, {}>((_, ref) => {
     },
     onSubmit: async (data) => {
       const payload = {
-        ...data,
+        name: data.name,
+        description: data.description,
+        status: data.status,
+        priority: data.priority,
         progress: parseInt(data.progress, 10),
         startdate: data.startDate || undefined,
         enddate: data.endDate || undefined,

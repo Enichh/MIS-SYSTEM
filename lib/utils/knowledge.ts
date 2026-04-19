@@ -26,9 +26,9 @@ function buildKnowledgeContext(context?: KnowledgeQuery['context']): string {
   if (!context) return '';
   
   const parts: string[] = [];
-  if (context.employeeId) parts.push(`employee: ${context.employeeId}`);
-  if (context.projectId) parts.push(`project: ${context.projectId}`);
-  if (context.taskId) parts.push(`task: ${context.taskId}`);
+  if (context.employee_id) parts.push(`employee: ${context.employee_id}`);
+  if (context.project_id) parts.push(`project: ${context.project_id}`);
+  if (context.task_id) parts.push(`task: ${context.task_id}`);
   
   return parts.length > 0 ? parts.join(', ') : '';
 }

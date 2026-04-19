@@ -1,20 +1,38 @@
-'use client';
+"use client";
 
-import { useImperativeHandle, forwardRef, useState } from 'react';
-import BaseModal from '@/app/components/modals/BaseModal/BaseModal';
-import { useModal } from '@/lib/hooks/useModal';
-import { useForm } from '@/lib/hooks/useForm';
-import { Button } from '@/app/components/ui/Button/Button';
-import { Input } from '@/app/components/ui/Input/Input';
-import { Textarea } from '@/app/components/ui/Textarea/Textarea';
-import type { FormFieldConfig, Employee } from '@/types';
+import { useImperativeHandle, forwardRef, useState } from "react";
+import BaseModal from "@/app/components/modals/BaseModal/BaseModal";
+import { useModal } from "@/lib/hooks/useModal";
+import { useForm } from "@/lib/hooks/useForm";
+import { Button } from "@/app/components/ui/Button/Button";
+import { Input } from "@/app/components/ui/Input/Input";
+import { Textarea } from "@/app/components/ui/Textarea/Textarea";
+import type { FormFieldConfig, Employee } from "@/types";
 
 const employeeFields: FormFieldConfig[] = [
-  { name: 'name', label: 'Name', type: 'text', required: true, maxLength: 100 },
-  { name: 'email', label: 'Email', type: 'email', required: true, maxLength: 255 },
-  { name: 'role', label: 'Role', type: 'text', required: true, maxLength: 50 },
-  { name: 'department', label: 'Department', type: 'text', required: true, maxLength: 50 },
-  { name: 'skills', label: 'Skills (comma-separated)', type: 'text', required: false, maxLength: 500 },
+  { name: "name", label: "Name", type: "text", required: true, maxLength: 100 },
+  {
+    name: "email",
+    label: "Email",
+    type: "email",
+    required: true,
+    maxLength: 255,
+  },
+  { name: "role", label: "Role", type: "text", required: true, maxLength: 50 },
+  {
+    name: "department",
+    label: "Department",
+    type: "text",
+    required: true,
+    maxLength: 50,
+  },
+  {
+    name: "skills",
+    label: "Skills (comma-separated)",
+    type: "text",
+    required: false,
+    maxLength: 500,
+  },
 ];
 
 interface FormData {
@@ -45,32 +63,45 @@ const EmployeeForm = forwardRef<EmployeeFormRef, {}>((_, ref) => {
   } = useForm<FormData>({
     fields: employeeFields,
     initialValues: {
-      name: '',
-      email: '',
-      role: '',
-      department: '',
-      skills: '',
+      name: "",
+      email: "",
+      role: "",
+      department: "",
+      skills: "",
     },
     onSubmit: async (data) => {
       const payload = {
-        ...data,
-        skills: data.skills ? data.skills.split(',').map((s) => s.trim()).filter((s) => s) : [],
+        name: data.name,
+        email: data.email,
+        role: data.role,
+        department: data.department,
+        skills: data.skills
+          ? data.skills
+              .split(",")
+              .map((s) => s.trim())
+              .filter((s) => s)
+          : [],
       };
 
       const isEditing = editingEmployee !== null;
-      const url = isEditing ? `/api/employees/${editingEmployee.id}` : '/api/employees';
-      const method = isEditing ? 'PATCH' : 'POST';
+      const url = isEditing
+        ? `/api/employees/${editingEmployee.id}`
+        : "/api/employees";
+      const method = isEditing ? "PATCH" : "POST";
 
       const response = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.message || `Failed to ${isEditing ? 'update' : 'create'} employee`);
+        throw new Error(
+          result.message ||
+            `Failed to ${isEditing ? "update" : "create"} employee`,
+        );
       }
     },
     onSuccess: () => {
@@ -90,10 +121,15 @@ const EmployeeForm = forwardRef<EmployeeFormRef, {}>((_, ref) => {
         email: employee.email,
         role: employee.role,
         department: employee.department,
-        skills: employee.skills ? employee.skills.join(', ') : '',
+        skills: employee.skills ? employee.skills.join(", ") : "",
       };
-      Object.keys(eventData).forEach(key => {
-        const event = { target: { name: key, value: eventData[key as keyof typeof eventData] } } as React.ChangeEvent<HTMLInputElement>;
+      Object.keys(eventData).forEach((key) => {
+        const event = {
+          target: {
+            name: key,
+            value: eventData[key as keyof typeof eventData],
+          },
+        } as React.ChangeEvent<HTMLInputElement>;
         handleInputChange(event);
       });
     } else {
@@ -113,7 +149,7 @@ const EmployeeForm = forwardRef<EmployeeFormRef, {}>((_, ref) => {
       <BaseModal
         isOpen={isOpen}
         onClose={close}
-        title={editingEmployee ? 'Edit Employee' : 'Add Employee'}
+        title={editingEmployee ? "Edit Employee" : "Add Employee"}
         size="md"
         ariaDescribedBy="employee-form-description"
       >
@@ -124,7 +160,9 @@ const EmployeeForm = forwardRef<EmployeeFormRef, {}>((_, ref) => {
         {notification && (
           <div
             className={`notification ${
-              notification.type === 'success' ? 'notification-success' : 'notification-error'
+              notification.type === "success"
+                ? "notification-success"
+                : "notification-error"
             }`}
             role="alert"
           >
@@ -139,7 +177,7 @@ const EmployeeForm = forwardRef<EmployeeFormRef, {}>((_, ref) => {
                 {field.label}
                 {field.required && <span className="required">*</span>}
               </label>
-              {field.type === 'textarea' ? (
+              {field.type === "textarea" ? (
                 <Textarea
                   id={field.name}
                   name={field.name}
@@ -147,8 +185,10 @@ const EmployeeForm = forwardRef<EmployeeFormRef, {}>((_, ref) => {
                   onChange={handleInputChange}
                   required={field.required}
                   rows={3}
-                  className={errors[field.name] ? 'border-destructive' : ''}
-                  aria-describedby={errors[field.name] ? `${field.name}-error` : undefined}
+                  className={errors[field.name] ? "border-destructive" : ""}
+                  aria-describedby={
+                    errors[field.name] ? `${field.name}-error` : undefined
+                  }
                   aria-invalid={!!errors[field.name]}
                 />
               ) : (
@@ -159,13 +199,19 @@ const EmployeeForm = forwardRef<EmployeeFormRef, {}>((_, ref) => {
                   value={formData[field.name as keyof FormData] as string}
                   onChange={handleInputChange}
                   required={field.required}
-                  state={errors[field.name] ? 'error' : 'default'}
-                  aria-describedby={errors[field.name] ? `${field.name}-error` : undefined}
+                  state={errors[field.name] ? "error" : "default"}
+                  aria-describedby={
+                    errors[field.name] ? `${field.name}-error` : undefined
+                  }
                   aria-invalid={!!errors[field.name]}
                 />
               )}
               {errors[field.name] && (
-                <p id={`${field.name}-error`} className="form-error" role="alert">
+                <p
+                  id={`${field.name}-error`}
+                  className="form-error"
+                  role="alert"
+                >
                   {errors[field.name]}
                 </p>
               )}
@@ -186,7 +232,7 @@ const EmployeeForm = forwardRef<EmployeeFormRef, {}>((_, ref) => {
               disabled={isSubmitting}
               aria-label="Submit employee form"
             >
-              {isSubmitting ? 'Submitting...' : 'Submit'}
+              {isSubmitting ? "Submitting..." : "Submit"}
             </Button>
           </div>
         </form>
@@ -195,6 +241,6 @@ const EmployeeForm = forwardRef<EmployeeFormRef, {}>((_, ref) => {
   );
 });
 
-EmployeeForm.displayName = 'EmployeeForm';
+EmployeeForm.displayName = "EmployeeForm";
 
 export default EmployeeForm;
