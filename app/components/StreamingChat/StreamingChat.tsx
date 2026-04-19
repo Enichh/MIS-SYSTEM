@@ -28,7 +28,7 @@ export function StreamingChat() {
   return (
     <div className="streaming-chat">
       <div className="chat-modal-header">
-        <h3>AI Chat Assistant</h3>
+        <h3>Enoch AI</h3>
         <Button
           variant="ghost"
           size="sm"
@@ -44,8 +44,11 @@ export function StreamingChat() {
         <div className="chat-message-list">
           {messages.length === 0 && !isLoading ? (
             <div className="chat-message-empty">
-              <p className="font-semibold mb-1">Start a conversation</p>
-              <p className="text-small">Ask me anything about your MIS system</p>
+              <div className="chat-message chat-message-assistant">
+                <div className="chat-message-content">
+                  <MarkdownRenderer content="Hello! I'm EnochAI, your helpful assistant for this project management system. I can help you with creating employees, projects, and tasks; assigning employees to tasks and projects; searching for employees by skills or department; and updating existing tasks and projects. How can I assist you today?" />
+                </div>
+              </div>
             </div>
           ) : (
             messages.map((msg) => (
@@ -114,16 +117,24 @@ export function StreamingChat() {
             aria-label="Send message"
           >
             {isLoading ? (
-              <button
+              <span
                 onClick={(e) => {
                   e.stopPropagation();
                   stop();
                 }}
                 className="chat-input-stop"
+                role="button"
+                tabIndex={0}
                 aria-label="Stop generating"
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter' || e.key === ' ') {
+                    e.preventDefault();
+                    stop();
+                  }
+                }}
               >
                 Stop
-              </button>
+              </span>
             ) : (
               'Send'
             )}

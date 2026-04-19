@@ -4,9 +4,12 @@ function sanitizeQuery(query: string): string {
   return query.trim().replace(/[<>]/g, '');
 }
 
-function detectQueryIntent(query: string): 'employee' | 'project' | 'task' | 'general' {
+function detectQueryIntent(query: string): 'employee' | 'project' | 'task' | 'report' | 'general' {
   const lowerQuery = query.toLowerCase();
   
+  if (lowerQuery.includes('report') || lowerQuery.includes('summary') || lowerQuery.includes('export')) {
+    return 'report';
+  }
   if (lowerQuery.includes('employee') || lowerQuery.includes('staff') || lowerQuery.includes('worker')) {
     return 'employee';
   }

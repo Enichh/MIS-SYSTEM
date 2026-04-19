@@ -1,6 +1,12 @@
-'use client';
+"use client";
 
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import React, {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  ReactNode,
+} from "react";
 
 // Constants
 export const BREAKPOINT_MOBILE = 768;
@@ -9,7 +15,14 @@ export const SIDEBAR_WIDTH_DESKTOP = 260;
 export const DRAWER_WIDTH_MOBILE = 280;
 
 // Types
-export type Section = 'employees' | 'projects' | 'tasks' | 'ai'
+export type Section =
+  | "dashboard"
+  | "employees"
+  | "projects"
+  | "tasks"
+  | "ai"
+  | "calendar"
+  | "reports";
 
 export interface NavigationState {
   isDrawerOpen: boolean;
@@ -37,13 +50,15 @@ function isDesktop(): boolean {
 }
 
 // Context
-const NavigationContext = createContext<NavigationContextType | undefined>(undefined);
+const NavigationContext = createContext<NavigationContextType | undefined>(
+  undefined,
+);
 
 // Provider
 export function NavigationProvider({ children }: { children: ReactNode }) {
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
-  const [activeSection, setActiveSection] = useState<Section>('employees');
+  const [activeSection, setActiveSection] = useState<Section>("dashboard");
 
   useEffect(() => {
     const checkMobile = () => {
@@ -53,15 +68,15 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
     checkMobile();
 
     const mediaQuery = window.matchMedia(`(max-width: ${BREAKPOINT_MOBILE}px)`);
-    
+
     const handleChange = (e: MediaQueryListEvent) => {
       setIsMobile(e.matches);
     };
 
-    mediaQuery.addEventListener('change', handleChange);
+    mediaQuery.addEventListener("change", handleChange);
 
     return () => {
-      mediaQuery.removeEventListener('change', handleChange);
+      mediaQuery.removeEventListener("change", handleChange);
     };
   }, []);
 
@@ -93,7 +108,9 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
 export function useNavigationContext(): NavigationContextType {
   const context = useContext(NavigationContext);
   if (context === undefined) {
-    throw new Error('useNavigationContext must be used within a NavigationProvider');
+    throw new Error(
+      "useNavigationContext must be used within a NavigationProvider",
+    );
   }
   return context;
 }

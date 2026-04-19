@@ -353,3 +353,83 @@
 .text-left {
   text-align: left;
 }
+
+/* Fluid Grid Utilities */
+.grid-cols-1 {
+  grid-template-columns: repeat(1, minmax(0, 1fr));
+}
+
+.grid-cols-2 {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.grid-cols-3 {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.grid-cols-4 {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+/* Touch-Friendly Tap Targets (min 44x44px) */
+.touch-target {
+  min-width: 44px;
+  min-height: 44px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Responsive Spacing */
+@media (max-width: 480px) {
+  .p-4 {
+    padding: var(--spacing-sm);
+  }
+
+  .p-6 {
+    padding: var(--spacing-md);
+  }
+
+  .gap-3 {
+    gap: var(--spacing-sm);
+  }
+
+  .gap-4 {
+    gap: var(--spacing-md);
+  }
+}
+
+/* Responsive Grid */
+@media (max-width: 640px) {
+  .grid-cols-2,
+  .grid-cols-3,
+  .grid-cols-4 {
+    grid-template-columns: repeat(1, minmax(0, 1fr));
+  }
+}
+
+@media (min-width: 641px) and (max-width: 1024px) {
+  .grid-cols-3,
+  .grid-cols-4 {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Responsive Width Utilities */
+@media (max-width: 480px) {
+  .w-responsive {
+    width: 100%;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  .w-responsive {
+    width: 90%;
+  }
+}
+
+@media (min-width: 769px) {
+  .w-responsive {
+    width: auto;
+  }
+}

@@ -2,13 +2,18 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getEmployees, createEmployee } from '@/lib/services/employeeService';
 import { handleApiError } from '@/lib/utils/api-handler';
+import { fetchFromDatabasePaginated } from '@/lib/utils/database';
 import type { Employee, ApiResponse } from '@/types';
 
 // Zod schema for query parameter validation
 const EmployeeQuerySchema = z.object({
   id: z.string().optional(),
   status: z.string().optional(),
-  name: z.string().max(100).optional(), // Optional name filter for case-insensitive partial matching
+  name: z.string().max(100).optional(),
+  department: z.string().optional(),
+  role: z.string().optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(10),
 });
 
 // Zod schema for employee creation
@@ -24,17 +29,14 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    // Parse query parameters
     const searchParams = request.nextUrl.searchParams;
     const queryParams = Object.fromEntries(searchParams.entries());
 
-    // Validate query parameters
     const validatedParams = EmployeeQuerySchema.parse(queryParams);
 
-    // Fetch employees from database with filters
-    const employees = await getEmployees(validatedParams);
+    const result = await fetchFromDatabasePaginated<Employee>('employees', validatedParams);
 
-    return NextResponse.json(employees, {
+    return NextResponse.json(result, {
       status: 200,
       headers: {
         'Content-Type': 'application/json',

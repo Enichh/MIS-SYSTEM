@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getTasks, createTask } from '@/lib/services/taskService';
 import { handleApiError } from '@/lib/utils/api-handler';
+import { fetchFromDatabasePaginated } from '@/lib/utils/database';
 import { TASK_STATUS, TASK_PRIORITY } from '@/lib/constants';
 import type { Task, ApiResponse } from '@/types';
 
@@ -9,9 +10,14 @@ import type { Task, ApiResponse } from '@/types';
 const TaskQuerySchema = z.object({
   id: z.string().optional(),
   status: z.string().optional(),
-  projectId: z.string().optional(),
-  assignedTo: z.string().optional(),
+  priority: z.string().optional(),
+  projectid: z.string().optional(),
+  assignedto: z.string().optional(),
   name: z.string().max(100).optional(), // Optional name/title filter for case-insensitive partial matching
+  dateRangeStart: z.string().optional(), // Calendar date range start filter
+  dateRangeEnd: z.string().optional(), // Calendar date range end filter
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(10),
 });
 
 // Zod schema for task creation
@@ -21,26 +27,23 @@ const TaskCreateSchema = z.object({
   status: z.enum(TASK_STATUS).default('pending'),
   priority: z.enum(TASK_PRIORITY).default('medium'),
   dependencies: z.array(z.string()).default([]),
-  projectId: z.string().min(1, 'Project ID is required'),
-  assignedTo: z.string().nullable().default(null),
-  dueDate: z.string().optional(),
+  projectid: z.string().min(1, 'Project ID is required'),
+  assignedto: z.string().nullable().default(null),
+  duedate: z.string().optional(),
 });
 
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    // Parse query parameters
     const searchParams = request.nextUrl.searchParams;
     const queryParams = Object.fromEntries(searchParams.entries());
 
-    // Validate query parameters
     const validatedParams = TaskQuerySchema.parse(queryParams);
 
-    // Fetch tasks from database with filters
-    const tasks = await getTasks(validatedParams);
+    const result = await fetchFromDatabasePaginated<Task>('tasks', validatedParams);
 
-    return NextResponse.json(tasks, {
+    return NextResponse.json(result, {
       status: 200,
       headers: {
         'Content-Type': 'application/json',

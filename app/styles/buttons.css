@@ -339,3 +339,69 @@
   outline: none;
   box-shadow: var(--focus-ring);
 }
+
+/* Responsive Button Sizing */
+@media (max-width: 480px) {
+  /* Primary Button - smaller padding on mobile */
+  .btn-primary {
+    padding: 0.75rem 1.25rem;
+    font-size: 0.8125rem;
+  }
+
+  /* Secondary Button - smaller padding on mobile */
+  .btn-secondary {
+    padding: 0.625rem 1.25rem;
+  }
+
+  /* Danger Button - smaller padding on mobile */
+  .btn-danger {
+    padding: 0.625rem 1.25rem;
+  }
+
+  /* FAB Button - smaller on mobile */
+  .fab-button {
+    width: 48px;
+    height: 48px;
+    bottom: 1rem;
+    right: 1rem;
+  }
+
+  .fab-button svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  /* Button Sizes - adjusted for mobile */
+  .btn-sm {
+    height: 2rem;
+    padding: 0 0.625rem;
+  }
+
+  .btn-md {
+    height: 2.25rem;
+    padding: 0.5rem 1rem;
+  }
+
+  .btn-lg {
+    height: 2.5rem;
+    padding: 0 1.5rem;
+  }
+
+  /* Touch-friendly minimum tap targets */
+  .btn-primary,
+  .btn-secondary,
+  .btn-danger,
+  .btn-ghost,
+  .btn-outline {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  /* FAB Button - adjusted for tablets */
+  .fab-button {
+    width: 52px;
+    height: 52px;
+  }
+}

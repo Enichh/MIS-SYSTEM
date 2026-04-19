@@ -22,6 +22,10 @@
 @import "./styles/data-display.css";
 @import "./styles/notifications.css";
 @import "./styles/employee.css";
+@import "./styles/filters.css";
+@import "./styles/project.css";
+@import "./styles/task.css";
+@import "./styles/dashboard.css";
 
 /* 4. Layout - Navigation and page layout */
 @import "./styles/navigation.css";

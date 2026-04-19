@@ -1,13 +1,12 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useRef } from 'react';
-import type { SearchQuery } from '@/types';
-import { debounceSearch } from '@/lib/utils/search';
-import { SEARCH_DEBOUNCE_MS, MIN_SEARCH_LENGTH } from '@/lib/constants';
-import './SearchBar.css';
+import { useState, useEffect, useRef } from "react";
+import type { SearchQuery } from "@/types";
+import { SEARCH_DEBOUNCE_MS, MIN_SEARCH_LENGTH } from "@/lib/constants";
+import "./SearchBar.css";
 
 interface SearchBarProps {
-  entityType: 'employees' | 'projects' | 'tasks';
+  entityType: "employees" | "projects" | "tasks";
   onSearch: (query: SearchQuery) => void;
   placeholder?: string;
   ariaLabel?: string;
@@ -16,12 +15,13 @@ interface SearchBarProps {
 export function SearchBar({
   entityType,
   onSearch,
-  placeholder = 'Search...',
-  ariaLabel = 'Search input',
+  placeholder = "Search...",
+  ariaLabel = "Search input",
 }: SearchBarProps) {
-  const [inputValue, setInputValue] = useState('');
+  const [inputValue, setInputValue] = useState("");
   const onSearchRef = useRef(onSearch);
   const entityTypeRef = useRef(entityType);
+  const timeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   // Keep refs in sync with latest props
   useEffect(() => {
@@ -29,17 +29,35 @@ export function SearchBar({
     entityTypeRef.current = entityType;
   }, [onSearch, entityType]);
 
-  // Stable debounced search handler that doesn't get recreated
-  const debouncedSearchRef = useRef(
-    debounceSearch((query: string) => {
-      if (query.length >= MIN_SEARCH_LENGTH) {
-        onSearchRef.current({ query, entityType: entityTypeRef.current });
-      }
-    }, SEARCH_DEBOUNCE_MS)
-  );
-
+  // Cleanup timeout on unmount
   useEffect(() => {
-    debouncedSearchRef.current(inputValue);
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Debounced search effect
+  useEffect(() => {
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    timeoutRef.current = setTimeout(() => {
+      if (inputValue.length >= MIN_SEARCH_LENGTH) {
+        onSearchRef.current({
+          query: inputValue,
+          entityType: entityTypeRef.current,
+        });
+      }
+    }, SEARCH_DEBOUNCE_MS);
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
   }, [inputValue]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {

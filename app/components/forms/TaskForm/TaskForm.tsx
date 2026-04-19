@@ -1,24 +1,66 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useImperativeHandle, forwardRef } from 'react';
-import BaseModal from '@/app/components/modals/BaseModal/BaseModal';
-import { useModal } from '@/lib/hooks/useModal';
-import { useForm } from '@/lib/hooks/useForm';
-import { TASK_STATUS, TASK_PRIORITY } from '@/lib/constants';
-import { Button } from '@/app/components/ui/Button/Button';
-import { Input } from '@/app/components/ui/Input/Input';
-import { Textarea } from '@/app/components/ui/Textarea/Textarea';
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from '@/app/components/ui/Select/Select';
-import type { FormFieldConfig, Project, Employee, Task } from '@/types';
+import { useState, useEffect, useImperativeHandle, forwardRef } from "react";
+import BaseModal from "@/app/components/modals/BaseModal/BaseModal";
+import { useModal } from "@/lib/hooks/useModal";
+import { useForm } from "@/lib/hooks/useForm";
+import { TASK_STATUS, TASK_PRIORITY } from "@/lib/constants";
+import { Button } from "@/app/components/ui/Button/Button";
+import { Input } from "@/app/components/ui/Input/Input";
+import { Textarea } from "@/app/components/ui/Textarea/Textarea";
+import {
+  Select,
+  SelectTrigger,
+  SelectValue,
+  SelectContent,
+  SelectItem,
+} from "@/app/components/ui/Select/Select";
+import type { FormFieldConfig, Project, Employee, Task } from "@/types";
 
 const taskFields: FormFieldConfig[] = [
-  { name: 'title', label: 'Title', type: 'text', required: true, maxLength: 100 },
-  { name: 'description', label: 'Description', type: 'textarea', required: false, maxLength: 1000 },
-  { name: 'status', label: 'Status', type: 'select', required: true, options: [...TASK_STATUS] },
-  { name: 'priority', label: 'Priority', type: 'select', required: true, options: [...TASK_PRIORITY] },
-  { name: 'projectId', label: 'Assign to Project', type: 'select', required: true, options: [] },
-  { name: 'assignedTo', label: 'Assign to Employee', type: 'searchable', required: false, options: [] },
-  { name: 'dueDate', label: 'Due Date', type: 'date', required: false },
+  {
+    name: "title",
+    label: "Title",
+    type: "text",
+    required: true,
+    maxLength: 100,
+  },
+  {
+    name: "description",
+    label: "Description",
+    type: "textarea",
+    required: false,
+    maxLength: 1000,
+  },
+  {
+    name: "status",
+    label: "Status",
+    type: "select",
+    required: true,
+    options: [...TASK_STATUS],
+  },
+  {
+    name: "priority",
+    label: "Priority",
+    type: "select",
+    required: true,
+    options: [...TASK_PRIORITY],
+  },
+  {
+    name: "projectId",
+    label: "Assign to Project",
+    type: "select",
+    required: true,
+    options: [],
+  },
+  {
+    name: "assignedTo",
+    label: "Assign to Employee",
+    type: "searchable",
+    required: false,
+    options: [],
+  },
+  { name: "dueDate", label: "Due Date", type: "date", required: false },
 ];
 
 interface FormData {
@@ -40,45 +82,40 @@ const TaskForm = forwardRef<TaskFormRef, {}>((_, ref) => {
   const { isOpen, open: openModal, close } = useModal();
   const [projects, setProjects] = useState<Project[]>([]);
   const [employees, setEmployees] = useState<Employee[]>([]);
-  const [employeeSearch, setEmployeeSearch] = useState('');
+  const [employeeSearch, setEmployeeSearch] = useState("");
   const [editingTask, setEditingTask] = useState<Task | null>(null);
+  const [isRecommending, setIsRecommending] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
       try {
         const [projectsRes, employeesRes] = await Promise.all([
-          fetch('/api/projects'),
-          fetch('/api/employees'),
+          fetch("/api/projects"),
+          fetch("/api/employees"),
         ]);
 
         if (projectsRes.ok) {
           const projectsData = await projectsRes.json();
-          setProjects(projectsData);
+          setProjects(projectsData.data || []);
         }
 
         if (employeesRes.ok) {
           const employeesData = await employeesRes.json();
-          setEmployees(employeesData);
+          setEmployees(employeesData.data || []);
         }
       } catch (error) {
-        console.error('Failed to fetch data:', error);
+        console.error("Failed to fetch data:", error);
       }
     };
 
     fetchData();
   }, []);
 
-  const dynamicTaskFields: FormFieldConfig[] = taskFields.map(field => {
-    if (field.name === 'projectId') {
+  const dynamicTaskFields: FormFieldConfig[] = taskFields.map((field) => {
+    if (field.name === "projectId") {
       return {
         ...field,
-        options: projects.map(p => `${p.id}|${p.name}`),
-      };
-    }
-    if (field.name === 'assignedTo') {
-      return {
-        ...field,
-        options: employees.map(e => `${e.id}|${e.name}`),
+        options: projects.map((p) => p.id),
       };
     }
     return field;
@@ -95,36 +132,39 @@ const TaskForm = forwardRef<TaskFormRef, {}>((_, ref) => {
   } = useForm<FormData>({
     fields: dynamicTaskFields,
     initialValues: {
-      title: '',
-      description: '',
-      status: 'pending',
-      priority: 'medium',
-      projectId: '',
-      assignedTo: '',
-      dueDate: '',
+      title: "",
+      description: "",
+      status: "pending",
+      priority: "medium",
+      projectId: "",
+      assignedTo: "",
+      dueDate: "",
     },
     onSubmit: async (data) => {
       const payload = {
         ...data,
-        assignedTo: data.assignedTo || null,
-        dueDate: data.dueDate || undefined,
+        projectid: data.projectId,
+        assignedto: data.assignedTo || null,
+        duedate: data.dueDate || undefined,
         dependencies: [],
       };
 
       const isEditing = editingTask !== null;
-      const url = isEditing ? `/api/tasks/${editingTask.id}` : '/api/tasks';
-      const method = isEditing ? 'PATCH' : 'POST';
+      const url = isEditing ? `/api/tasks/${editingTask.id}` : "/api/tasks";
+      const method = isEditing ? "PATCH" : "POST";
 
       const response = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
 
       const result = await response.json();
 
       if (!response.ok) {
-        throw new Error(result.message || `Failed to ${isEditing ? 'update' : 'create'} task`);
+        throw new Error(
+          result.message || `Failed to ${isEditing ? "update" : "create"} task`,
+        );
       }
     },
     onSuccess: () => {
@@ -135,9 +175,10 @@ const TaskForm = forwardRef<TaskFormRef, {}>((_, ref) => {
     },
   });
 
-  const filteredEmployees = employees.filter(emp =>
-    emp.name.toLowerCase().includes(employeeSearch.toLowerCase()) ||
-    emp.email.toLowerCase().includes(employeeSearch.toLowerCase())
+  const filteredEmployees = employees.filter(
+    (emp) =>
+      emp.name.toLowerCase().includes(employeeSearch.toLowerCase()) ||
+      emp.email.toLowerCase().includes(employeeSearch.toLowerCase()),
   );
 
   const open = (task?: Task) => {
@@ -146,31 +187,36 @@ const TaskForm = forwardRef<TaskFormRef, {}>((_, ref) => {
       // Pre-populate form with task data
       const initialData = {
         title: task.title,
-        description: task.description || '',
+        description: task.description || "",
         status: task.status,
         priority: task.priority,
-        projectId: task.projectId,
-        assignedTo: task.assignedTo || '',
-        dueDate: task.dueDate || '',
+        projectId: task.projectid,
+        assignedTo: task.assignedto || "",
+        dueDate: task.duedate || "",
       };
       // Need to reset form with this data
-      Object.keys(initialData).forEach(key => {
-        const event = { target: { name: key, value: initialData[key as keyof typeof initialData] } } as React.ChangeEvent<HTMLInputElement>;
+      Object.keys(initialData).forEach((key) => {
+        const event = {
+          target: {
+            name: key,
+            value: initialData[key as keyof typeof initialData],
+          },
+        } as React.ChangeEvent<HTMLInputElement>;
         handleInputChange(event);
       });
       // Set employee search if assigned
-      if (task.assignedTo) {
-        const employee = employees.find(e => e.id === task.assignedTo);
+      if (task.assignedto) {
+        const employee = employees.find((e) => e.id === task.assignedto);
         if (employee) {
           setEmployeeSearch(employee.name);
         }
       } else {
-        setEmployeeSearch('');
+        setEmployeeSearch("");
       }
     } else {
       setEditingTask(null);
       resetForm();
-      setEmployeeSearch('');
+      setEmployeeSearch("");
     }
     openModal();
   };
@@ -182,29 +228,50 @@ const TaskForm = forwardRef<TaskFormRef, {}>((_, ref) => {
 
   useEffect(() => {
     if (formData.assignedTo) {
-      const employee = employees.find(e => e.id === formData.assignedTo);
+      const employee = employees.find((e) => e.id === formData.assignedTo);
       if (employee) {
         setEmployeeSearch(employee.name);
       }
     } else {
-      setEmployeeSearch('');
+      setEmployeeSearch("");
     }
   }, [formData.assignedTo, employees]);
 
-  const getDisplayValue = (value: string, fieldName: string) => {
-    if (fieldName === 'projectId') {
-      const project = projects.find(p => p.id === value);
-      return project ? `${project.id}|${project.name}` : value;
-    }
-    if (fieldName === 'assignedTo') {
-      const employee = employees.find(e => e.id === value);
-      return employee ? `${employee.id}|${employee.name}` : value;
-    }
-    return value;
+  const getProjectName = (projectId: string) => {
+    const project = projects.find((p) => p.id === projectId);
+    return project?.name || "Select a project";
   };
 
-  const extractId = (value: string) => {
-    return value.split('|')[0];
+  const recommendEmployees = async () => {
+    setIsRecommending(true);
+    try {
+      const response = await fetch("/api/employees/recommend", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          taskTitle: formData.title,
+          taskDescription: formData.description,
+          projectId: formData.projectId,
+          priority: formData.priority,
+        }),
+      });
+
+      if (response.ok) {
+        const data = await response.json();
+        if (data.recommendations && data.recommendations.length > 0) {
+          const topRecommendation = data.recommendations[0];
+          setEmployeeSearch(topRecommendation.name);
+          const event = {
+            target: { name: "assignedTo", value: topRecommendation.id },
+          } as React.ChangeEvent<HTMLInputElement>;
+          handleInputChange(event);
+        }
+      }
+    } catch (error) {
+      console.error("Failed to get recommendations:", error);
+    } finally {
+      setIsRecommending(false);
+    }
   };
 
   return (
@@ -212,7 +279,7 @@ const TaskForm = forwardRef<TaskFormRef, {}>((_, ref) => {
       <BaseModal
         isOpen={isOpen}
         onClose={close}
-        title={editingTask ? 'Edit Task' : 'Add Task'}
+        title={editingTask ? "Edit Task" : "Add Task"}
         size="md"
         ariaDescribedBy="task-form-description"
       >
@@ -223,7 +290,9 @@ const TaskForm = forwardRef<TaskFormRef, {}>((_, ref) => {
         {notification && (
           <div
             className={`notification ${
-              notification.type === 'success' ? 'notification-success' : 'notification-error'
+              notification.type === "success"
+                ? "notification-success"
+                : "notification-error"
             }`}
             role="alert"
           >
@@ -238,7 +307,7 @@ const TaskForm = forwardRef<TaskFormRef, {}>((_, ref) => {
                 {field.label}
                 {field.required && <span className="required">*</span>}
               </label>
-              {field.type === 'textarea' ? (
+              {field.type === "textarea" ? (
                 <Textarea
                   id={field.name}
                   name={field.name}
@@ -246,60 +315,83 @@ const TaskForm = forwardRef<TaskFormRef, {}>((_, ref) => {
                   onChange={handleInputChange}
                   required={field.required}
                   rows={3}
-                  className={errors[field.name] ? 'border-destructive' : ''}
-                  aria-describedby={errors[field.name] ? `${field.name}-error` : undefined}
+                  className={errors[field.name] ? "border-destructive" : ""}
+                  aria-describedby={
+                    errors[field.name] ? `${field.name}-error` : undefined
+                  }
                   aria-invalid={!!errors[field.name]}
                 />
-              ) : field.type === 'select' ? (
+              ) : field.type === "select" ? (
                 <Select
-                  value={field.name === 'projectId' ? getDisplayValue(formData[field.name as keyof FormData] as string, field.name) : formData[field.name as keyof FormData] as string}
+                  value={formData[field.name as keyof FormData] || ""}
                   onValueChange={(value) => {
-                    if (field.name === 'projectId') {
-                      const event = { target: { name: field.name, value: extractId(value) } } as React.ChangeEvent<HTMLInputElement>;
-                      handleInputChange(event);
-                    } else {
-                      const event = { target: { name: field.name, value } } as React.ChangeEvent<HTMLInputElement>;
-                      handleInputChange(event);
-                    }
+                    handleInputChange({
+                      target: { name: field.name, value },
+                    } as React.ChangeEvent<HTMLInputElement>);
                   }}
-                  required={field.required}
                 >
-                  <SelectTrigger className={errors[field.name] ? 'border-destructive' : ''}>
-                    <SelectValue placeholder={field.name === 'projectId' ? 'Select a project' : field.name === 'status' ? 'Select a status' : field.name === 'priority' ? 'Select a priority' : 'Select an option'} />
+                  <SelectTrigger
+                    className={errors[field.name] ? "border-destructive" : ""}
+                  >
+                    <SelectValue>
+                      {field.name === "projectId"
+                        ? getProjectName(formData.projectId)
+                        : field.name === "status"
+                          ? formData.status.charAt(0).toUpperCase() +
+                            formData.status.slice(1)
+                          : field.name === "priority"
+                            ? formData.priority.charAt(0).toUpperCase() +
+                              formData.priority.slice(1)
+                            : `Select ${field.label.toLowerCase()}`}
+                    </SelectValue>
                   </SelectTrigger>
                   <SelectContent>
-                    {field.options?.map((option) => {
-                      if (field.name === 'projectId') {
-                        const [id, name] = option.split('|');
-                        return (
-                          <SelectItem key={id} value={option}>
-                            {name}
+                    {field.name === "projectId"
+                      ? projects.map((project) => (
+                          <SelectItem key={project.id} value={project.id}>
+                            {project.name}
                           </SelectItem>
-                        );
-                      }
-                      return (
-                        <SelectItem key={option} value={option}>
-                          {option}
-                        </SelectItem>
-                      );
-                    })}
+                        ))
+                      : field.options?.map((option) => (
+                          <SelectItem key={option} value={option}>
+                            {option.charAt(0).toUpperCase() + option.slice(1)}
+                          </SelectItem>
+                        ))}
                   </SelectContent>
                 </Select>
-              ) : field.type === 'searchable' ? (
+              ) : field.type === "searchable" ? (
                 <div className="relative">
-                  <Input
-                    type="text"
-                    id={field.name}
-                    name={field.name}
-                    value={employeeSearch}
-                    onChange={(e) => {
-                      setEmployeeSearch(e.target.value);
-                    }}
-                    placeholder="Search employee by name or email..."
-                    state={errors[field.name] ? 'error' : 'default'}
-                    aria-describedby={errors[field.name] ? `${field.name}-error` : undefined}
-                    aria-invalid={!!errors[field.name]}
-                  />
+                  <div className="flex gap-2">
+                    <Input
+                      type="text"
+                      id={field.name}
+                      name={field.name}
+                      value={employeeSearch}
+                      onChange={(e) => {
+                        setEmployeeSearch(e.target.value);
+                      }}
+                      placeholder="Search employee by name or email..."
+                      state={errors[field.name] ? "error" : "default"}
+                      aria-describedby={
+                        errors[field.name] ? `${field.name}-error` : undefined
+                      }
+                      aria-invalid={!!errors[field.name]}
+                    />
+                    <button
+                      type="button"
+                      onClick={recommendEmployees}
+                      disabled={isRecommending || !formData.title}
+                      className="recommend-button"
+                      title="AI Recommend Employee"
+                      aria-label="Get AI employee recommendation"
+                    >
+                      {isRecommending ? (
+                        <span className="recommend-spinner">⏳</span>
+                      ) : (
+                        <span className="recommend-star">⭐</span>
+                      )}
+                    </button>
+                  </div>
                   {employeeSearch && filteredEmployees.length > 0 && (
                     <ul className="dropdown-list">
                       {filteredEmployees.map((emp) => (
@@ -307,7 +399,9 @@ const TaskForm = forwardRef<TaskFormRef, {}>((_, ref) => {
                           key={emp.id}
                           onClick={() => {
                             setEmployeeSearch(emp.name);
-                            const event = { target: { name: field.name, value: emp.id } } as React.ChangeEvent<HTMLInputElement>;
+                            const event = {
+                              target: { name: field.name, value: emp.id },
+                            } as React.ChangeEvent<HTMLInputElement>;
                             handleInputChange(event);
                           }}
                           className="dropdown-item-custom"
@@ -330,13 +424,19 @@ const TaskForm = forwardRef<TaskFormRef, {}>((_, ref) => {
                   value={formData[field.name as keyof FormData] as string}
                   onChange={handleInputChange}
                   required={field.required}
-                  state={errors[field.name] ? 'error' : 'default'}
-                  aria-describedby={errors[field.name] ? `${field.name}-error` : undefined}
+                  state={errors[field.name] ? "error" : "default"}
+                  aria-describedby={
+                    errors[field.name] ? `${field.name}-error` : undefined
+                  }
                   aria-invalid={!!errors[field.name]}
                 />
               )}
               {errors[field.name] && (
-                <p id={`${field.name}-error`} className="form-error" role="alert">
+                <p
+                  id={`${field.name}-error`}
+                  className="form-error"
+                  role="alert"
+                >
                   {errors[field.name]}
                 </p>
               )}
@@ -357,7 +457,7 @@ const TaskForm = forwardRef<TaskFormRef, {}>((_, ref) => {
               disabled={isSubmitting}
               aria-label="Submit task form"
             >
-              {isSubmitting ? 'Submitting...' : 'Submit'}
+              {isSubmitting ? "Submitting..." : "Submit"}
             </Button>
           </div>
         </form>
@@ -366,6 +466,6 @@ const TaskForm = forwardRef<TaskFormRef, {}>((_, ref) => {
   );
 });
 
-TaskForm.displayName = 'TaskForm';
+TaskForm.displayName = "TaskForm";
 
 export default TaskForm;

@@ -1,13 +1,22 @@
-'use client';
+"use client";
 
-import React from 'react';
-import { useNavigationContext } from '@/lib/context/NavigationContext';
-import { NavigationLinks } from '@/app/components/NavigationLinks/NavigationLinks';
+import React from "react";
+import {
+  useNavigationContext,
+  type Section,
+} from "@/lib/context/NavigationContext";
+import { NavigationLinks } from "@/app/components/NavigationLinks/NavigationLinks";
 
 export function Drawer() {
-  const { activeSection, setActiveSection, isDrawerOpen, isMobile, closeDrawer } = useNavigationContext();
+  const {
+    activeSection,
+    setActiveSection,
+    isDrawerOpen,
+    isMobile,
+    closeDrawer,
+  } = useNavigationContext();
 
-  const handleSectionChange = (section: 'employees' | 'projects' | 'tasks' | 'ai') => {
+  const handleSectionChange = (section: Section) => {
     setActiveSection(section);
     closeDrawer();
   };
@@ -23,19 +32,22 @@ export function Drawer() {
   return (
     <>
       <div
-        className={`drawer-backdrop ${isDrawerOpen ? 'drawer-backdrop-visible' : ''}`}
+        className={`drawer-backdrop ${isDrawerOpen ? "drawer-backdrop-visible" : ""}`}
         onClick={handleBackdropClick}
         aria-hidden="true"
       />
       <div
-        className={`drawer ${isDrawerOpen ? 'drawer-open' : ''}`}
+        className={`drawer ${isDrawerOpen ? "drawer-open" : ""}`}
         id="mobile-drawer"
         role="dialog"
         aria-modal="true"
         aria-label="Mobile navigation menu"
       >
         <nav>
-          <NavigationLinks activeSection={activeSection} onSectionChange={handleSectionChange} />
+          <NavigationLinks
+            activeSection={activeSection}
+            onSectionChange={handleSectionChange}
+          />
         </nav>
       </div>
     </>

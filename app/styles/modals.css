@@ -119,7 +119,7 @@ dialog[open]::backdrop {
 .modal-overlay {
   position: fixed;
   inset: 0;
-  z-index: 50;
+  z-index: 1000;
   background-color: rgba(0, 0, 0, 0.4);
   backdrop-filter: blur(4px);
 }
@@ -128,10 +128,12 @@ dialog[open]::backdrop {
   position: fixed;
   left: 50%;
   top: 50%;
-  z-index: 50;
+  z-index: 1001;
   display: grid;
   width: 100%;
   max-width: 32rem;
+  max-height: 85vh;
+  overflow-y: auto;
   transform: translate(-50%, -50%);
   gap: 1rem;
   border: 2px solid var(--color-border);
@@ -140,6 +142,82 @@ dialog[open]::backdrop {
   padding: 1.5rem;
   box-shadow: var(--shadow-2xl);
   border-radius: 1.5rem;
+}
+
+/* Dark Mode Overrides for Modal Content */
+[data-theme="dark"] .modal-content {
+  background-color: var(--color-background-secondary);
+  border-color: var(--color-border);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+}
+
+[data-theme="dark"] .modal-header {
+  border-color: var(--color-border);
+}
+
+[data-theme="dark"] .modal-title {
+  color: var(--color-text);
+}
+
+[data-theme="dark"] .modal-description {
+  color: var(--color-text-secondary);
+}
+
+[data-theme="dark"] .modal-close {
+  color: var(--color-text-muted);
+}
+
+[data-theme="dark"] .modal-close:hover {
+  color: var(--color-text);
+  background-color: var(--color-background-tertiary);
+}
+
+/* Dark Mode for form elements inside modals */
+[data-theme="dark"] .modal-content .form-field {
+  background-color: transparent !important;
+}
+
+[data-theme="dark"] .modal-content .form-label {
+  color: var(--color-text) !important;
+}
+
+[data-theme="dark"] .modal-content .form-label .required {
+  color: var(--color-primary) !important;
+}
+
+[data-theme="dark"] .modal-content .input {
+  background-color: var(--color-background-tertiary) !important;
+  border-color: var(--color-border) !important;
+  color: var(--color-text) !important;
+}
+
+[data-theme="dark"] .modal-content .input::placeholder {
+  color: oklch(0.75 0.02 240) !important;
+}
+
+[data-theme="dark"] .modal-content .textarea {
+  background-color: var(--color-background-tertiary) !important;
+  border-color: var(--color-border) !important;
+  color: var(--color-text) !important;
+}
+
+[data-theme="dark"] .modal-content .textarea::placeholder {
+  color: oklch(0.75 0.02 240) !important;
+}
+
+[data-theme="dark"] .modal-content .select-trigger {
+  background-color: var(--color-background-tertiary) !important;
+  border-color: var(--color-border) !important;
+  color: var(--color-text) !important;
+}
+
+[data-theme="dark"] .modal-content .form-error {
+  color: var(--color-error) !important;
+}
+
+[data-theme="dark"] .modal-content .notification {
+  background-color: var(--color-background-tertiary) !important;
+  border-color: var(--color-border) !important;
 }
 
 .modal-close {
@@ -194,6 +272,59 @@ dialog[open]::backdrop {
   .modal-footer {
     flex-direction: row;
     justify-content: flex-end;
+  }
+}
+
+/* Enhanced Modal Responsiveness */
+@media (max-width: 480px) {
+  /* Modal Content - full width on mobile with small margins */
+  .modal {
+    width: calc(100% - var(--spacing-md));
+    max-width: none;
+    padding: var(--spacing-md);
+    border-radius: 12px;
+  }
+
+  /* Modal Header - smaller font on mobile */
+  .modal-header h3 {
+    font-size: var(--text-xl);
+  }
+
+  /* Modal Body - reduced padding on mobile */
+  .modal-body {
+    padding: var(--spacing-sm) 0 var(--spacing-md) 0;
+  }
+
+  /* Modal Content - full width on mobile */
+  .modal-content {
+    width: calc(100% - var(--spacing-md));
+    max-width: none;
+    padding: var(--spacing-md);
+    border-radius: 12px;
+  }
+
+  /* Modal Title - smaller font on mobile */
+  .modal-title {
+    font-size: 1.125rem;
+  }
+
+  /* Modal Close - touch-friendly size */
+  .modal-close {
+    width: 2rem;
+    height: 2rem;
+    min-width: 44px;
+    min-height: 44px;
+  }
+}
+
+@media (min-width: 481px) and (max-width: 768px) {
+  /* Modal Content - adjusted for tablets */
+  .modal {
+    max-width: 450px;
+  }
+
+  .modal-content {
+    max-width: 28rem;
   }
 }
 

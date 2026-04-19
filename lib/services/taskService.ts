@@ -11,7 +11,7 @@ export async function getTasks(filters?: Record<string, unknown>): Promise<Task[
  * @returns The created task record
  */
 export async function createTask(data: Omit<Task, 'id' | 'created_at' | 'updated_at'>): Promise<Task> {
-  console.log(`[TASK_CREATE] Creating task: ${data.title} - ProjectID: ${data.projectId}, Status: ${data.status}, Priority: ${data.priority}`);
+  console.log(`[TASK_CREATE] Creating task: ${data.title} - ProjectID: ${data.projectid}, Status: ${data.status}, Priority: ${data.priority}`);
   const result = await insertToDatabase<Task>('tasks', data);
   console.log(`[TASK_CREATE] Task created successfully: ID=${result.id}, Title=${result.title}`);
   return result;

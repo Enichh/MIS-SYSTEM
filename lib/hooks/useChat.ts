@@ -20,10 +20,10 @@ export interface ChatMessage {
 const MAX_MESSAGE_LENGTH = 5000;
 
 export function useChat() {
-  const [input, setInput] = useState('');
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const [useStreaming, setUseStreaming] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const prevMessagesRef = useRef<string>('');
 
   const {
     messages: vercelMessages,
@@ -50,7 +50,6 @@ export function useChat() {
   });
 
   const [localMessages, setLocalMessages] = useState<ChatMessage[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
 
   useEffect(() => {
     try {
@@ -71,7 +70,8 @@ export function useChat() {
     } catch (error) {
       console.error('Failed to load chat history:', error);
     }
-  }, [setMessages]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (localMessages.length > 0) {
@@ -98,18 +98,24 @@ export function useChat() {
   }, [streamingError]);
 
   useEffect(() => {
-    const mappedMessages: ChatMessage[] = vercelMessages.map((msg) => ({
-      id: msg.id,
-      role: msg.role as 'user' | 'assistant',
-      content: msg.content,
-      timestamp: Date.now(),
-    }));
-    setLocalMessages(mappedMessages);
+    const currentMessagesString = JSON.stringify(vercelMessages.map(m => ({ id: m.id, content: m.content, role: m.role })));
+    
+    // Only update if messages actually changed (compare with previous state)
+    if (currentMessagesString !== prevMessagesRef.current) {
+      prevMessagesRef.current = currentMessagesString;
+      const mappedMessages: ChatMessage[] = vercelMessages.map((msg) => ({
+        id: msg.id,
+        role: msg.role as 'user' | 'assistant',
+        content: msg.content,
+        timestamp: Date.now(),
+      }));
+      setLocalMessages(mappedMessages);
+    }
   }, [vercelMessages]);
 
   const handleSend = useCallback(async (e?: React.FormEvent) => {
     e?.preventDefault();
-    const message = input.trim();
+    const message = vercelInput.trim();
     
     if (!message || isStreaming) return;
     
@@ -120,8 +126,7 @@ export function useChat() {
 
     setError(null);
     handleSubmit(e);
-    setInput('');
-  }, [input, isStreaming, handleSubmit]);
+  }, [vercelInput, isStreaming, handleSubmit]);
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -151,9 +156,8 @@ export function useChat() {
 
   return {
     messages: localMessages,
-    input,
+    input: vercelInput,
     setInput: (value: string) => {
-      setInput(value);
       handleInputChange({ target: { value } } as React.ChangeEvent<HTMLInputElement>);
     },
     isLoading: isStreaming,

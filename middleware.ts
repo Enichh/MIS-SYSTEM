@@ -11,6 +11,10 @@ import { createServerClient, type CookieOptions } from '@supabase/ssr';
 // Public routes that don't require authentication
 const PUBLIC_ROUTES = [
   '/login',
+  '/signup',
+  '/forgot-password',
+  '/reset-password',
+  '/verify-email',
   '/_next',
   '/api/auth',
   '/favicon.ico',
@@ -99,22 +103,8 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(loginUrl);
     }
 
-    // Check if user is an active admin
-    const { data: admin, error: adminError } = await supabase
-      .from('admins')
-      .select('is_active')
-      .eq('id', user.id)
-      .single();
-
-    if (adminError || !admin || !admin.is_active) {
-      // Not an admin or inactive - redirect to login with error
-      const loginUrl = new URL('/login', request.url);
-      loginUrl.searchParams.set('error', 'access_denied');
-      await supabase.auth.signOut();
-      return NextResponse.redirect(loginUrl);
-    }
-
-    // User is authenticated and is an active admin - allow access
+    // User is authenticated - allow access
+    // Admin status is checked client-side by useAuth hook
     return response;
   } catch (error) {
     console.error('Middleware auth error:', error);

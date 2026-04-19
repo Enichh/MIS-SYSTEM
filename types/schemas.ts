@@ -18,8 +18,8 @@ export const ProjectSchema = z.object({
   status: z.enum(['active', 'completed', 'on_hold']),
   priority: z.enum(['high', 'medium', 'low']),
   progress: z.number().int().min(0).max(100).default(0),
-  startDate: z.string().optional(),
-  endDate: z.string().optional(),
+  startdate: z.string().optional(),
+  enddate: z.string().optional(),
   created_at: z.string(),
   updated_at: z.string(),
 });
@@ -31,9 +31,9 @@ export const TaskSchema = z.object({
   status: z.enum(['completed', 'in_progress', 'pending']),
   priority: z.enum(['high', 'medium', 'low']),
   dependencies: z.array(z.string()).default([]),
-  projectId: z.string().uuid('Project ID must be a valid UUID'),
-  assignedTo: z.string().uuid().nullable(),
-  dueDate: z.string().optional(),
+  projectid: z.string().uuid('Project ID must be a valid UUID'),
+  assignedto: z.string().uuid().nullable(),
+  duedate: z.string().optional(),
   created_at: z.string(),
   updated_at: z.string(),
 });

@@ -58,3 +58,26 @@
 .drawer-chat .mb-1 {
   margin-bottom: var(--spacing-sm);
 }
+
+/* Dark Mode Overrides for DrawerChat */
+[data-theme="dark"] .drawer-chat {
+  background-color: var(--color-background-secondary);
+}
+
+[data-theme="dark"] .drawer-chat .chat-modal-header {
+  background-color: var(--color-background-tertiary);
+  border-color: var(--color-border);
+}
+
+[data-theme="dark"] .drawer-chat .chat-modal-header h3 {
+  color: var(--color-primary);
+}
+
+[data-theme="dark"] .drawer-chat .chat-message-list-container {
+  background-color: var(--color-background);
+}
+
+[data-theme="dark"] .drawer-chat .chat-input-container {
+  background-color: var(--color-background-tertiary);
+  border-color: var(--color-border);
+}

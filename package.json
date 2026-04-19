@@ -1,4 +1,4 @@
-{
+  {
   "name": "mis-system",
   "version": "1.0.0",
   "private": true,
@@ -7,7 +7,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "test": "vitest"
+    "test": "vitest",
+    "backfill:embeddings": "npx ts-node scripts/backfill-embeddings.ts"
   },
   "dependencies": {
     "@ai-sdk/openai": "^1.0.0",
@@ -15,6 +16,7 @@
     "@radix-ui/react-dialog": "^1.1.15",
     "@radix-ui/react-select": "^2.2.6",
     "@radix-ui/react-slot": "^1.2.4",
+    "@react-pdf/renderer": "^4.5.1",
     "@supabase/ssr": "^0.10.2",
     "@supabase/supabase-js": "^2.103.3",
     "ai": "^4.0.0",
@@ -36,9 +38,11 @@
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^6.0.1",
     "@vitest/ui": "^4.1.4",
+    "dotenv": "^16.3.1",
     "eslint": "^8.0.0",
     "eslint-config-next": "^15.0.0",
     "jsdom": "^29.0.2",
+    "ts-node": "^10.9.2",
     "typescript": "^5.0.0",
     "vitest": "^4.1.4"
   }

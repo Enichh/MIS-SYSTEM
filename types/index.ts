@@ -16,8 +16,8 @@ export interface Project {
   status: 'active' | 'completed' | 'on_hold';
   priority: 'high' | 'medium' | 'low';
   progress: number;
-  startDate?: string;
-  endDate?: string;
+  startdate?: string;
+  enddate?: string;
   created_at: string;
   updated_at: string;
 }
@@ -29,9 +29,9 @@ export interface Task {
   status: 'completed' | 'in_progress' | 'pending';
   priority: 'high' | 'medium' | 'low';
   dependencies: string[];
-  projectId: string;
-  assignedTo: string | null;
-  dueDate?: string;
+  projectid: string;
+  assignedto: string | null;
+  duedate?: string;
   created_at: string;
   updated_at: string;
 }
@@ -127,3 +127,4 @@ export interface SearchResult<T> {
 }
 
 export * from './auth';
+export * from '../lib/types/reports';

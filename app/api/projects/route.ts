@@ -2,14 +2,21 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { getProjects, createProject } from '@/lib/services/projectService';
 import { handleApiError } from '@/lib/utils/api-handler';
+import { fetchFromDatabasePaginated } from '@/lib/utils/database';
 import { PROJECT_STATUS, PROJECT_PRIORITY } from '@/lib/constants';
 import type { Project, ApiResponse } from '@/types';
 
-// Zod schema for query parameter validation
 const ProjectQuerySchema = z.object({
   id: z.string().optional(),
   status: z.string().optional(),
-  name: z.string().max(100).optional(), // Optional name filter for case-insensitive partial matching
+  priority: z.string().optional(),
+  progressMin: z.coerce.number().min(0).max(100).optional(),
+  progressMax: z.coerce.number().min(0).max(100).optional(),
+  name: z.string().max(100).optional(),
+  dateRangeStart: z.string().optional(),
+  dateRangeEnd: z.string().optional(),
+  page: z.coerce.number().int().min(1).default(1),
+  limit: z.coerce.number().int().min(1).max(100).default(10),
 });
 
 // Zod schema for project creation
@@ -27,17 +34,14 @@ export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
   try {
-    // Parse query parameters
     const searchParams = request.nextUrl.searchParams;
     const queryParams = Object.fromEntries(searchParams.entries());
 
-    // Validate query parameters
     const validatedParams = ProjectQuerySchema.parse(queryParams);
 
-    // Fetch projects from database with filters
-    const projects = await getProjects(validatedParams);
+    const result = await fetchFromDatabasePaginated<Project>('projects', validatedParams);
 
-    return NextResponse.json(projects, {
+    return NextResponse.json(result, {
       status: 200,
       headers: {
         'Content-Type': 'application/json',

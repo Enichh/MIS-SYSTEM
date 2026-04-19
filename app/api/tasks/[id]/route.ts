@@ -11,9 +11,9 @@ const TaskUpdateSchema = z.object({
   status: z.enum(TASK_STATUS).optional(),
   priority: z.enum(TASK_PRIORITY).optional(),
   dependencies: z.array(z.string()).optional(),
-  projectId: z.string().uuid('Project ID must be a valid UUID').optional(),
-  assignedTo: z.string().uuid().nullable().optional(),
-  dueDate: z.string().optional(),
+  projectid: z.string().uuid('Project ID must be a valid UUID').optional(),
+  assignedto: z.string().uuid().nullable().optional(),
+  duedate: z.string().optional(),
 }).strict();
 
 export const dynamic = 'force-dynamic';

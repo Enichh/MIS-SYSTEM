@@ -43,9 +43,9 @@ export function AuthProvider({ children, initialSession }: AuthProviderProps) {
     const checkSession = async () => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
-        
+
         if (user) {
-          const { data: admin } = await supabase
+          const { data: admin, error: adminError } = await supabase
             .from('admins')
             .select('*')
             .eq('id', user.id)
