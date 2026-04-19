@@ -93,7 +93,7 @@ export async function POST(request: NextRequest) {
         }
 
         result = await updateToDatabase('tasks', payload.taskId as string, {
-          assignedTo: payload.employeeId,
+          assignedto: payload.employeeId,
         });
         break;
       

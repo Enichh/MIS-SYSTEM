@@ -35,7 +35,7 @@ async function buildEnhancedContext(context?: KnowledgeQuery['context'], query?:
         `Project: ${project.name || 'Unknown'} (ID: ${project.id || 'N/A'})`,
         `  Description: ${project.description || 'No description'}`,
         `  Status: ${project.status || 'Unknown'}`,
-        `  Dates: ${project.startDate || 'N/A'} to ${project.endDate || 'N/A'}`
+        `  Dates: ${project.startdate || 'N/A'} to ${project.enddate || 'N/A'}`
       );
     }
   }
@@ -64,9 +64,9 @@ async function buildEnhancedContext(context?: KnowledgeQuery['context'], query?:
         `Task: ${task.title || 'Unknown'} (ID: ${task.id || 'N/A'})`,
         `  Description: ${task.description || 'No description'}`,
         `  Status: ${task.status || 'Unknown'}`,
-        `  Project ID: ${task.projectId || 'N/A'}`,
-        `  Assigned To: ${task.assignedTo || 'Unassigned'}`,
-        `  Due Date: ${task.dueDate || 'No due date'}`
+        `  Project ID: ${task.projectid || 'N/A'}`,
+        `  Assigned To: ${task.assignedto || 'Unassigned'}`,
+        `  Due Date: ${task.duedate || 'No due date'}`
       );
     }
   }
@@ -96,7 +96,7 @@ async function buildEnhancedContext(context?: KnowledgeQuery['context'], query?:
         contextParts.push(`All Tasks (${tasks.length}):`);
         (tasks as any[]).forEach((task) => {
           contextParts.push(
-            `  - ${task.title || 'Unknown'} (ID: ${task.id || 'N/A'}, Status: ${task.status || 'Unknown'}, Assigned To: ${task.assignedTo || 'Unassigned'})`
+            `  - ${task.title || 'Unknown'} (ID: ${task.id || 'N/A'}, Status: ${task.status || 'Unknown'}, Assigned To: ${task.assignedto || 'Unassigned'})`
           );
         });
       } else {

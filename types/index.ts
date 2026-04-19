@@ -5,8 +5,9 @@ export interface Employee {
   role: string;
   department: string;
   skills: string[];
-  created_at: string;
-  updated_at: string;
+  embedding?: number[];
+  created_at: string | null;
+  updated_at: string | null;
 }
 
 export interface Project {
@@ -18,8 +19,9 @@ export interface Project {
   progress: number;
   startdate?: string;
   enddate?: string;
-  created_at: string;
-  updated_at: string;
+  embedding?: number[];
+  created_at: string | null;
+  updated_at: string | null;
 }
 
 export interface Task {
@@ -32,8 +34,9 @@ export interface Task {
   projectid: string;
   assignedto: string | null;
   duedate?: string;
-  created_at: string;
-  updated_at: string;
+  embedding?: number[];
+  created_at: string | null;
+  updated_at: string | null;
 }
 
 export interface ApiResponse {
@@ -60,7 +63,18 @@ export interface KnowledgeResponse {
 export interface EmployeeProject {
   employee_id: string;
   project_id: string;
-  created_at: string;
+  created_at: string | null;
+}
+
+export interface Admin {
+  id: string;
+  email: string;
+  full_name: string;
+  role: 'admin' | 'super_admin';
+  is_active: boolean;
+  last_login_at?: string | null;
+  created_at: string | null;
+  updated_at: string | null;
 }
 
 export type ModalSize = 'sm' | 'md' | 'lg' | 'xl';
