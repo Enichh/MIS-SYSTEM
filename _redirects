@@ -1,8 +1,2 @@
-# Static assets - serve directly
-/assets/* /assets/:splat 200
-
-# Files with extensions - serve directly (preserves full path)
-/*.* /:splat 200
-
-# Catch-all for SPA routing
-/* /index.html 200
+# Next.js App Router handles its own routing
+# No custom redirects needed
