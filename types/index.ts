@@ -5,7 +5,7 @@ export interface Employee {
   role: string;
   department: string;
   skills: string[];
-  embedding?: number[];
+  embedding?: number[] | null;
   created_at: string | null;
   updated_at: string | null;
 }
@@ -19,7 +19,7 @@ export interface Project {
   progress: number;
   startdate?: string;
   enddate?: string;
-  embedding?: number[];
+  embedding?: number[] | null;
   created_at: string | null;
   updated_at: string | null;
 }
@@ -34,7 +34,7 @@ export interface Task {
   projectid: string;
   assignedto: string | null;
   duedate?: string;
-  embedding?: number[];
+  embedding?: number[] | null;
   created_at: string | null;
   updated_at: string | null;
 }
