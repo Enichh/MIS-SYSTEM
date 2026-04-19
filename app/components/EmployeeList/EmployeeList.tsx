@@ -385,7 +385,7 @@ export default function EmployeeList({ isActive = true }: EmployeeListProps) {
         entityType="Employee"
         variant="danger"
       />
-      <EmployeeForm ref={employeeFormRef} />
+      <EmployeeForm ref={employeeFormRef} onSuccess={loadEmployees} />
     </>
   );
 }

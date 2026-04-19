@@ -517,7 +517,7 @@ export default function TaskList({ isActive = true }: TaskListProps) {
         entityType="Task"
         variant="danger"
       />
-      <TaskForm ref={taskFormRef} />
+      <TaskForm ref={taskFormRef} onSuccess={loadData} />
     </>
   );
 }

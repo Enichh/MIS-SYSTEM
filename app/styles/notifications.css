@@ -10,9 +10,15 @@
   padding: 1rem 1.5rem;
   border-radius: 4px;
   font-weight: var(--heading-weight);
-  z-index: 2000;
+  z-index: 9999;
   animation: slideInRight 0.3s ease;
   max-width: 400px;
+  /* Ensure notification escapes any containing block (modal transforms) */
+  transform: none;
+  isolation: isolate;
+  contain: layout paint;
+  /* Force viewport positioning even inside transformed ancestors */
+  position: fixed !important;
 }
 
 .notification.hidden {
@@ -20,21 +26,21 @@
 }
 
 /* Notification Variants */
-.notification.success {
+.notification-success {
   background-color: var(--color-success);
   color: var(--color-background);
   border: 2px solid var(--color-success);
   box-shadow: 0 0 20px rgba(0, 255, 0, 0.3);
 }
 
-.notification.error {
+.notification-error {
   background-color: var(--color-error);
   color: var(--color-text);
   border: 2px solid var(--color-error);
   box-shadow: 0 0 20px rgba(255, 0, 0, 0.3);
 }
 
-.notification.warning {
+.notification-warning {
   background-color: var(--color-warning);
   color: var(--color-background);
   border: 2px solid var(--color-warning);

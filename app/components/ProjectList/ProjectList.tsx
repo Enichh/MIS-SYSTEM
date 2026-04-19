@@ -471,7 +471,7 @@ export default function ProjectList({ isActive = true }: ProjectListProps) {
         entityType="Project"
         variant="danger"
       />
-      <ProjectForm ref={projectFormRef} />
+      <ProjectForm ref={projectFormRef} onSuccess={loadProjects} />
     </>
   );
 }
