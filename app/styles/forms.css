@@ -1,807 +1,150 @@
 /* Form Components Module
- * Form fields, labels, inputs, textareas, selects, and dropdown components
+ * Refactored for Supabase Design System
  */
 
-/* Form Field */
 .form-field {
-  margin-bottom: var(--spacing-md);
-  position: relative;
+  margin-bottom: var(--spacing-24);
+  display: flex;
+  flex-direction: column;
+  gap: var(--spacing-8);
 }
 
-/* Form Label */
 .form-label {
-  display: block;
-  font-size: var(--text-sm);
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text);
-  margin-bottom: var(--spacing-xs);
-  letter-spacing: 0.025em;
+  font-family: var(--font-circular);
+  font-size: var(--text-nav);
+  font-weight: 500;
+  color: var(--light-gray);
 }
 
-.form-label .required {
-  color: var(--color-error);
-  margin-left: 0.25rem;
-  font-weight: 700;
-}
-
-/* Form Input, Textarea, and Select - Base Styles */
 .form-input,
 .form-textarea,
-.form-select {
+.form-select,
+.select-trigger,
+.input {
   width: 100%;
-  padding: var(--spacing-md);
-  border: 2px solid var(--color-border);
-  border-radius: 8px;
-  background-color: var(--color-background-secondary);
-  color: var(--color-text);
-  font-family: var(--font-family);
-  font-size: var(--text-base);
+  padding: 8px 12px;
+  background-color: var(--near-black);
+  border: 1px solid var(--border-dark);
+  border-radius: var(--radius-sm);
+  color: var(--off-white);
+  font-family: var(--font-circular);
+  font-size: var(--text-nav);
   transition: all var(--transition-base);
-  box-shadow: var(--shadow-sm);
-  min-height: 44px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
 }
 
 .form-input:hover,
 .form-textarea:hover,
-.form-select:hover {
-  border-color: var(--color-primary);
-  background-color: var(--color-background);
-  box-shadow: var(--shadow-md);
-  transform: translateY(-1px);
+.form-select:hover,
+.select-trigger:hover,
+.input:hover {
+  border-color: var(--mid-border);
+  background-color: var(--dark-border);
 }
 
 .form-input:focus,
 .form-textarea:focus,
-.form-select:focus {
+.form-select:focus,
+.select-trigger:focus,
+.input:focus-visible {
   outline: none;
-  border-color: var(--color-primary);
-  box-shadow:
-    0 0 0 3px hsl(var(--color-primary) / 0.2),
-    var(--shadow-md);
-  background-color: var(--color-background);
-  transform: translateY(-1px);
+  border-color: var(--supabase-green);
+  box-shadow: 0 0 0 2px rgba(62, 207, 142, 0.1);
 }
 
-.form-input.error,
-.form-textarea.error,
-.form-select.error {
-  border-color: var(--color-error);
-  background-color: hsl(25 60% 55% / 0.05);
+.form-input::placeholder,
+.form-textarea::placeholder,
+.input::placeholder {
+  color: var(--mid-gray);
 }
 
-.form-input.error:focus,
-.form-textarea.error:focus,
-.form-select.error:focus {
-  box-shadow: 0 0 0 4px hsl(25 60% 55% / 0.2);
-}
-
-/* Form Textarea Specific */
-.form-textarea {
-  resize: vertical;
-  min-height: 4rem;
-  line-height: 1.6;
-}
-
-/* Form Select Specific */
-.form-select {
-  appearance: none;
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23666'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
-  background-repeat: no-repeat;
-  background-position: right 1rem center;
-  background-size: 1.25rem;
-  padding-right: 3rem;
-  cursor: pointer;
-}
-
-/* Form Error Message */
+/* Form Error */
 .form-error {
-  margin-top: 0.5rem;
-  font-size: 0.8125rem;
-  color: var(--color-error);
-  font-weight: 600;
-  display: flex;
-  align-items: center;
-  gap: 0.375rem;
-  animation: slideDown 0.2s ease;
+  margin-top: var(--spacing-8);
+  font-family: var(--font-circular);
+  font-size: 12px;
+  color: #ff4d4d;
 }
 
 /* Form Actions */
 .form-actions {
   display: flex;
   justify-content: flex-end;
-  gap: 1rem;
-  margin-top: 2rem;
-  padding-top: 1.75rem;
-  border-top: 2px solid var(--color-border-light);
+  gap: var(--spacing-16);
+  margin-top: var(--spacing-32);
+  padding-top: var(--spacing-24);
+  border-top: 1px solid var(--border-dark);
 }
 
-/* Searchable Dropdown */
-.searchable-dropdown {
-  position: relative;
-}
-
-/* Dropdown List */
-.dropdown-list {
-  position: absolute;
-  top: 100%;
-  left: 0;
-  right: 0;
-  background-color: var(--color-background);
-  border: 2px solid var(--color-border);
-  border-radius: 12px;
-  box-shadow: var(--shadow-lg);
-  max-height: 200px;
-  overflow-y: auto;
-  z-index: 10;
+/* Dropdown (Radix & Custom) */
+.dropdown-list, .select-content {
+  background-color: var(--near-black);
+  border: 1px solid var(--border-dark);
+  border-radius: var(--radius-md);
   margin-top: 4px;
-  list-style: none;
-  padding: 0.5rem 0;
-  animation: fadeIn 0.2s ease;
-}
-
-/* Dropdown Item */
-.dropdown-item {
-  padding: 0.75rem 1rem;
-  cursor: pointer;
-  transition: all var(--transition-base);
-  border-bottom: 1px solid var(--color-border-light);
-}
-
-.dropdown-item:last-child {
-  border-bottom: none;
-}
-
-.dropdown-item:hover {
-  background-color: var(--color-background-secondary);
-  border-color: var(--color-primary);
-}
-
-/* No Results */
-.no-results {
-  padding: 1rem;
-  color: var(--color-text-muted);
-  font-style: italic;
-  text-align: center;
-}
-
-/* Dark Mode Overrides for Form Components */
-[data-theme="dark"] .form-input,
-[data-theme="dark"] .form-textarea,
-[data-theme="dark"] .form-select {
-  background-color: var(--color-background-tertiary);
-  border-color: var(--color-border);
-  color: var(--color-text);
-}
-
-[data-theme="dark"] .form-input:hover,
-[data-theme="dark"] .form-textarea:hover,
-[data-theme="dark"] .form-select:hover {
-  background-color: var(--color-background-secondary);
-  border-color: var(--color-primary);
-  color: var(--color-text);
-}
-
-[data-theme="dark"] .form-input:focus,
-[data-theme="dark"] .form-textarea:focus,
-[data-theme="dark"] .form-select:focus {
-  background-color: var(--color-background-secondary);
-  border-color: var(--color-primary);
-  color: var(--color-text);
-}
-
-[data-theme="dark"] .form-input::placeholder,
-[data-theme="dark"] .form-textarea::placeholder {
-  color: oklch(0.75 0.02 240);
-}
-
-[data-theme="dark"] .form-select {
-  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%23aaa'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
-}
-
-[data-theme="dark"] .form-label {
-  color: var(--color-text);
-}
-
-[data-theme="dark"] .form-error {
-  color: var(--color-error);
-}
-
-[data-theme="dark"] .dropdown-list {
-  background-color: var(--color-background-tertiary);
-  border-color: var(--color-border);
-}
-
-[data-theme="dark"] .dropdown-item:hover {
-  background-color: var(--color-background-secondary);
-}
-
-/* Semantic Input Component Classes */
-.input {
-  display: flex;
-  width: 100%;
-  border-radius: 0.5rem;
-  border: 2px solid var(--color-border);
-  background-color: var(--color-background);
-  padding: 0.75rem;
-  font-size: 1rem;
-  color: var(--color-text);
-  box-shadow: var(--shadow-sm);
-  transition: all var(--transition-base);
-}
-
-.input:hover {
-  border-color: var(--color-primary);
-}
-
-.input:focus-visible {
-  outline: none;
-  box-shadow: var(--focus-ring);
-  border-color: var(--color-primary);
-}
-
-.input:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
-.input::file-selector-button {
-  border: 0;
-  background: transparent;
-  font-size: 0.875rem;
-  font-weight: var(--font-weight-medium);
-  color: var(--color-text);
-}
-
-.input::placeholder {
-  color: var(--color-text-muted);
-}
-
-[data-theme="dark"] .input::placeholder {
-  color: oklch(0.75 0.02 240);
-}
-
-/* Input Sizes */
-.input-sm {
-  height: 2.25rem;
-  padding: 0 0.75rem;
-  font-size: 0.875rem;
-}
-
-.input-md {
-  height: 2.75rem;
-  padding: 0 0.75rem;
-  font-size: 1rem;
-}
-
-.input-lg {
-  height: 3rem;
-  padding: 0 1rem;
-  font-size: 1.125rem;
-}
-
-/* Input States */
-.input-error {
-  border-color: var(--color-error);
-}
-
-.input-error:focus-visible {
-  box-shadow: 0 0 0 4px hsl(var(--color-error) / 0.2);
-}
-
-/* Semantic Select Component Classes (Radix Select) */
-.select-trigger {
-  display: flex;
-  height: 2.25rem;
-  width: 100%;
-  align-items: center;
-  justify-content: space-between;
-  white-space: nowrap;
-  border-radius: 0.375rem;
-  border: 2px solid var(--color-border);
-  background-color: transparent;
-  padding: 0 0.75rem;
-  font-size: 0.875rem;
-  box-shadow: var(--shadow-sm);
-}
-
-.select-trigger:focus-visible {
-  outline: none;
-  box-shadow: var(--focus-ring);
-}
-
-.select-trigger:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
-.select-trigger[data-placeholder] {
-  color: var(--color-text-muted);
-}
-
-[data-theme="dark"] .select-trigger[data-placeholder] {
-  color: oklch(0.75 0.02 240);
-}
-
-.select-content {
-  position: relative;
-  z-index: 2000;
-  max-height: var(--radix-select-content-available-height);
-  min-width: 8rem;
-  overflow-y: auto;
-  overflow-x: hidden;
-  border-radius: 0.375rem;
-  border: 2px solid var(--color-border);
-  background-color: var(--color-background);
-  color: var(--color-text);
-  box-shadow: var(--shadow-md);
-}
-
-.select-viewport {
-  padding: 0.25rem;
-}
-
-.select-label {
-  padding: 0.375rem 0.5rem;
-  font-size: 0.875rem;
-  font-weight: var(--font-weight-semibold);
-}
-
-.select-item {
-  position: relative;
-  display: flex;
-  width: 100%;
-  cursor: default;
-  user-select: none;
-  align-items: center;
-  border-radius: 0.125rem;
-  padding: 0.375rem 0.5rem;
-  padding-right: 2rem;
-  font-size: 0.875rem;
-  outline: none;
-}
-
-.select-item:focus {
-  background-color: var(--color-background-secondary);
-  color: var(--color-text);
-}
-
-.select-item[data-disabled] {
-  pointer-events: none;
-  opacity: 0.5;
-}
-
-.select-item-indicator {
-  position: absolute;
-  right: 0.5rem;
-  display: flex;
-  height: 0.875rem;
-  width: 0.875rem;
-  align-items: center;
-  justify-content: center;
-}
-
-.select-separator {
-  margin: -0.25rem 0;
-  height: 1px;
-  background-color: var(--color-border-light);
-}
-
-.select-scroll-button {
-  display: flex;
-  cursor: default;
-  align-items: center;
-  justify-content: center;
-  padding: 0.25rem;
-}
-
-/* Semantic Textarea Component Classes */
-.textarea {
-  display: flex;
-  min-height: 3.75rem;
-  width: 100%;
-  border-radius: 0.375rem;
-  border: 2px solid var(--color-border);
-  background-color: transparent;
-  padding: 0.5rem 0.75rem;
-  font-size: 1rem;
-  box-shadow: var(--shadow-sm);
-}
-
-.textarea::placeholder {
-  color: var(--color-text-muted);
-}
-
-[data-theme="dark"] .textarea::placeholder {
-  color: oklch(0.75 0.02 240);
-}
-
-/* Dark Mode Overrides for Forms in Modals/Drawers */
-[data-theme="dark"] .form-field {
-  background-color: transparent;
-}
-
-[data-theme="dark"] .form-label {
-  color: var(--color-text);
-}
-
-[data-theme="dark"] .form-label .required {
-  color: var(--color-primary);
-}
-
-[data-theme="dark"] .form-error {
-  color: var(--color-error);
-}
-
-[data-theme="dark"] .form-actions {
-  background-color: transparent;
-}
-
-[data-theme="dark"] .dropdown-list {
-  background-color: var(--color-background-tertiary);
-  border-color: var(--color-border);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-[data-theme="dark"] .dropdown-item-custom {
-  color: var(--color-text);
-  border-color: var(--color-border);
-}
-
-[data-theme="dark"] .dropdown-item-custom:hover {
-  background-color: var(--color-background-secondary);
-  color: var(--color-text);
-}
-
-[data-theme="dark"] .dropdown-item-name {
-  color: var(--color-text);
-}
-
-[data-theme="dark"] .dropdown-item-email {
-  color: var(--color-text-secondary);
-}
-
-[data-theme="dark"] .no-results {
-  color: var(--color-text-secondary);
-}
-
-/* Enhanced Dark Mode for Input/Textarea/Select in Modals */
-[data-theme="dark"] .input {
-  background-color: var(--color-background-tertiary) !important;
-  border-color: var(--color-border) !important;
-  color: var(--color-text) !important;
-}
-
-[data-theme="dark"] .input:hover {
-  background-color: var(--color-background-secondary) !important;
-  border-color: var(--color-border-light) !important;
-}
-
-[data-theme="dark"] .input:focus {
-  background-color: var(--color-background-secondary) !important;
-  border-color: var(--color-primary) !important;
-  color: var(--color-text) !important;
-}
-
-[data-theme="dark"] .input::placeholder {
-  color: oklch(0.75 0.02 240) !important;
-}
-
-[data-theme="dark"] .input-error {
-  border-color: var(--color-error) !important;
-  background-color: var(--color-background-tertiary) !important;
-}
-
-[data-theme="dark"] .textarea {
-  background-color: var(--color-background-tertiary) !important;
-  border-color: var(--color-border) !important;
-  color: var(--color-text) !important;
-}
-
-[data-theme="dark"] .textarea:hover {
-  background-color: var(--color-background-secondary) !important;
-  border-color: var(--color-border-light) !important;
-}
-
-[data-theme="dark"] .textarea:focus {
-  background-color: var(--color-background-secondary) !important;
-  border-color: var(--color-primary) !important;
-  color: var(--color-text) !important;
-}
-
-[data-theme="dark"] .select-trigger {
-  background-color: var(--color-background-tertiary) !important;
-  border-color: var(--color-border) !important;
-  color: var(--color-text) !important;
-}
-
-[data-theme="dark"] .select-trigger:hover {
-  background-color: var(--color-background-secondary) !important;
-  border-color: var(--color-border-light) !important;
-}
-
-[data-theme="dark"] .select-trigger:focus {
-  background-color: var(--color-background-secondary) !important;
-  border-color: var(--color-primary) !important;
-  color: var(--color-text) !important;
-}
-
-[data-theme="dark"] .select-content {
-  background-color: var(--color-background-tertiary) !important;
-  border-color: var(--color-border) !important;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-}
-
-[data-theme="dark"] .select-item {
-  color: var(--color-text) !important;
-}
-
-[data-theme="dark"] .select-item:hover {
-  background-color: var(--color-background-secondary) !important;
-  color: var(--color-text) !important;
-}
-
-[data-theme="dark"] .select-item-indicator {
-  color: var(--color-primary) !important;
-}
-
-/* Dark Mode for Notifications in Forms */
-[data-theme="dark"] .notification {
-  background-color: var(--color-background-tertiary) !important;
-  border-color: var(--color-border) !important;
-  color: var(--color-text) !important;
-}
-
-[data-theme="dark"] .notification-success {
-  background-color: var(
-    --color-success-light,
-    rgba(34, 197, 94, 0.15)
-  ) !important;
-  color: var(--color-success) !important;
-  border-color: var(--color-success) !important;
-}
-
-[data-theme="dark"] .notification-error {
-  background-color: var(
-    --color-error-light,
-    rgba(239, 68, 68, 0.15)
-  ) !important;
-  color: var(--color-error) !important;
-  border-color: var(--color-error) !important;
-}
-
-/* Global dark mode overrides for all form elements (for portals and modals) */
-[data-theme="dark"] .form-field {
-  background-color: transparent !important;
-}
-
-[data-theme="dark"] .form-label {
-  color: var(--color-text) !important;
-}
-
-[data-theme="dark"] .form-label .required {
-  color: var(--color-primary) !important;
-}
-
-[data-theme="dark"] .form-error {
-  color: var(--color-error) !important;
-}
-
-[data-theme="dark"] .form-actions {
-  background-color: transparent !important;
-}
-
-/* Dark Mode for Radix UI Select Portal (dropdown menu) */
-[data-theme="dark"] [data-radix-select-content] {
-  background-color: var(--color-background-tertiary) !important;
-  border-color: var(--color-border) !important;
-  color: var(--color-text) !important;
-}
-
-[data-theme="dark"] [data-radix-select-item] {
-  color: var(--color-text) !important;
-}
-
-[data-theme="dark"] [data-radix-select-item]:hover,
-[data-theme="dark"] [data-radix-select-item][data-highlighted] {
-  background-color: var(--color-background-secondary) !important;
-  color: var(--color-text) !important;
-}
-
-[data-theme="dark"] [data-radix-select-item-indicator] {
-  color: var(--color-primary) !important;
-}
-
-[data-theme="dark"] [data-radix-select-scroll-button] {
-  background-color: var(--color-background-tertiary) !important;
-  color: var(--color-text) !important;
-}
-
-[data-theme="dark"] [data-radix-select-viewport] {
-  background-color: var(--color-background-tertiary) !important;
-}
-
-.textarea:focus-visible {
-  outline: none;
-  box-shadow: var(--focus-ring);
-}
-
-.textarea:disabled {
-  cursor: not-allowed;
-  opacity: 0.5;
-}
-
-@media (min-width: 768px) {
-  .textarea {
-    font-size: 0.875rem;
-  }
-}
-
-/* Notification Styles */
-.notification {
-  margin-bottom: var(--spacing-md);
-  padding: var(--spacing-sm);
-  border-radius: 8px;
-}
-
-.notification-success {
-  background-color: hsl(142 60% 55% / 0.1);
-  color: hsl(142 60% 40%);
-}
-
-.notification-error {
-  background-color: hsl(25 60% 55% / 0.1);
-  color: hsl(25 60% 40%);
-}
-
-/* Dropdown Item Styles */
-.dropdown-item-custom {
-  padding: var(--spacing-sm) var(--spacing-md);
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.dropdown-item, .select-item {
+  padding: 8px 12px;
+  font-family: var(--font-circular);
+  font-size: var(--text-nav);
+  color: var(--light-gray);
   cursor: pointer;
   transition: all var(--transition-base);
 }
 
-.dropdown-item-custom:hover {
-  background-color: var(--color-background-secondary);
-}
-
-.dropdown-item-name {
-  font-weight: var(--font-weight-semibold);
-}
-
-.dropdown-item-email {
-  font-size: var(--text-sm);
-  color: var(--color-text-secondary);
-}
-
-/* Warning Variant */
-.btn-warning {
-  background-color: hsl(38 92% 50%);
-  color: white;
-}
-
-.btn-warning:hover {
-  background-color: hsl(38 92% 45%);
-}
-
-/* Recommend Button Styling */
-.recommend-button {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 42px;
-  height: 42px;
-  padding: 0;
-  background: linear-gradient(135deg, #ffd700 0%, #ffb700 100%);
-  border: 2px solid #e6a700;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  flex-shrink: 0;
-}
-
-.recommend-button:hover:not(:disabled) {
-  background: linear-gradient(135deg, #ffdb4d 0%, #ffc933 100%);
-  border-color: #d49800;
-  transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(255, 183, 0, 0.3);
-}
-
-.recommend-button:active:not(:disabled) {
-  transform: translateY(0);
-  box-shadow: 0 2px 6px rgba(255, 183, 0, 0.3);
-}
-
-.recommend-button:disabled {
-  opacity: 0.5;
-  cursor: not-allowed;
-  background: linear-gradient(135deg, #ccc 0%, #bbb 100%);
-  border-color: #999;
-}
-
-.recommend-star {
-  font-size: 20px;
-  line-height: 1;
-  animation: star-pulse 2s ease-in-out infinite;
-}
-
-@keyframes star-pulse {
-  0%,
-  100% {
-    transform: scale(1);
-  }
-  50% {
-    transform: scale(1.1);
-  }
-}
-
-.recommend-spinner {
-  font-size: 18px;
-  line-height: 1;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-/* Dark mode for recommend button */
-[data-theme="dark"] .recommend-button {
-  background: linear-gradient(135deg, #ffd700 0%, #ffb700 100%);
-  border-color: #e6a700;
-}
-
-[data-theme="dark"] .recommend-button:hover:not(:disabled) {
-  background: linear-gradient(135deg, #ffdb4d 0%, #ffc933 100%);
-  border-color: #d49800;
-  box-shadow: 0 4px 12px rgba(255, 183, 0, 0.4);
+.dropdown-item:hover, .select-item:focus {
+  background-color: var(--dark-border);
+  color: var(--off-white);
+  outline: none;
 }
 
 /* Recommendation Reason Styling */
 .recommendation-reason {
-  margin-top: var(--spacing-sm);
-  padding: var(--spacing-md);
-  background-color: hsl(142 60% 55% / 0.08);
-  border-left: 4px solid hsl(142 60% 45%);
-  border-radius: 8px;
-  animation: fadeIn 0.3s ease;
+  margin-top: var(--spacing-12);
+  padding: var(--spacing-16);
+  background-color: rgba(62, 207, 142, 0.05);
+  border-left: 2px solid var(--supabase-green);
+  border-radius: var(--radius-sm);
 }
 
 .recommendation-reason-header {
-  font-size: var(--text-sm);
-  font-weight: var(--font-weight-semibold);
-  color: hsl(142 60% 35%);
-  margin-bottom: var(--spacing-xs);
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-}
-
-.recommendation-reason-header::before {
-  content: "💡";
-  font-size: 1rem;
+  font-family: var(--font-circular);
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--supabase-green);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: var(--spacing-4);
 }
 
 .recommendation-reason-text {
-  font-size: var(--text-sm);
-  color: var(--color-text);
+  font-size: var(--text-nav);
+  color: var(--light-gray);
   line-height: 1.5;
 }
 
-/* Dark mode for recommendation reason */
-[data-theme="dark"] .recommendation-reason {
-  background-color: hsl(142 60% 40% / 0.12);
-  border-left-color: hsl(142 60% 55%);
+/* Specific button in forms */
+.recommend-button {
+  background: var(--near-black);
+  border: 1px solid var(--border-dark);
+  color: var(--supabase-green);
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all var(--transition-base);
 }
 
-[data-theme="dark"] .recommendation-reason-header {
-  color: hsl(142 60% 65%);
-}
-
-[data-theme="dark"] .recommendation-reason-text {
-  color: var(--color-text-secondary);
+.recommend-button:hover {
+  border-color: var(--supabase-green);
+  background-color: var(--dark-border);
 }

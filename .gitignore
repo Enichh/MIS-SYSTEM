@@ -44,3 +44,4 @@ supabase/
 **/*.test.tsx
 **/*.test.js
 **/*.test.jsx
+.aider*

@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { createServerSupabaseClient } from '@/lib/auth/server';
-import { z } from 'zod';
+import { NextRequest, NextResponse } from "next/server";
+import { createServerSupabaseClient } from "@/lib/auth/server";
+import { z } from "zod";
 
 // ============================================================================
 // Login API Route
@@ -11,8 +11,8 @@ import { z } from 'zod';
 // ============================================================================
 
 const LoginRequestSchema = z.object({
-  email: z.string().email('Invalid email format'),
-  password: z.string().min(8, 'Password must be at least 8 characters'),
+  email: z.string().email("Invalid email format"),
+  password: z.string().min(8, "Password must be at least 8 characters"),
 });
 
 export async function POST(request: NextRequest) {
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     const validatedData = LoginRequestSchema.parse(body);
 
     const supabase = await createServerSupabaseClient();
-    
+
     const { data, error } = await supabase.auth.signInWithPassword({
       email: validatedData.email,
       password: validatedData.password,
@@ -29,50 +29,55 @@ export async function POST(request: NextRequest) {
 
     if (error) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Invalid email or password',
-          code: 'INVALID_CREDENTIALS'
+        {
+          success: false,
+          error: "Invalid email or password",
+          code: "INVALID_CREDENTIALS",
         },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
     if (!data.user) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Authentication failed',
-          code: 'AUTH_FAILED'
+        {
+          success: false,
+          error: "Authentication failed",
+          code: "AUTH_FAILED",
         },
-        { status: 401 }
+        { status: 401 },
       );
     }
 
     // Check if user is an active admin
     const { data: admin, error: adminError } = await supabase
-      .from('admins')
-      .select('*')
-      .eq('id', data.user.id)
-      .eq('is_active', true)
+      .from("admins")
+      .select("*")
+      .eq("id", data.user.id)
+      .eq("is_active", true)
       .single();
 
     if (adminError || !admin) {
       // Sign out the user if not an admin
       await supabase.auth.signOut();
-      
+
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Access denied. Admin privileges required.',
-          code: 'ACCESS_DENIED'
+        {
+          success: false,
+          error: "Access denied. Admin privileges required.",
+          code: "ACCESS_DENIED",
         },
-        { status: 403 }
+        { status: 403 },
       );
     }
 
+    // Sign out the user after password verification (2FA required)
+    await supabase.auth.signOut();
+
     return NextResponse.json({
       success: true,
+      message: "Password verified. 2FA required.",
+      requires2FA: true,
       admin: {
         id: admin.id,
         email: admin.email,
@@ -83,23 +88,23 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     if (error instanceof z.ZodError) {
       return NextResponse.json(
-        { 
-          success: false, 
-          error: 'Invalid request data',
-          details: error.errors 
+        {
+          success: false,
+          error: "Invalid request data",
+          details: error.errors,
         },
-        { status: 400 }
+        { status: 400 },
       );
     }
 
-    console.error('Login API error:', error);
+    console.error("Login API error:", error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: 'Internal server error',
-        code: 'SERVER_ERROR'
+      {
+        success: false,
+        error: "Internal server error",
+        code: "SERVER_ERROR",
       },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

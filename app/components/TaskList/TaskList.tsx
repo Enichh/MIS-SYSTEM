@@ -19,11 +19,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/app/components/ui/Select/Select";
-import DeleteConfirmation from "@/app/components/confirmation/DeleteConfirmation/DeleteConfirmation";
 import { SearchBar } from "@/app/components/SearchBar/SearchBar";
+import { useConfirmation } from "@/lib/context/ConfirmationContext";
 import TaskForm, {
   type TaskFormRef,
 } from "@/app/components/forms/TaskForm/TaskForm";
+import useSWR, { useSWRConfig } from "swr";
+import { fetcher } from "@/lib/fetcher";
 
 interface TaskListProps {
   isActive?: boolean;
@@ -38,7 +40,6 @@ export default function TaskList({ isActive = true }: TaskListProps) {
   const [searchQuery, setSearchQuery] = useState<string>("");
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const [priorityFilter, setPriorityFilter] = useState<string>("all");
-  const [assignedToFilter, setAssignedToFilter] = useState<string>("all");
   const [projectFilter, setProjectFilter] = useState<string>("all");
   const [aiTaskQuery, setAiTaskQuery] = useState<string>("");
   const [aiFiltering, setAiFiltering] = useState(false);
@@ -50,72 +51,85 @@ export default function TaskList({ isActive = true }: TaskListProps) {
     useState<string>("");
   const [showRecommendations, setShowRecommendations] = useState(false);
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
-  const [deleteConfirmation, setDeleteConfirmation] = useState<{
-    isOpen: boolean;
-    taskId: string | null;
-    taskTitle: string;
-  }>({
-    isOpen: false,
-    taskId: null,
-    taskTitle: "",
-  });
+  const { confirm } = useConfirmation();
   const taskFormRef = useRef<TaskFormRef>(null);
 
-  const loadData = useCallback(async () => {
-    try {
-      setLoading(true);
-      const params = new URLSearchParams();
-      if (searchQuery) params.append("name", searchQuery);
-      if (statusFilter !== "all") params.append("status", statusFilter);
-      if (priorityFilter !== "all") params.append("priority", priorityFilter);
-      if (assignedToFilter !== "all")
-        params.append("assignedto", assignedToFilter);
-      if (projectFilter !== "all") params.append("projectid", projectFilter);
-      params.append("page", currentPage.toString());
-      params.append("limit", "10");
+  const buildTasksUrl = useCallback(() => {
+    const params = new URLSearchParams();
+    if (searchQuery) params.append("name", searchQuery);
+    if (statusFilter !== "all") params.append("status", statusFilter);
+    if (priorityFilter !== "all") params.append("priority", priorityFilter);
+    if (projectFilter !== "all") params.append("projectid", projectFilter);
+    params.append("page", currentPage.toString());
+    params.append("limit", "10");
 
-      const tasksUrl = params.toString()
-        ? `/api/tasks?${params.toString()}`
-        : "/api/tasks?page=1&limit=10";
-      const [tasksResponse, projectsResponse, employeesResponse] =
-        await Promise.all([
-          fetch(tasksUrl),
-          fetch("/api/projects?limit=100"),
-          fetch("/api/employees?limit=100"),
-        ]);
-
-      if (!tasksResponse.ok || !projectsResponse.ok || !employeesResponse.ok) {
-        throw new Error("Failed to fetch data");
-      }
-
-      const tasksData = await tasksResponse.json();
-      const projectsData = await projectsResponse.json();
-      const employeesData = await employeesResponse.json();
-      setTasks(tasksData.data || []);
-      setTotalPages(tasksData.pagination?.totalPages || 1);
-      setTotal(tasksData.pagination?.total || 0);
-      setProjects(projectsData.data || []);
-      setEmployees(employeesData.data || []);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load tasks");
-    } finally {
-      setLoading(false);
-    }
+    return params.toString()
+      ? `/api/tasks?${params.toString()}`
+      : "/api/tasks?page=1&limit=10";
   }, [
     searchQuery,
     statusFilter,
     priorityFilter,
-    assignedToFilter,
     projectFilter,
     currentPage,
   ]);
 
+  const { data: tasksData, error: tasksError, isLoading: tasksLoading } = useSWR(
+    isActive && !aiFiltering ? buildTasksUrl() : null,
+    fetcher,
+    { dedupingInterval: 2000, revalidateOnFocus: false }
+  );
+
+  const { data: projectsData, error: projectsError, isLoading: projectsLoading } = useSWR(
+    isActive ? "/api/projects?limit=100" : null,
+    fetcher,
+    { dedupingInterval: 60000, revalidateOnFocus: false }
+  );
+
+  const { data: employeesData, error: employeesError, isLoading: employeesLoading } = useSWR(
+    isActive ? "/api/employees?limit=100" : null,
+    fetcher,
+    { dedupingInterval: 60000, revalidateOnFocus: false }
+  );
+
+  const { mutate: globalMutate } = useSWRConfig();
+
   useEffect(() => {
-    if (isActive) {
-      loadData();
+    setLoading(tasksLoading || projectsLoading || employeesLoading);
+  }, [tasksLoading, projectsLoading, employeesLoading]);
+
+  useEffect(() => {
+    if (tasksData && !aiFiltering) {
+      setTasks(tasksData.data || tasksData);
+      setTotalPages(tasksData.pagination?.totalPages || 1);
+      setTotal(tasksData.pagination?.total || 0);
     }
-  }, [isActive, loadData]);
+  }, [tasksData, aiFiltering]);
+
+  useEffect(() => {
+    if (projectsData) {
+      setProjects(projectsData.data || projectsData);
+    }
+  }, [projectsData]);
+
+  useEffect(() => {
+    if (employeesData) {
+      setEmployees(employeesData.data || employeesData);
+    }
+  }, [employeesData]);
+
+  useEffect(() => {
+    const fetchError = tasksError || projectsError || employeesError;
+    if (fetchError) {
+      setError(fetchError instanceof Error ? fetchError.message : "Failed to load tasks data");
+    } else {
+      setError(null);
+    }
+  }, [tasksError, projectsError, employeesError]);
+
+  const invalidateCache = useCallback(() => {
+    globalMutate((key) => typeof key === "string" && key.startsWith("/api/tasks"));
+  }, [globalMutate]);
 
   const handleSearch = useCallback((query: SearchQuery) => {
     setSearchQuery(query.query);
@@ -207,34 +221,23 @@ export default function TaskList({ isActive = true }: TaskListProps) {
   const projectMap = new Map(projects.map((p) => [p.id, p.name]));
 
   const handleDeleteClick = (task: Task) => {
-    setDeleteConfirmation({
-      isOpen: true,
-      taskId: task.id,
-      taskTitle: task.title,
-    });
-  };
+    confirm({
+      title: "Delete Task",
+      message: `Are you sure you want to delete "${task.title}"? This action cannot be undone.`,
+      variant: "danger",
+      confirmText: "Delete",
+      onConfirm: async () => {
+        const response = await fetch(`/api/tasks/${task.id}`, {
+          method: "DELETE",
+        });
 
-  const handleConfirmDelete = async () => {
-    if (!deleteConfirmation.taskId) return;
+        if (!response.ok) {
+          throw new Error("Failed to delete task");
+        }
 
-    try {
-      const response = await fetch(`/api/tasks/${deleteConfirmation.taskId}`, {
-        method: "DELETE",
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to delete task");
+        invalidateCache();
       }
-
-      setDeleteConfirmation({ isOpen: false, taskId: null, taskTitle: "" });
-      await loadData();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete task");
-    }
-  };
-
-  const handleCancelDelete = () => {
-    setDeleteConfirmation({ isOpen: false, taskId: null, taskTitle: "" });
+    });
   };
 
   if (loading) {
@@ -304,28 +307,7 @@ export default function TaskList({ isActive = true }: TaskListProps) {
               <SelectItem value="low">Low</SelectItem>
             </SelectContent>
           </Select>
-          <Select
-            value={assignedToFilter}
-            onValueChange={(value) => {
-              setAssignedToFilter(value);
-              setCurrentPage(1);
-            }}
-          >
-            <SelectTrigger
-              className="filter-select"
-              aria-label="Filter by assigned to"
-            >
-              <SelectValue placeholder="All Assignees" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All Assignees</SelectItem>
-              {uniqueEmployees.map((emp) => (
-                <SelectItem key={emp.id} value={emp.id}>
-                  {emp.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+
           <Select
             value={projectFilter}
             onValueChange={(value) => {
@@ -509,15 +491,7 @@ export default function TaskList({ isActive = true }: TaskListProps) {
           )}
         </>
       )}
-      <DeleteConfirmation
-        isOpen={deleteConfirmation.isOpen}
-        onConfirm={handleConfirmDelete}
-        onCancel={handleCancelDelete}
-        entityName={deleteConfirmation.taskTitle}
-        entityType="Task"
-        variant="danger"
-      />
-      <TaskForm ref={taskFormRef} onSuccess={loadData} />
+      <TaskForm ref={taskFormRef} onSuccess={invalidateCache} />
     </>
   );
 }

@@ -42,18 +42,22 @@ export async function POST(request: NextRequest) {
     }
 
     let result;
+    let message = 'Quick action executed successfully';
 
     switch (type) {
       case 'create_employee':
         result = await createEmployee(payload as Omit<Employee, 'id' | 'created_at' | 'updated_at'>);
+        message = `Successfully created employee: **${(result as Employee).name}**`;
         break;
 
       case 'create_project':
         result = await createProject(payload as Omit<Project, 'id' | 'created_at' | 'updated_at'>);
+        message = `Successfully created project: **${(result as Project).name}**`;
         break;
 
       case 'create_task':
         result = await createTask(payload as Omit<Task, 'id' | 'created_at' | 'updated_at'>);
+        message = `Successfully created task: **${(result as Task).title}**`;
         break;
       
       case 'assign_employee':
@@ -92,9 +96,14 @@ export async function POST(request: NextRequest) {
           });
         }
 
+        const employee = employees[0] as Employee;
+        const task = tasks[0] as Task;
+
         result = await updateToDatabase('tasks', payload.task_id as string, {
           assignedto: payload.employee_id,
         });
+        
+        message = `Successfully assigned **${employee.name}** to task **${task.title}**`;
         break;
       
       default:
@@ -110,7 +119,7 @@ export async function POST(request: NextRequest) {
 
     const successResponse: ApiResponse = {
       code: 'SUCCESS',
-      message: 'Quick action executed successfully',
+      message,
     };
     
     return NextResponse.json(

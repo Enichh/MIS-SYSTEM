@@ -110,36 +110,35 @@ export default function SignupPage() {
     setIsLoading(true);
 
     try {
-      const supabase = createBrowserSupabaseClient();
-
-      const { data, error: signUpError } = await supabase.auth.signUp({
+      // Create temporary token with user data
+      const tempToken = JSON.stringify({
         email: formData.email.trim(),
         password: formData.password,
-        options: {
-          data: {
-            full_name: formData.fullName.trim(),
-            role: hasExistingAdmins ? "admin" : "super_admin",
-          },
-        },
+        full_name: formData.fullName.trim(),
+        role: hasExistingAdmins ? "admin" : "super_admin",
       });
 
-      if (signUpError) {
-        setError(signUpError.message);
-        return;
+      // Send verification code
+      const response = await fetch("/api/auth/send-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: formData.email.trim(),
+          type: "signup",
+          tempToken,
+        }),
+      });
+
+      const data = await response.json();
+
+      if (data.success) {
+        // Redirect to verification page
+        router.push(
+          `/verify-code?email=${encodeURIComponent(formData.email.trim())}&type=signup&tempToken=${encodeURIComponent(tempToken)}`,
+        );
+      } else {
+        setError(data.error || "Failed to send verification code");
       }
-
-      if (!data.user) {
-        setError("Failed to create account. Please try again.");
-        return;
-      }
-
-      setSuccess(
-        "Account created successfully! Please check your email to verify your account before logging in.",
-      );
-
-      setTimeout(() => {
-        router.push("/login");
-      }, 3000);
     } catch {
       setError("An unexpected error occurred. Please try again.");
     } finally {

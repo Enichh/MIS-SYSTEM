@@ -2,6 +2,11 @@ import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
 import { detectQueryIntent, buildKnowledgeContext } from '@/lib/utils/knowledge';
 import { fetchFromDatabase } from '@/lib/utils/database';
+import { 
+  searchEmployeesWithData, 
+  searchProjectsWithData, 
+  searchTasksWithData 
+} from '@/lib/utils/embeddings';
 import type { KnowledgeQuery, KnowledgeResponse, ApiResponse } from '@/types';
 
 // Zod schema for request body validation
@@ -77,45 +82,39 @@ async function buildEnhancedContext(context?: KnowledgeQuery['context'], query?:
     console.log('DEBUG: Query intent detected:', intent, 'for query:', query);
     
     if (intent === 'employee' && !context?.employee_id) {
-      const employees = await fetchFromDatabase('employees', {});
-      if (employees.length > 0) {
-        contextParts.push(`All Employees (${employees.length}):`);
-        (employees as any[]).forEach((emp) => {
+      const results = await searchEmployeesWithData(query, 5);
+      if (results.length > 0) {
+        contextParts.push(`Relevant Employees (${results.length}):`);
+        results.forEach((emp) => {
           const skills = Array.isArray(emp.skills) ? emp.skills.join(', ') : 'None';
           contextParts.push(
-            `  - ${emp.name || 'Unknown'} (ID: ${emp.id || 'N/A'}, Role: ${emp.role || 'Unknown'}, Department: ${emp.department || 'Unknown'}, Skills: ${skills})`
+            `  - ${emp.name || 'Unknown'} (Role: ${emp.role || 'Unknown'}, Department: ${emp.department || 'Unknown'}, Skills: ${skills})`
           );
         });
       }
     }
 
     if (intent === 'task' && !context?.task_id) {
-      const tasks = await fetchFromDatabase('tasks', {});
-      console.log('DEBUG: Fetched tasks:', tasks);
-      if (tasks.length > 0) {
-        contextParts.push(`All Tasks (${tasks.length}):`);
-        (tasks as any[]).forEach((task) => {
+      const results = await searchTasksWithData(query, 5);
+      if (results.length > 0) {
+        contextParts.push(`Relevant Tasks (${results.length}):`);
+        results.forEach((task) => {
           contextParts.push(
-            `  - ${task.title || 'Unknown'} (ID: ${task.id || 'N/A'}, Status: ${task.status || 'Unknown'}, Assigned To: ${task.assignedto || 'Unassigned'})`
+            `  - ${task.title || 'Unknown'} (Status: ${task.status || 'Unknown'}, Assigned To: ${task.assignedto || 'Unassigned'})`
           );
         });
-      } else {
-        console.log('DEBUG: No tasks found in database');
       }
     }
 
     if (intent === 'project' && !context?.project_id) {
-      const projects = await fetchFromDatabase('projects', {});
-      console.log('DEBUG: Fetched projects:', projects);
-      if (projects.length > 0) {
-        contextParts.push(`All Projects (${projects.length}):`);
-        (projects as any[]).forEach((proj) => {
+      const results = await searchProjectsWithData(query, 5);
+      if (results.length > 0) {
+        contextParts.push(`Relevant Projects (${results.length}):`);
+        results.forEach((proj) => {
           contextParts.push(
-            `  - ${proj.name || 'Unknown'} (ID: ${proj.id || 'N/A'}, Status: ${proj.status || 'Unknown'})`
+            `  - ${proj.name || 'Unknown'} (Status: ${proj.status || 'Unknown'})`
           );
         });
-      } else {
-        console.log('DEBUG: No projects found in database');
       }
     }
   }

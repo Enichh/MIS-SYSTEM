@@ -8,6 +8,8 @@ import { AlertIcon } from "@/app/components/ui/icons/custom/AlertIcon";
 import { ClockIcon } from "@/app/components/ui/icons/custom/ClockIcon";
 import { FolderIcon } from "@/app/components/ui/icons/custom/FolderIcon";
 import { useNavigationContext } from "@/lib/context/NavigationContext";
+import useSWR from "swr";
+import { fetcher } from "@/lib/fetcher";
 
 interface DashboardStats {
   totalEmployees: number;
@@ -46,17 +48,18 @@ export function DashboardDrawer() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  const loadDashboardData = useCallback(async () => {
-    try {
-      setLoading(true);
-      const response = await fetch("/api/dashboard/stats");
+  const { data, error: swrError, isLoading: swrIsLoading } = useSWR(
+    "/api/dashboard/stats",
+    fetcher,
+    { dedupingInterval: 60000, revalidateOnFocus: false }
+  );
 
-      if (!response.ok) {
-        throw new Error("Failed to fetch dashboard data");
-      }
+  useEffect(() => {
+    setLoading(swrIsLoading);
+  }, [swrIsLoading]);
 
-      const data = await response.json();
-
+  useEffect(() => {
+    if (data) {
       setStats({
         totalEmployees: data.employees.total,
         totalProjects: data.projects.total,
@@ -69,22 +72,17 @@ export function DashboardDrawer() {
         pendingTasks: data.tasks.pending,
         highPriorityTasks: data.tasks.highPriority,
       });
-
       setRecentActivity(data.recentActivity || []);
       setPriorityItems(data.priorityItems || []);
       setError(null);
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to load dashboard data",
-      );
-    } finally {
-      setLoading(false);
     }
-  }, []);
+  }, [data]);
 
   useEffect(() => {
-    loadDashboardData();
-  }, [loadDashboardData]);
+    if (swrError) {
+      setError(swrError instanceof Error ? swrError.message : "Failed to load dashboard data");
+    }
+  }, [swrError]);
 
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
@@ -139,26 +137,30 @@ export function DashboardDrawer() {
   return (
     <div className="dashboard-section">
       {/* Welcome Section */}
-      <div className="dashboard-hero">
+      <div className="dashboard-hero modern-hero">
         <div className="dashboard-hero-content">
+
           <div className="dashboard-hero-brand">
-            <span className="dashboard-hero-logo">E</span>
-            <h1 className="dashboard-hero-title">Enosoft</h1>
+            <h1 className="dashboard-hero-title">Welcome to <span className="text-gradient">Enosoft</span></h1>
           </div>
           <p className="dashboard-hero-subtitle">
-            Management Information System
+            Next-Generation Project Management
           </p>
           <p className="dashboard-hero-description">
-            Streamline your workforce, projects, and tasks in one place.
+            Streamline your workforce, projects, and tasks in one centralized interface.
           </p>
+          <div className="hero-actions">
+            <button className="btn btn-primary" onClick={() => setActiveSection("projects")}>
+              View Active Projects
+            </button>
+            <button className="btn btn-secondary" onClick={() => setActiveSection("tasks")}>
+              Manage Tasks
+            </button>
+          </div>
         </div>
-        <div className="dashboard-hero-pattern" aria-hidden="true">
-          <div className="dashboard-hero-dot" />
-          <div className="dashboard-hero-dot" />
-          <div className="dashboard-hero-dot" />
-          <div className="dashboard-hero-dot" />
-          <div className="dashboard-hero-dot" />
-          <div className="dashboard-hero-dot" />
+        <div className="dashboard-hero-visual" aria-hidden="true">
+          <div className="hero-glow-1"></div>
+          <div className="hero-glow-2"></div>
         </div>
       </div>
 

@@ -1,5 +1,5 @@
-  {
-  "name": "mis-system",
+{
+  "name": "enosoft",
   "version": "1.0.0",
   "private": true,
   "scripts": {
@@ -24,16 +24,19 @@
     "clsx": "^2.1.1",
     "lucide-react": "^0.263.1",
     "next": "^15.0.0",
+    "nodemailer": "^8.0.7",
     "react": "^18.3.0",
     "react-dom": "^18.3.0",
     "react-markdown": "^9.1.0",
     "rehype-sanitize": "^6.0.0",
+    "swr": "^2.4.1",
     "zod": "^3.22.0"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
     "@types/node": "^20.0.0",
+    "@types/nodemailer": "^8.0.0",
     "@types/react": "^18.3.0",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^6.0.1",

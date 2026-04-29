@@ -71,21 +71,44 @@ export function NavigationProvider({ children }: { children: ReactNode }) {
 
     const handleChange = (e: MediaQueryListEvent) => {
       setIsMobile(e.matches);
+      // Close drawer and restore scroll when switching to desktop
+      if (!e.matches && isDrawerOpen) {
+        setIsDrawerOpen(false);
+        document.body.style.overflow = "";
+        document.body.classList.remove("drawer-open");
+      }
     };
 
     mediaQuery.addEventListener("change", handleChange);
 
     return () => {
       mediaQuery.removeEventListener("change", handleChange);
+      // Cleanup body styles on unmount
+      document.body.style.overflow = "";
+      document.body.classList.remove("drawer-open");
     };
-  }, []);
+  }, [isDrawerOpen]);
 
   const toggleDrawer = () => {
-    setIsDrawerOpen((prev) => !prev);
+    setIsDrawerOpen((prev) => {
+      const newState = !prev;
+      // Prevent body scroll when drawer is open on mobile
+      if (newState && isMobile) {
+        document.body.style.overflow = "hidden";
+        document.body.classList.add("drawer-open");
+      } else {
+        document.body.style.overflow = "";
+        document.body.classList.remove("drawer-open");
+      }
+      return newState;
+    });
   };
 
   const closeDrawer = () => {
     setIsDrawerOpen(false);
+    // Restore body scroll
+    document.body.style.overflow = "";
+    document.body.classList.remove("drawer-open");
   };
 
   const value: NavigationContextType = {

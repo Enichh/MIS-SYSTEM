@@ -1,271 +1,164 @@
 /* Employee Components Module
- * Employee-specific styles for cards, avatars, and related components
+ * Refactored for Supabase Design System
  */
-
-/* ============================================================================
-   Employee Filters
-   Shared filter styles are in filters.css
-   Employee-specific overrides and additions below
-   ============================================================================ */
 
 /* Filter Container */
 .employee-filters {
   display: flex;
   flex-direction: column;
-  gap: var(--spacing-md);
-  margin-bottom: var(--spacing-lg);
+  gap: var(--spacing-16);
+  margin-bottom: var(--spacing-32);
 }
 
-/* Filter Dropdowns Row */
 .employee-filter-dropdowns {
   display: flex;
-  gap: var(--spacing-md);
+  gap: var(--spacing-16);
   flex-wrap: wrap;
   align-items: center;
 }
 
-/* Filter Select Dropdowns */
 .employee-filter-dropdowns .filter-select {
-  min-width: var(--filter-select-min-width, 160px);
-  flex-shrink: 0;
+  min-width: 180px;
+  background-color: var(--near-black);
+  border: 1px solid var(--border-dark);
+  border-radius: var(--radius-sm);
+  color: var(--off-white);
+  padding: 8px 12px;
+  font-family: var(--font-circular);
 }
 
-/* AI Filter Section */
 .ai-skill-filter {
   display: flex;
-  gap: var(--spacing-sm);
-  margin-top: var(--spacing-sm);
+  gap: var(--spacing-12);
+  margin-top: var(--spacing-8);
 }
 
-/* AI Filter Input */
 .ai-skill-filter .ai-skill-input {
   flex: 1;
-  padding: var(--spacing-sm) var(--spacing-md);
-  border: 1px solid var(--color-border);
-  border-radius: var(--border-radius-md);
-  font-size: var(--text-sm);
-  background-color: var(--color-background);
-  color: var(--color-text);
+  padding: 8px 16px;
+  border: 1px solid var(--border-dark);
+  border-radius: var(--radius-sm);
+  font-size: var(--text-nav);
+  background-color: var(--near-black);
+  color: var(--off-white);
   transition: all var(--transition-base);
-  width: 100%;
-}
-
-.ai-skill-filter .ai-skill-input:hover {
-  border-color: var(--color-border-hover);
+  font-family: var(--font-circular);
 }
 
 .ai-skill-filter .ai-skill-input:focus {
   outline: none;
-  border-color: var(--color-primary);
-  box-shadow: 0 0 0 3px rgba(var(--color-primary-rgb), 0.1);
-}
-
-.ai-skill-filter .ai-skill-input:focus-visible {
-  outline: 2px solid var(--color-primary);
-  outline-offset: 2px;
-}
-
-.ai-skill-filter .ai-skill-input::placeholder {
-  color: var(--color-text-muted);
-}
-
-.ai-skill-filter .ai-skill-input:disabled {
-  background-color: var(--color-muted);
-  cursor: not-allowed;
-  opacity: 0.6;
-}
-
-/* ============================================================================
-   Responsive Design
-   ============================================================================ */
-
-@media (max-width: 768px) {
-  .employee-filter-dropdowns {
-    flex-direction: column;
-    align-items: stretch;
-  }
-
-  .employee-filter-dropdowns .filter-select {
-    min-width: 100%;
-  }
-
-  .ai-skill-filter {
-    flex-direction: column;
-  }
-
-  .ai-skill-filter .ai-skill-input {
-    min-width: 100%;
-  }
-}
-
-@media (max-width: 480px) {
-  .employee-filters {
-    gap: var(--spacing-sm);
-  }
-
-  .employee-filter-dropdowns {
-    gap: var(--spacing-sm);
-  }
-
-  .ai-skill-filter {
-    gap: var(--spacing-xs);
-  }
-}
-
-/* Employee Name */
-.employee-name {
-  font-weight: var(--font-weight-semibold);
-  color: var(--color-text);
-  margin-bottom: 0.25rem;
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  overflow: hidden;
-}
-
-/* Employee Email */
-.employee-email {
-  font-size: var(--text-sm);
-  color: var(--color-text-secondary);
-  word-wrap: break-word;
-  overflow-wrap: break-word;
-  overflow: hidden;
+  border-color: var(--supabase-green);
 }
 
 /* Employee Card */
 .employee-card {
+  background-color: var(--near-black);
+  border: 1px solid var(--border-dark);
+  border-radius: var(--radius-lg);
+  padding: var(--spacing-24);
   transition: all var(--transition-base);
-  border-left: 4px solid transparent;
-  overflow: hidden;
-  width: 100%;
 }
 
 .employee-card:hover {
-  border-left-color: var(--color-primary);
-  transform: translateX(4px);
+  border-color: var(--mid-border);
 }
 
-/* Employee Role Badge */
-.employee-role-badge {
-  font-size: 0.6875rem;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  padding: 0.25rem 0.625rem;
-  border-radius: 9999px;
-  background: linear-gradient(
-    135deg,
-    var(--color-primary) 0%,
-    var(--color-primary-hover) 100%
-  );
-  color: var(--color-background);
-  box-shadow: var(--shadow-sm);
-}
-
-/* Employee Department */
-.employee-department {
-  font-size: var(--text-sm);
-  color: var(--color-text-secondary);
-  font-weight: 500;
-}
-
-/* Employee Skills */
-.employee-skills {
+.employee-header {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-  margin-top: 0.75rem;
-  max-width: 100%;
+  align-items: center;
+  gap: var(--spacing-16);
+  margin-bottom: var(--spacing-20);
 }
 
-.employee-skills .badge.skill-badge {
-  max-width: fit-content;
-}
-
-.badge.skill-badge,
-.badge-secondary.skill-badge {
-  font-size: 0.75rem;
-  font-weight: 500;
-  padding: 0.25rem 0.625rem;
-  border-radius: 9999px !important;
-  background-color: var(--color-muted);
-  color: var(--color-text-secondary);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
-  border: 1px solid var(--color-border) !important;
-  text-transform: none;
-  letter-spacing: normal;
-}
-
-/* Employee Card Actions */
-.employee-card-actions {
-  display: flex;
-  gap: var(--spacing-sm);
-  padding-top: var(--spacing-md);
-  border-top: 1px solid var(--color-border-light);
-}
-
-/* Employee Avatar */
 .employee-avatar {
   width: 48px;
   height: 48px;
-  border-radius: 50%;
-  background: linear-gradient(
-    135deg,
-    var(--color-primary) 0%,
-    var(--color-primary-hover) 100%
-  );
+  border-radius: var(--radius-pill);
+  background-color: var(--border-dark);
+  border: 1px solid var(--green-border);
+  color: var(--supabase-green);
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--color-background);
-  font-weight: var(--font-weight-bold);
-  font-size: 1.25rem;
-  box-shadow: var(--shadow-md);
+  font-family: var(--font-circular);
+  font-size: var(--text-subheading);
+  font-weight: 500;
   flex-shrink: 0;
 }
 
-/* Employee Header */
-.employee-header {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  gap: var(--spacing-sm);
-}
-
-/* Employee Info */
 .employee-info {
   flex: 1;
   min-width: 0;
-  overflow: hidden;
 }
 
-/* Mobile Responsiveness for Employee Cards */
-@media (max-width: 480px) {
-  .employee-header {
-    flex-direction: column;
-    align-items: flex-start;
-    gap: var(--spacing-sm);
+.employee-name {
+  font-family: var(--font-circular);
+  font-size: var(--text-subheading);
+  font-weight: 400;
+  color: var(--off-white);
+  margin-bottom: 2px;
+}
+
+.employee-email {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--mid-gray);
+  text-transform: lowercase;
+}
+
+/* Role & Skills */
+.employee-role-badge {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1.2px;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  background-color: var(--border-dark);
+  border: 1px solid var(--mid-border);
+  color: var(--light-gray);
+}
+
+.employee-skills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--spacing-8);
+  margin-top: var(--spacing-16);
+}
+
+.skill-badge {
+  font-family: var(--font-circular);
+  font-size: 12px;
+  padding: 4px 12px;
+  border-radius: var(--radius-pill);
+  background-color: var(--dark);
+  border: 1px solid var(--border-dark);
+  color: var(--mid-gray);
+  transition: all var(--transition-base);
+}
+
+.skill-badge:hover {
+  color: var(--off-white);
+  border-color: var(--mid-border);
+}
+
+/* Card Actions */
+.employee-card-actions {
+  display: flex;
+  gap: var(--spacing-12);
+  margin-top: var(--spacing-24);
+  padding-top: var(--spacing-16);
+  border-top: 1px solid var(--dark-border);
+}
+
+/* Responsive adjustments */
+@media (max-width: 600px) {
+  .employee-card {
+    padding: var(--spacing-16);
   }
 
   .employee-avatar {
     width: 40px;
     height: 40px;
-    font-size: 1rem;
-  }
-
-  .employee-card-actions {
-    flex-wrap: wrap;
-  }
-
-  .skill-badge {
-    font-size: 0.6875rem;
-    padding: 0.1875rem 0.5rem;
-  }
-
-  .employee-role-badge {
-    font-size: 0.6875rem;
-    padding: 0.3125rem 0.75rem;
   }
 }

@@ -19,11 +19,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/app/components/ui/Select/Select";
-import DeleteConfirmation from "@/app/components/confirmation/DeleteConfirmation/DeleteConfirmation";
 import { SearchBar } from "@/app/components/SearchBar/SearchBar";
 import EmployeeForm, {
   type EmployeeFormRef,
 } from "@/app/components/forms/EmployeeForm/EmployeeForm";
+import { useConfirmation } from "@/lib/context/ConfirmationContext";
+import useSWR, { useSWRConfig } from "swr";
+import { fetcher } from "@/lib/fetcher";
 
 interface EmployeeListProps {
   isActive?: boolean;
@@ -42,15 +44,7 @@ export default function EmployeeList({ isActive = true }: EmployeeListProps) {
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
   const [total, setTotal] = useState(0);
-  const [deleteConfirmation, setDeleteConfirmation] = useState<{
-    isOpen: boolean;
-    employeeId: string | null;
-    employeeName: string;
-  }>({
-    isOpen: false,
-    employeeId: null,
-    employeeName: "",
-  });
+  const { confirm } = useConfirmation();
   const employeeFormRef = useRef<EmployeeFormRef>(null);
 
   const uniqueDepartments = useMemo(() => {
@@ -63,42 +57,54 @@ export default function EmployeeList({ isActive = true }: EmployeeListProps) {
     return Array.from(roles).sort();
   }, [allEmployees]);
 
-  const loadEmployees = useCallback(async () => {
-    try {
-      setLoading(true);
-      const params = new URLSearchParams();
-      if (searchQuery) params.append("name", searchQuery);
-      if (departmentFilter !== "all")
-        params.append("department", departmentFilter);
-      if (roleFilter !== "all") params.append("role", roleFilter);
-      params.append("page", currentPage.toString());
-      params.append("limit", "10");
+  const buildUrl = useCallback(() => {
+    const params = new URLSearchParams();
+    if (searchQuery) params.append("name", searchQuery);
+    if (departmentFilter !== "all")
+      params.append("department", departmentFilter);
+    if (roleFilter !== "all") params.append("role", roleFilter);
+    params.append("page", currentPage.toString());
+    params.append("limit", "10");
 
-      const url = params.toString()
-        ? `/api/employees?${params.toString()}`
-        : "/api/employees?page=1&limit=10";
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error("Failed to fetch employees");
-      }
-      const data = await response.json();
-      setEmployees(data.data || data);
-      setAllEmployees(data.data || data);
-      setTotalPages(data.pagination?.totalPages || 1);
-      setTotal(data.pagination?.total || 0);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load employees");
-    } finally {
-      setLoading(false);
-    }
+    return params.toString()
+      ? `/api/employees?${params.toString()}`
+      : "/api/employees?page=1&limit=10";
   }, [searchQuery, departmentFilter, roleFilter, currentPage]);
 
-  useEffect(() => {
-    if (isActive) {
-      loadEmployees();
+  const { data: swrData, error: swrError, isLoading: swrIsLoading } = useSWR(
+    isActive && !aiFiltering ? buildUrl() : null,
+    fetcher,
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 2000,
     }
-  }, [isActive, loadEmployees]);
+  );
+
+  const { mutate: globalMutate } = useSWRConfig();
+
+  useEffect(() => {
+    setLoading(swrIsLoading);
+  }, [swrIsLoading]);
+
+  useEffect(() => {
+    if (swrData && !aiFiltering) {
+      setEmployees(swrData.data || swrData);
+      setAllEmployees(swrData.data || swrData);
+      setTotalPages(swrData.pagination?.totalPages || 1);
+      setTotal(swrData.pagination?.total || 0);
+      setError(null);
+    }
+  }, [swrData, aiFiltering]);
+
+  useEffect(() => {
+    if (swrError) {
+      setError(swrError instanceof Error ? swrError.message : "Failed to load employees");
+    }
+  }, [swrError]);
+
+  const invalidateCache = useCallback(() => {
+    globalMutate((key) => typeof key === "string" && key.startsWith("/api/employees"));
+  }, [globalMutate]);
 
   const handleSearch = useCallback((query: SearchQuery) => {
     setSearchQuery(query.query);
@@ -143,46 +149,23 @@ export default function EmployeeList({ isActive = true }: EmployeeListProps) {
   }, [aiSkillQuery, currentPage]);
 
   const handleDeleteClick = (employee: Employee) => {
-    setDeleteConfirmation({
-      isOpen: true,
-      employeeId: employee.id,
-      employeeName: employee.name,
-    });
-  };
+    confirm({
+      title: "Delete Employee",
+      message: `Are you sure you want to delete "${employee.name}"? This action cannot be undone.`,
+      variant: "danger",
+      confirmText: "Delete",
+      onConfirm: async () => {
+        const response = await fetch(
+          `/api/employees/${employee.id}`,
+          { method: "DELETE" },
+        );
 
-  const handleConfirmDelete = async () => {
-    if (!deleteConfirmation.employeeId) return;
+        if (!response.ok) {
+          throw new Error("Failed to delete employee");
+        }
 
-    try {
-      const response = await fetch(
-        `/api/employees/${deleteConfirmation.employeeId}`,
-        {
-          method: "DELETE",
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to delete employee");
+        invalidateCache();
       }
-
-      setDeleteConfirmation({
-        isOpen: false,
-        employeeId: null,
-        employeeName: "",
-      });
-      await loadEmployees();
-    } catch (err) {
-      setError(
-        err instanceof Error ? err.message : "Failed to delete employee",
-      );
-    }
-  };
-
-  const handleCancelDelete = () => {
-    setDeleteConfirmation({
-      isOpen: false,
-      employeeId: null,
-      employeeName: "",
     });
   };
 
@@ -298,23 +281,13 @@ export default function EmployeeList({ isActive = true }: EmployeeListProps) {
         <>
           <div className="grid-layout">
             {employees.map((employee) => (
-              <Card key={employee.id} className="employee-card">
+              <Card key={employee.id}>
                 <CardHeader>
-                  <div className="employee-header">
-                    <div className="employee-avatar">
-                      {employee.name.charAt(0).toUpperCase()}
+                  <div className="flex-between-start">
+                    <div className="flex-1">
+                      <CardTitle>{employee.name}</CardTitle>
+                      <CardDescription>{employee.role}</CardDescription>
                     </div>
-                    <div className="employee-info">
-                      <CardTitle className="employee-name">
-                        {employee.name}
-                      </CardTitle>
-                      <CardDescription className="employee-email">
-                        {employee.email}
-                      </CardDescription>
-                    </div>
-                    <Badge className="employee-role-badge">
-                      {employee.role}
-                    </Badge>
                   </div>
                 </CardHeader>
                 <CardContent>
@@ -322,11 +295,7 @@ export default function EmployeeList({ isActive = true }: EmployeeListProps) {
                   {employee.skills && employee.skills.length > 0 && (
                     <div className="employee-skills">
                       {employee.skills.map((skill) => (
-                        <Badge
-                          key={skill}
-                          variant="secondary"
-                          className="skill-badge"
-                        >
+                        <Badge key={skill} variant="secondary">
                           {skill}
                         </Badge>
                       ))}
@@ -377,15 +346,7 @@ export default function EmployeeList({ isActive = true }: EmployeeListProps) {
           )}
         </>
       )}
-      <DeleteConfirmation
-        isOpen={deleteConfirmation.isOpen}
-        onConfirm={handleConfirmDelete}
-        onCancel={handleCancelDelete}
-        entityName={deleteConfirmation.employeeName}
-        entityType="Employee"
-        variant="danger"
-      />
-      <EmployeeForm ref={employeeFormRef} onSuccess={loadEmployees} />
+      <EmployeeForm ref={employeeFormRef} onSuccess={invalidateCache} />
     </>
   );
 }

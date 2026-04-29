@@ -22,6 +22,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/app/components/ui/Select/Select";
+import useSWR from "swr";
+import { fetcher } from "@/lib/fetcher";
 import "./CalendarDrawer.css";
 
 export function CalendarDrawer() {
@@ -36,43 +38,40 @@ export function CalendarDrawer() {
     setSelectedDate(date);
   };
 
-  const fetchCalendarData = async (month: Date) => {
-    try {
-      setLoading(true);
-      const year = month.getFullYear();
-      const monthIndex = month.getMonth();
+  const year = currentMonth.getFullYear();
+  const monthIndex = currentMonth.getMonth();
+  const firstDay = new Date(year, monthIndex, 1);
+  const lastDay = new Date(year, monthIndex + 1, 0);
 
-      // Calculate first and last day of the month for date range filtering
-      const firstDay = new Date(year, monthIndex, 1);
-      const lastDay = new Date(year, monthIndex + 1, 0);
+  const formatDate = (date: Date) => date.toISOString().split("T")[0];
 
-      const formatDate = (date: Date) => date.toISOString().split("T")[0];
+  const { data: projectsData, isLoading: projectsLoading } = useSWR(
+    `/api/projects?dateRangeStart=${formatDate(firstDay)}&dateRangeEnd=${formatDate(lastDay)}`,
+    fetcher,
+    { dedupingInterval: 60000, revalidateOnFocus: false }
+  );
 
-      // Fetch projects and tasks for the current month
-      const [projectsResponse, tasksResponse] = await Promise.all([
-        fetch(
-          `/api/projects?dateRangeStart=${formatDate(firstDay)}&dateRangeEnd=${formatDate(lastDay)}`,
-        ),
-        fetch(
-          `/api/tasks?dateRangeStart=${formatDate(firstDay)}&dateRangeEnd=${formatDate(lastDay)}`,
-        ),
-      ]);
-
-      const projectsData = await projectsResponse.json();
-      const tasksData = await tasksResponse.json();
-
-      setProjects(projectsData.data || []);
-      setTasks(tasksData.data || []);
-    } catch (error) {
-      console.error("Error fetching calendar data:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
+  const { data: tasksData, isLoading: tasksLoading } = useSWR(
+    `/api/tasks?dateRangeStart=${formatDate(firstDay)}&dateRangeEnd=${formatDate(lastDay)}`,
+    fetcher,
+    { dedupingInterval: 60000, revalidateOnFocus: false }
+  );
 
   useEffect(() => {
-    fetchCalendarData(currentMonth);
-  }, [currentMonth]);
+    setLoading(projectsLoading || tasksLoading);
+  }, [projectsLoading, tasksLoading]);
+
+  useEffect(() => {
+    if (projectsData) {
+      setProjects(projectsData.data || []);
+    }
+  }, [projectsData]);
+
+  useEffect(() => {
+    if (tasksData) {
+      setTasks(tasksData.data || []);
+    }
+  }, [tasksData]);
 
   const handleMonthChange = (month: Date) => {
     setCurrentMonth(month);

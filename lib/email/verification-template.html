@@ -1,0 +1,411 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <title>Verification Code</title>
+    <style>
+      /* Reset */
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        font-family:
+          -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Oxygen, Ubuntu,
+          Cantarell, sans-serif;
+        background-color: #0f0f0f;
+        color: #fafafa;
+        line-height: 1.6;
+      }
+
+      /* Container */
+      .email-container {
+        max-width: 600px;
+        margin: 0 auto;
+        padding: 40px 20px;
+        background: linear-gradient(
+          135deg,
+          #0f0f0f 0%,
+          #171717 50%,
+          #0f0f0f 100%
+        );
+      }
+
+      /* Card */
+      .email-card {
+        background: linear-gradient(145deg, #171717 0%, #1a1a1a 100%);
+        border-radius: 20px;
+        padding: 40px;
+        border: 1px solid #2e2e2e;
+        box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+      }
+
+      /* Header */
+      .email-header {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      .email-logo {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        margin-bottom: 20px;
+      }
+
+      .email-logo svg {
+        width: 56px;
+        height: 56px;
+        color: #3ecf8e;
+      }
+
+      .email-header h1 {
+        font-size: 28px;
+        font-weight: 700;
+        color: #fafafa;
+        margin: 0 0 10px 0;
+        letter-spacing: -0.025em;
+      }
+
+      .email-header p {
+        font-size: 16px;
+        color: #b4b4b4;
+        margin: 0;
+      }
+
+      /* Code Display */
+      .code-display {
+        background: linear-gradient(
+          135deg,
+          rgba(62, 207, 142, 0.15) 0%,
+          rgba(62, 207, 142, 0.08) 100%
+        );
+        border: 2px solid rgba(62, 207, 142, 0.3);
+        border-radius: 16px;
+        padding: 30px;
+        text-align: center;
+        margin: 30px 0;
+      }
+
+      .code-number {
+        font-size: 48px;
+        font-weight: 700;
+        color: #3ecf8e;
+        letter-spacing: 8px;
+        font-family: "Courier New", monospace;
+        text-shadow: 0 0 20px rgba(62, 207, 142, 0.3);
+      }
+
+      /* Info Section */
+      .email-info {
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 12px;
+        padding: 20px;
+        margin: 30px 0;
+        border-top: 1px solid #2e2e2e;
+      }
+
+      .email-info h3 {
+        font-size: 16px;
+        font-weight: 600;
+        color: #fafafa;
+        margin: 0 0 10px 0;
+      }
+
+      .email-info ul {
+        margin: 0;
+        padding-left: 20px;
+        color: #b4b4b4;
+        font-size: 14px;
+      }
+
+      .email-info li {
+        margin-bottom: 8px;
+      }
+
+      /* Warning */
+      .email-warning {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        padding: 15px 20px;
+        background: linear-gradient(
+          135deg,
+          rgba(245, 158, 11, 0.15) 0%,
+          rgba(245, 158, 11, 0.08) 100%
+        );
+        border: 1px solid rgba(245, 158, 11, 0.3);
+        border-radius: 10px;
+        color: #f59e0b;
+        font-size: 14px;
+        font-weight: 500;
+        margin: 20px 0;
+      }
+
+      .email-warning svg {
+        width: 18px;
+        height: 18px;
+        flex-shrink: 0;
+      }
+
+      /* Footer */
+      .email-footer {
+        text-align: center;
+        margin-top: 30px;
+        padding-top: 20px;
+        border-top: 1px solid #2e2e2e;
+        font-size: 12px;
+        color: #898989;
+      }
+
+      .email-footer p {
+        margin: 5px 0;
+      }
+
+      .email-footer a {
+        color: #3ecf8e;
+        text-decoration: none;
+      }
+
+      .email-footer a:hover {
+        text-decoration: underline;
+      }
+
+      /* Security Badge */
+      .security-badge {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+        margin-top: 20px;
+        padding: 12px;
+        background: linear-gradient(
+          180deg,
+          transparent 0%,
+          rgba(62, 207, 142, 0.03) 100%
+        );
+        border-radius: 8px;
+        font-size: 12px;
+        color: #898989;
+      }
+
+      .security-badge svg {
+        width: 16px;
+        height: 16px;
+        color: #3ecf8e;
+      }
+
+      /* Responsive */
+      @media (max-width: 600px) {
+        .email-container {
+          padding: 20px 10px;
+        }
+
+        .email-card {
+          padding: 30px 20px;
+          border-radius: 12px;
+        }
+
+        .email-header h1 {
+          font-size: 24px;
+        }
+
+        .code-number {
+          font-size: 36px;
+          letter-spacing: 4px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="email-container">
+      <div class="email-card">
+        <!-- Header -->
+        <div class="email-header">
+          <div class="email-logo">
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <path d="M3 21l18 0" />
+              <path d="M9 8l1 0" />
+              <path d="M9 12l1 0" />
+              <path d="M9 16l1 0" />
+              <path d="M14 8l1 0" />
+              <path d="M14 12l1 0" />
+              <path d="M14 16l1 0" />
+              <path d="M5 21l0 -16a2 2 0 0 1 2 -2l10 0a2 2 0 0 1 2 2l0 16" />
+            </svg>
+          </div>
+          <h1
+            style="
+              color: #fafafa;
+              font-size: 28px;
+              font-weight: 700;
+              margin: 0 0 10px 0;
+              letter-spacing: -0.025em;
+            "
+          >
+            {{#if isSignup}}Verify Your Email{{else if isLogin}}Two-Factor
+            Authentication{{else if isPasswordReset}}Password Reset
+            Code{{else}}Verification Code{{/if}}
+          </h1>
+          <p style="color: #b4b4b4; font-size: 16px; margin: 0">
+            {{#if isSignup}}Complete your account registration{{else if
+            isLogin}}Complete your login process{{else if isPasswordReset}}Use
+            this code to reset your password{{else}}Use this code to verify your
+            identity{{/if}}
+          </p>
+        </div>
+
+        <!-- Code Display -->
+        <div
+          class="code-display"
+          style="
+            background: linear-gradient(
+              135deg,
+              rgba(62, 207, 142, 0.15) 0%,
+              rgba(62, 207, 142, 0.08) 100%
+            );
+            border: 2px solid rgba(62, 207, 142, 0.3);
+            border-radius: 16px;
+            padding: 30px;
+            text-align: center;
+            margin: 30px 0;
+          "
+        >
+          <div
+            class="code-number"
+            style="
+              font-size: 48px;
+              font-weight: 700;
+              color: #3ecf8e;
+              letter-spacing: 8px;
+              font-family: &quot;Courier New&quot;, monospace;
+              text-shadow: 0 0 20px rgba(62, 207, 142, 0.3);
+            "
+          >
+            {{code}}
+          </div>
+        </div>
+
+        <!-- Warning -->
+        <div
+          class="email-warning"
+          style="
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 15px 20px;
+            background: linear-gradient(
+              135deg,
+              rgba(245, 158, 11, 0.15) 0%,
+              rgba(245, 158, 11, 0.08) 100%
+            );
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 10px;
+            color: #f59e0b;
+            font-size: 14px;
+            font-weight: 500;
+            margin: 20px 0;
+          "
+        >
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            style="width: 18px; height: 18px; flex-shrink: 0"
+          >
+            <circle cx="12" cy="12" r="10" />
+            <line x1="12" y1="8" x2="12" y2="12" />
+            <line x1="12" y1="16" x2="12.01" y2="16" />
+          </svg>
+          <span style="color: #f59e0b"
+            >This code will expire in {{expiresIn}} minutes. Do not share it
+            with anyone.</span
+          >
+        </div>
+
+        <!-- Info Section -->
+        <div
+          class="email-info"
+          style="
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 30px 0;
+            border-top: 1px solid #2e2e2e;
+          "
+        >
+          <h3
+            style="
+              font-size: 16px;
+              font-weight: 600;
+              color: #fafafa;
+              margin: 0 0 10px 0;
+            "
+          >
+            Important Information:
+          </h3>
+          <ul
+            style="
+              margin: 0;
+              padding-left: 20px;
+              color: #b4b4b4;
+              font-size: 14px;
+            "
+          >
+            <li style="margin-bottom: 8px">
+              This is a one-time verification code
+            </li>
+            <li style="margin-bottom: 8px">
+              Enter the code on the verification page to complete {{#if
+              isSignup}}registration{{else if isLogin}}login{{else if
+              isPasswordReset}}password reset{{else}}verification{{/if}}
+            </li>
+            <li style="margin-bottom: 8px">
+              If you didn't request this code, please ignore this email
+            </li>
+            <li style="margin-bottom: 8px">
+              For security reasons, never share your verification code
+            </li>
+          </ul>
+        </div>
+
+        <!-- Security Badge -->
+        <div class="security-badge">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+          >
+            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" />
+          </svg>
+          <span>Secured with enterprise-grade encryption</span>
+        </div>
+
+        <!-- Footer -->
+        <div class="email-footer">
+          <p>&copy; {{year}} MIS System. All rights reserved.</p>
+          <p>This is an automated email. Please do not reply.</p>
+          <p>Need help? <a href="{{supportUrl}}">Contact Support</a></p>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>

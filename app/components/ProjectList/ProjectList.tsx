@@ -19,11 +19,14 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/app/components/ui/Select/Select";
-import DeleteConfirmation from "@/app/components/confirmation/DeleteConfirmation/DeleteConfirmation";
+import { Progress } from "@/app/components/ui/Progress";
+import { useConfirmation } from "@/lib/context/ConfirmationContext";
 import { SearchBar } from "@/app/components/SearchBar/SearchBar";
 import ProjectForm, {
   type ProjectFormRef,
 } from "@/app/components/forms/ProjectForm/ProjectForm";
+import useSWR, { useSWRConfig } from "swr";
+import { fetcher } from "@/lib/fetcher";
 
 interface ProjectListProps {
   isActive?: boolean;
@@ -48,46 +51,22 @@ export default function ProjectList({ isActive = true }: ProjectListProps) {
     useState<string>("");
   const [showRecommendations, setShowRecommendations] = useState(false);
   const [loadingRecommendations, setLoadingRecommendations] = useState(false);
-  const [deleteConfirmation, setDeleteConfirmation] = useState<{
-    isOpen: boolean;
-    projectId: string | null;
-    projectName: string;
-  }>({
-    isOpen: false,
-    projectId: null,
-    projectName: "",
-  });
+  const { confirm } = useConfirmation();
   const projectFormRef = useRef<ProjectFormRef>(null);
 
-  const loadProjects = useCallback(async () => {
-    try {
-      setLoading(true);
-      const params = new URLSearchParams();
-      if (searchQuery) params.append("name", searchQuery);
-      if (statusFilter !== "all") params.append("status", statusFilter);
-      if (priorityFilter !== "all") params.append("priority", priorityFilter);
-      if (progressMin) params.append("progressMin", progressMin);
-      if (progressMax) params.append("progressMax", progressMax);
-      params.append("page", currentPage.toString());
-      params.append("limit", "10");
+  const buildUrl = useCallback(() => {
+    const params = new URLSearchParams();
+    if (searchQuery) params.append("name", searchQuery);
+    if (statusFilter !== "all") params.append("status", statusFilter);
+    if (priorityFilter !== "all") params.append("priority", priorityFilter);
+    if (progressMin) params.append("progressMin", progressMin);
+    if (progressMax) params.append("progressMax", progressMax);
+    params.append("page", currentPage.toString());
+    params.append("limit", "10");
 
-      const url = params.toString()
-        ? `/api/projects?${params.toString()}`
-        : "/api/projects?page=1&limit=10";
-      const response = await fetch(url);
-      if (!response.ok) {
-        throw new Error("Failed to fetch projects");
-      }
-      const data = await response.json();
-      setProjects(data.data || data);
-      setTotalPages(data.pagination?.totalPages || 1);
-      setTotal(data.pagination?.total || 0);
-      setError(null);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to load projects");
-    } finally {
-      setLoading(false);
-    }
+    return params.toString()
+      ? `/api/projects?${params.toString()}`
+      : "/api/projects?page=1&limit=10";
   }, [
     searchQuery,
     statusFilter,
@@ -97,11 +76,39 @@ export default function ProjectList({ isActive = true }: ProjectListProps) {
     currentPage,
   ]);
 
-  useEffect(() => {
-    if (isActive) {
-      loadProjects();
+  const { data: swrData, error: swrError, isLoading: swrIsLoading } = useSWR(
+    isActive && !aiFiltering ? buildUrl() : null,
+    fetcher,
+    {
+      revalidateOnFocus: false,
+      dedupingInterval: 2000,
     }
-  }, [isActive, loadProjects]);
+  );
+
+  const { mutate: globalMutate } = useSWRConfig();
+
+  useEffect(() => {
+    setLoading(swrIsLoading);
+  }, [swrIsLoading]);
+
+  useEffect(() => {
+    if (swrData && !aiFiltering) {
+      setProjects(swrData.data || swrData);
+      setTotalPages(swrData.pagination?.totalPages || 1);
+      setTotal(swrData.pagination?.total || 0);
+      setError(null);
+    }
+  }, [swrData, aiFiltering]);
+
+  useEffect(() => {
+    if (swrError) {
+      setError(swrError instanceof Error ? swrError.message : "Failed to load projects");
+    }
+  }, [swrError]);
+
+  const invalidateCache = useCallback(() => {
+    globalMutate((key) => typeof key === "string" && key.startsWith("/api/projects"));
+  }, [globalMutate]);
 
   const handleSearch = useCallback((query: SearchQuery) => {
     setSearchQuery(query.query);
@@ -179,41 +186,24 @@ export default function ProjectList({ isActive = true }: ProjectListProps) {
   }, []);
 
   const handleDeleteClick = (project: Project) => {
-    setDeleteConfirmation({
-      isOpen: true,
-      projectId: project.id,
-      projectName: project.name,
-    });
-  };
+    confirm({
+      title: "Delete Project",
+      message: `Are you sure you want to delete "${project.name}"? This action cannot be undone.`,
+      variant: "danger",
+      confirmText: "Delete",
+      onConfirm: async () => {
+        const response = await fetch(
+          `/api/projects/${project.id}`,
+          { method: "DELETE" },
+        );
 
-  const handleConfirmDelete = async () => {
-    if (!deleteConfirmation.projectId) return;
+        if (!response.ok) {
+          throw new Error("Failed to delete project");
+        }
 
-    try {
-      const response = await fetch(
-        `/api/projects/${deleteConfirmation.projectId}`,
-        {
-          method: "DELETE",
-        },
-      );
-
-      if (!response.ok) {
-        throw new Error("Failed to delete project");
+        invalidateCache();
       }
-
-      setDeleteConfirmation({
-        isOpen: false,
-        projectId: null,
-        projectName: "",
-      });
-      await loadProjects();
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to delete project");
-    }
-  };
-
-  const handleCancelDelete = () => {
-    setDeleteConfirmation({ isOpen: false, projectId: null, projectName: "" });
+    });
   };
 
   if (loading) {
@@ -406,18 +396,29 @@ export default function ProjectList({ isActive = true }: ProjectListProps) {
                   </div>
                 </CardHeader>
                 <CardContent>
-                  {project.startdate && (
-                    <p className="text-sm">
-                      <span className="font-semibold">Start Date:</span>{" "}
-                      {project.startdate}
-                    </p>
-                  )}
-                  {project.enddate && (
-                    <p className="text-sm">
-                      <span className="font-semibold">End Date:</span>{" "}
-                      {project.enddate}
-                    </p>
-                  )}
+                  <div className="flex flex-col gap-4">
+                    {project.progress !== undefined && (
+                      <div className="space-y-2">
+                        <div className="flex justify-between text-xs font-mono text-muted-foreground">
+                          <span>Progress</span>
+                          <span>{project.progress}%</span>
+                        </div>
+                        <Progress value={project.progress} />
+                      </div>
+                    )}
+                    <div className="flex flex-col gap-1">
+                      {project.startdate && (
+                        <p className="text-xs text-muted-foreground">
+                          <span className="font-semibold text-off-white">Start:</span> {project.startdate}
+                        </p>
+                      )}
+                      {project.enddate && (
+                        <p className="text-xs text-muted-foreground">
+                          <span className="font-semibold text-off-white">End:</span> {project.enddate}
+                        </p>
+                      )}
+                    </div>
+                  </div>
                 </CardContent>
                 <CardFooter className="flex-between-end">
                   <Button
@@ -463,15 +464,7 @@ export default function ProjectList({ isActive = true }: ProjectListProps) {
           )}
         </>
       )}
-      <DeleteConfirmation
-        isOpen={deleteConfirmation.isOpen}
-        onConfirm={handleConfirmDelete}
-        onCancel={handleCancelDelete}
-        entityName={deleteConfirmation.projectName}
-        entityType="Project"
-        variant="danger"
-      />
-      <ProjectForm ref={projectFormRef} onSuccess={loadProjects} />
+      <ProjectForm ref={projectFormRef} onSuccess={invalidateCache} />
     </>
   );
 }

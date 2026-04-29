@@ -48,6 +48,7 @@ export default function LoginPage() {
     setIsLoading(true);
 
     try {
+      // First verify password
       const response = await fetch("/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -59,12 +60,36 @@ export default function LoginPage() {
 
       const data = await response.json();
 
-      if (data.success) {
-        // Redirect to home page on successful login
-        router.push("/");
-        router.refresh();
+      if (!data.success) {
+        setError(data.error || "Invalid email or password");
+        return;
+      }
+
+      // Password is correct, create temporary token and send verification code
+      const tempToken = JSON.stringify({
+        email: email.trim(),
+        password,
+      });
+
+      const codeResponse = await fetch("/api/auth/send-code", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: email.trim(),
+          type: "login",
+          tempToken,
+        }),
+      });
+
+      const codeData = await codeResponse.json();
+
+      if (codeData.success) {
+        // Redirect to verification page
+        router.push(
+          `/verify-code?email=${encodeURIComponent(email.trim())}&type=login&tempToken=${encodeURIComponent(tempToken)}`,
+        );
       } else {
-        setError(data.error || "Login failed. Please try again.");
+        setError(codeData.error || "Failed to send verification code");
       }
     } catch (err) {
       setError("An unexpected error occurred. Please try again.");

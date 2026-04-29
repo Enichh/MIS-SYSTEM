@@ -573,3 +573,86 @@ export async function backfillTaskEmbeddings(
   console.log(`Backfill complete: ${success} succeeded, ${failed} failed out of ${total}`);
   return { success, failed, total };
 }
+
+/**
+ * Search and fetch full employee data
+ */
+export async function searchEmployeesWithData(
+  query: string,
+  limit = 5
+): Promise<(Employee & { similarity: number })[]> {
+  const supabase = await createClient();
+  const searchResults = await searchEmployeesByEmbedding(query, { matchCount: limit });
+  
+  if (searchResults.length === 0) return [];
+
+  const { data, error } = await supabase
+    .from('employees')
+    .select('*')
+    .in('id', searchResults.map(r => r.id));
+
+  if (error) throw error;
+
+  // Re-sort by similarity and attach score
+  return searchResults
+    .map(res => {
+      const fullData = data.find(d => d.id === res.id);
+      return fullData ? { ...fullData, similarity: res.similarity } : null;
+    })
+    .filter((d): d is Employee & { similarity: number } => d !== null);
+}
+
+/**
+ * Search and fetch full project data
+ */
+export async function searchProjectsWithData(
+  query: string,
+  limit = 5
+): Promise<(Project & { similarity: number })[]> {
+  const supabase = await createClient();
+  const searchResults = await searchProjectsByEmbedding(query, { matchCount: limit });
+  
+  if (searchResults.length === 0) return [];
+
+  const { data, error } = await supabase
+    .from('projects')
+    .select('*')
+    .in('id', searchResults.map(r => r.id));
+
+  if (error) throw error;
+
+  return searchResults
+    .map(res => {
+      const fullData = data.find(d => d.id === res.id);
+      return fullData ? { ...fullData, similarity: res.similarity } : null;
+    })
+    .filter((d): d is Project & { similarity: number } => d !== null);
+}
+
+/**
+ * Search and fetch full task data
+ */
+export async function searchTasksWithData(
+  query: string,
+  limit = 5
+): Promise<(Task & { similarity: number })[]> {
+  const supabase = await createClient();
+  const searchResults = await searchTasksByEmbedding(query, { matchCount: limit });
+  
+  if (searchResults.length === 0) return [];
+
+  const { data, error } = await supabase
+    .from('tasks')
+    .select('*')
+    .in('id', searchResults.map(r => r.id));
+
+  if (error) throw error;
+
+  return searchResults
+    .map(res => {
+      const fullData = data.find(d => d.id === res.id);
+      return fullData ? { ...fullData, similarity: res.similarity } : null;
+    })
+    .filter((d): d is Task & { similarity: number } => d !== null);
+}
+

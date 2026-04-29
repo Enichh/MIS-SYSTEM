@@ -52,8 +52,15 @@ export default function ThemeToggle() {
       size="sm"
       onClick={toggleTheme}
       aria-label="Toggle theme"
+      className="theme-toggle-btn"
     >
-      {theme === 'light' ? <SunIcon size={20} /> : <MoonIcon size={20} />}
+      <div className="theme-toggle-icon-container">
+        {theme === 'light' ? (
+          <SunIcon size={20} className="theme-icon sun" />
+        ) : (
+          <MoonIcon size={20} className="theme-icon moon" />
+        )}
+      </div>
     </Button>
   )
 }

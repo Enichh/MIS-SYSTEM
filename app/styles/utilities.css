@@ -82,6 +82,15 @@
   }
 }
 
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: .5;
+  }
+}
+
 /* Responsive Utility Classes for Navigation */
 .drawer-slide-in {
   animation: slideInRight 0.3s cubic-bezier(0.4, 0, 0.2, 1);

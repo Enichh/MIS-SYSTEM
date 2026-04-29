@@ -157,12 +157,12 @@
 
 .calendar-event-project {
   background-color: var(--color-info);
-  color: var(--color-background);
+  color: white;
 }
 
 .calendar-event-task {
   background-color: var(--color-warning);
-  color: var(--color-background);
+  color: white;
 }
 
 /* Calendar Loading State */

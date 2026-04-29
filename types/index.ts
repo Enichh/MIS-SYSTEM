@@ -16,10 +16,37 @@ export interface Project {
   description?: string;
   status: 'active' | 'completed' | 'on_hold';
   priority: 'high' | 'medium' | 'low';
-  progress: number;
+  progress: number; // Percentage (can be auto-calculated from milestones)
+  current_milestone_id?: string | null;
   startdate?: string;
   enddate?: string;
   embedding?: number[] | null;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export interface Milestone {
+  id: string;
+  project_id: string;
+  name: string;
+  description?: string;
+  status: 'pending' | 'current' | 'completed';
+  order_index: number;
+  completed_at?: string | null;
+  created_at: string | null;
+  updated_at: string | null;
+}
+
+export type RaidType = 'risk' | 'action_item' | 'issue' | 'decision_point';
+
+export interface RaidItem {
+  id: string;
+  project_id: string;
+  type: RaidType;
+  description: string;
+  status: string;
+  priority: 'high' | 'medium' | 'low';
+  assigned_to?: string | null;
   created_at: string | null;
   updated_at: string | null;
 }
@@ -32,6 +59,7 @@ export interface Task {
   priority: 'high' | 'medium' | 'low';
   dependencies: string[];
   projectid: string;
+  milestone_id?: string | null;
   assignedto: string | null;
   duedate?: string;
   embedding?: number[] | null;
