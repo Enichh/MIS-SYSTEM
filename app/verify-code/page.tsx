@@ -108,7 +108,11 @@ function VerifyCodeContent() {
       if (data.success) {
         setSuccess(true);
         setTimeout(() => {
-          router.push("/");
+          if (type === "password_reset") {
+            router.push(`/new-password?email=${encodeURIComponent(email)}`);
+          } else {
+            router.push("/");
+          }
         }, 1500);
       } else {
         setError(data.error || "Invalid verification code");
