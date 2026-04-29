@@ -26,6 +26,7 @@ tsconfig.tsbuildinfo
 
 # Markdown files
 **/*.md
+!README.md
 
 # Logs
 *.log
