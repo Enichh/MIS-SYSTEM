@@ -85,7 +85,7 @@ function VerifyEmailContent() {
   };
 
   return (
-    <div className="login-page">
+    <div className="login-page" data-theme="dark">
       <div className="login-container">
         <div className="login-header">
           <div className="login-logo">{getStatusIcon()}</div>
@@ -168,7 +168,7 @@ function VerifyEmailContent() {
 export default function VerifyEmailPage() {
   return (
     <Suspense fallback={
-      <div className="login-page">
+      <div className="login-page" data-theme="dark">
         <div className="login-container">
           <div className="login-header">
             <div className="login-logo">

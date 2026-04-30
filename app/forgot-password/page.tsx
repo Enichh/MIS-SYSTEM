@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { Mail, ArrowLeft, AlertCircle, Shield } from "lucide-react";
+import { Mail, ArrowLeft, AlertCircle, Building2, Shield } from "lucide-react";
 import "../styles/login.css";
 
 export default function ForgotPasswordPage() {
@@ -63,11 +63,11 @@ export default function ForgotPasswordPage() {
   };
 
   return (
-    <div className="login-page">
+    <div className="login-page" data-theme="dark">
       <div className="login-container">
         <div className="login-header">
           <div className="login-logo">
-            <Shield className="login-logo-icon" />
+            <Building2 className="login-logo-icon" />
           </div>
           <h1>Reset Password</h1>
           <p>

@@ -92,7 +92,7 @@ function NewPasswordContent() {
 
   if (success) {
     return (
-      <div className="login-page">
+      <div className="login-page" data-theme="dark">
         <div className="login-container">
           <div className="login-header">
             <div className="login-logo">

@@ -140,6 +140,7 @@
   --color-warning: #f59e0b;
   --color-error: #ef4444;
   --color-success: var(--supabase-green);
+  --color-primary-hsl: 153 61% 53%;
 
   --glass-dark: rgba(41, 41, 41, 0.84);
 }
@@ -182,6 +183,7 @@
   --color-warning: #d97706;
   --color-error: #dc2626;
   --color-success: var(--supabase-green);
+  --color-primary-hsl: 154 57% 39%;
 
   --glass-dark: rgba(255, 255, 255, 0.84);
 }
